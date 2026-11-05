@@ -1,10 +1,13 @@
 """Bounded, content-addressed import evidence, never a public price history."""
 
+import fcntl
 import hashlib
 import json
 import os
+import secrets
 import tempfile
 import zipfile
+from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path, PurePosixPath
 from xml.etree.ElementTree import ParseError
@@ -20,8 +23,21 @@ class ArtifactStore:
         self.root, self.budget = Path(root), budget
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
 
+    @contextmanager
+    def lock(self):
+        with (self.root / ".lock").open("a") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle, fcntl.LOCK_UN)
+
     def save(self, stream, manifest):
-        self.prune(utcnow())
+        with self.lock():
+            return self._save(stream, manifest)
+
+    def _save(self, stream, manifest):
+        self._prune(utcnow())
         used = sum(p.stat().st_size for p in self.root.glob("*.data"))
         digest, size = hashlib.sha256(), 0
         fd, name = tempfile.mkstemp(dir=self.root)
@@ -33,24 +49,35 @@ class ArtifactStore:
                         raise CatalogError("artifact_budget_exceeded")
                     f.write(chunk)
                     digest.update(chunk)
-            target = self.root / (digest.hexdigest() + ".data")
+            target = self.root / (digest.hexdigest() + "_" + secrets.token_hex(8) + ".data")
             os.replace(name, target)
             manifest.path, manifest.artifact_sha256 = str(target), digest.hexdigest()
-            self.mark(target, "active", manifest)
+            self._mark(target, "active", manifest)
             return target
         finally:
             Path(name).unlink(missing_ok=True)
 
     def mark(self, path, state, manifest, now=None):
+        with self.lock():
+            self._mark(path, state, manifest, now)
+
+    def _mark(self, path, state, manifest, now=None):
         meta = {
             "state": state,
             "time": (now or utcnow()).isoformat(),
             "interface": manifest.interface,
             "domain": manifest.domain,
         }
-        Path(path).with_suffix(".json").write_text(json.dumps(meta))
+        fd, name = tempfile.mkstemp(dir=self.root)
+        with os.fdopen(fd, "w") as handle:
+            json.dump(meta, handle)
+        os.replace(name, Path(path).with_suffix(".json"))
 
     def prune(self, now):
+        with self.lock():
+            return self._prune(now)
+
+    def _prune(self, now):
         from datetime import datetime
 
         records = [(p, json.loads(p.read_text())) for p in self.root.glob("*.json")]

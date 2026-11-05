@@ -8,6 +8,7 @@ from psycopg.types.json import Jsonb
 
 from suppliermcp.catalog.contracts import CatalogError, Page, ProductView, utcnow
 from suppliermcp.catalog.repository import get_product, read_status
+from suppliermcp.config import Settings
 
 from .schema import catalog_schema, validate_filter
 
@@ -44,10 +45,15 @@ def matching_ids(conn, query):
     return [i for i, m in rows if m is True], [i for i, m in rows if m is None]
 
 
-def materialize(conn, products, coverage, principal, query_hash, total=None, unknown_total=0):
+def materialize(
+    conn, products, coverage, principal, query_hash, total=None, unknown_total=0, settings=None
+):
+    settings = settings or Settings()
     result_id = secrets.token_urlsafe(24)
-    expires = utcnow() + timedelta(minutes=30)
+    expires = utcnow() + timedelta(seconds=settings.result_ttl_seconds)
     data = {
+        "page_size": settings.page_size,
+        "max_response_bytes": settings.max_response_bytes,
         "results": [p.model_dump(mode="json") for p in products],
         "total": len(products) if total is None else total,
         "unknown_total": unknown_total,
@@ -63,7 +69,8 @@ def materialize(conn, products, coverage, principal, query_hash, total=None, unk
     return next_page(conn, cursor, principal)
 
 
-def start_listing(conn, query, principal):
+def start_listing(conn, query, principal, settings=None):
+    settings = settings or Settings()
     with conn.transaction():
         conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
         if not conn.execute("SELECT 1 FROM source_items LIMIT 1").fetchone():
@@ -78,7 +85,7 @@ def start_listing(conn, query, principal):
             raise CatalogError("unsupported_currency")
         confirmed, unknown = matching_ids(conn, query)
         ids = confirmed if query.classification == "confirmed" else unknown
-        if len(ids) > 100_000:
+        if len(ids) > settings.max_result_rows:
             raise CatalogError(
                 "result_too_large",
                 json.dumps(
@@ -87,9 +94,11 @@ def start_listing(conn, query, principal):
                         "partitions": [
                             {
                                 "source_id_from": ids[i],
-                                "source_id_to": ids[i + 100000] if i + 100000 < len(ids) else None,
+                                "source_id_to": ids[i + settings.max_result_rows]
+                                if i + settings.max_result_rows < len(ids)
+                                else None,
                             }
-                            for i in range(0, len(ids), 100000)
+                            for i in range(0, len(ids), settings.max_result_rows)
                         ],
                     }
                 ),
@@ -114,7 +123,15 @@ def start_listing(conn, query, principal):
             v.get("outcome") == "ok" for v in coverage.interfaces.values()
         ) and bool(coverage.interfaces)
         digest = hashlib.sha256(query.model_dump_json().encode()).hexdigest()
-        return materialize(conn, products, coverage, principal, digest, unknown_total=len(unknown))
+        return materialize(
+            conn,
+            products,
+            coverage,
+            principal,
+            digest,
+            unknown_total=len(unknown),
+            settings=settings,
+        )
 
 
 def next_page(conn, cursor, principal, query_hash=None):
@@ -130,8 +147,11 @@ def next_page(conn, cursor, principal, query_hash=None):
     if expires <= utcnow():
         raise CatalogError("result_expired")
     selected = []
-    for item in data["results"][offset : offset + 20]:
-        if len(json.dumps(selected + [item]).encode()) > 240 * 1024:
+    for item in data["results"][offset : offset + data.get("page_size", 20)]:
+        if (
+            len(json.dumps(selected + [item]).encode())
+            > data.get("max_response_bytes", 256 * 1024) * 0.9
+        ):
             if not selected:
                 raise CatalogError("item_too_large", "Use get_product for the item details")
             break

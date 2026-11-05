@@ -153,3 +153,73 @@ def test_page_payload_budget(conn):
     with pytest.raises(CatalogError) as error:
         start_listing(conn, CatalogQuery(), "alice")
     assert error.value.code == "item_too_large"
+
+
+def test_explicit_numeric_mapping_and_category(conn, monkeypatch):
+    from suppliermcp.catalog.contracts import Observation, SchemaRecord
+    from suppliermcp.search import schema
+
+    monkeypatch.setattr(
+        schema,
+        "MAPPINGS",
+        {
+            "native:mega:CapacityMB": {
+                "field": "capacity_gb",
+                "type": "number",
+                "unit": "GB",
+                "scale": "0.001",
+            }
+        },
+    )
+    product = SourceItem(
+        supplier="mega",
+        source_id="map",
+        sku="map",
+        name="Mapped memory",
+        observations=[
+            Observation(interface="mega", endpoint="base", field="CapacityMB", value="32000")
+        ],
+    )
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog", artifact_sha256="mapped"),
+            [product],
+        ),
+    )
+    page = start_listing(
+        conn,
+        CatalogQuery(filters=[Filter(field="capacity_gb", operator="eq", value="32")]),
+        "alice",
+    )
+    assert [p.product_id for p in page.results] == ["mega:map"]
+    assert schema.catalog_schema(conn)["capacity_gb"]["unit"] == "GB"
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="ed_private", domain="schema", artifact_sha256="category"),
+            [
+                SchemaRecord(
+                    interface="ed_private",
+                    kind="ProductCategory",
+                    values={"CategoryCode": "ram", "CategoryName": "Memory"},
+                )
+            ],
+        ),
+    )
+    assert "price" in schema.catalog_schema(conn, "ed:ram")
+
+
+def test_configured_page_and_result_limits(conn):
+    from suppliermcp.config import Settings
+
+    seed(conn)
+    settings = Settings(page_size=3, max_result_rows=30, result_ttl_seconds=60)
+    page = start_listing(conn, CatalogQuery(), "alice", settings=settings)
+    assert len(page.results) == 3
+    assert len(next_page(conn, page.next_cursor, "alice").results) == 3
+    with pytest.raises(CatalogError) as error:
+        start_listing(conn, CatalogQuery(), "alice", settings=Settings(max_result_rows=10))
+    assert error.value.code == "result_too_large"

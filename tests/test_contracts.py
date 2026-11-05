@@ -17,7 +17,9 @@ def test_optional_sources(enabled, monkeypatch):
             if active:
                 monkeypatch.setenv(f"SUPPLIERMCP_{name}_{key}", "supplier-password")
     settings = Settings.from_env()
-    assert settings.enabled_interfaces == [n.lower() for n, e in zip(names, enabled, strict=True) if e]
+    assert settings.enabled_interfaces == [
+        n.lower() for n, e in zip(names, enabled, strict=True) if e
+    ]
     assert "supplier-password" not in repr(settings)
     assert "supplier-password" not in settings.model_dump_json()
 
@@ -43,3 +45,10 @@ def test_identity_and_money():
         Identifier(kind="mpn", value="ABC")
     with pytest.raises(ValidationError):
         Identifier(kind="sku", supplier="mega", value="001", unexpected=True)
+
+
+def test_resource_limits_must_be_positive():
+    with pytest.raises(ValidationError):
+        Settings(max_download_bytes=0)
+    with pytest.raises(ValidationError):
+        Settings(page_size=101)

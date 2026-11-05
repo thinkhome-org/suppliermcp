@@ -84,7 +84,7 @@ def register(server, settings):
                 return SearchResult(**next_page(conn, cursor, principal()).model_dump())
             client = configured_client(settings)
             try:
-                return search(conn, client, text, filters or [], principal())
+                return search(conn, client, text, filters or [], principal(), settings=settings)
             finally:
                 client.http.close()
 
@@ -101,7 +101,7 @@ def register(server, settings):
                 if query is not None:
                     raise CatalogError("result_query_mismatch")
                 return next_page(conn, cursor, principal())
-            return start_listing(conn, query or CatalogQuery(), principal())
+            return start_listing(conn, query or CatalogQuery(), principal(), settings=settings)
 
         return safe(settings, operation)
 

@@ -59,3 +59,22 @@ def test_rejects_write_and_limits_response():
         t.read("POST", "https://api.example/", endpoint="createOrder")
     with pytest.raises(CatalogError, match="payload_too_large"):
         t.read("GET", "https://api.example/", endpoint="read")
+
+
+def test_rejects_unexpected_http_compression():
+    import gzip
+
+    def handler(request):
+        return httpx.Response(
+            200, headers={"Content-Encoding": "gzip"}, content=gzip.compress(b"x" * 100000)
+        )
+
+    transport = SupplierTransport(
+        {"example.com"},
+        {"read"},
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        resolver=lambda host: ["8.8.8.8"],
+    )
+    with pytest.raises(CatalogError) as error:
+        transport.read("GET", "https://example.com/export", endpoint="read")
+    assert error.value.code == "unsupported_content_encoding"

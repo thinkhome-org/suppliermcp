@@ -42,6 +42,7 @@ def get_product(conn, product_id):
             "vat_percent",
             "order_multiple",
             "discount_min_qty",
+            "discount",
         ]:
             present = [o for o in offers if getattr(o, field) is not None]
             if not present:
@@ -50,7 +51,12 @@ def get_product(conn, product_id):
                 setattr(combined, field, getattr(present[0], field))
             elif all(o.source_updated_at for o in present):
                 latest = max(present, key=lambda o: o.source_updated_at)
-                setattr(combined, field, getattr(latest, field))
+                winners = [o for o in present if o.source_updated_at == latest.source_updated_at]
+                if len({str(getattr(o, field)) for o in winners}) == 1:
+                    setattr(combined, field, getattr(latest, field))
+                else:
+                    setattr(combined, field, None)
+                    conflicts.append(field)
             else:
                 setattr(combined, field, None)
                 conflicts.append(field)
@@ -61,10 +67,16 @@ def get_product(conn, product_id):
         price_evidence = [o for o in offers if o.unit_net is not None]
         if price_evidence:
             combined.evidence_at = min(o.evidence_at for o in price_evidence)
-            combined.source_updated_at = min(
-                (o.source_updated_at for o in price_evidence if o.source_updated_at), default=None
+            combined.source_updated_at = (
+                None
+                if any(o.source_updated_at is None for o in price_evidence)
+                else min((o.source_updated_at for o in price_evidence), default=None)
             )
             combined.refresh_failed = any(o.refresh_failed for o in price_evidence)
+        price_rules = {o.price_rule for o in offers if o.unit_net is not None}
+        if len(price_rules) > 1:
+            combined.price_rule = "unknown"
+            conflicts.append("price_rule")
         combined.observations = [v for o in offers for v in o.observations]
     relationships = [
         r[0] for r in conn.execute("SELECT data FROM relationships WHERE item_id=%s", (product_id,))

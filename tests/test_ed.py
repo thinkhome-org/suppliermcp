@@ -126,3 +126,33 @@ def test_enrichment_partition_failure_keeps_other_partitions(tmp_path):
     manifests, failures = adapter.enrichment()
     assert len(manifests) == 1 and failures == ["B"]
     assert not manifests[0].complete
+
+
+def test_relationship_and_navigator_evidence(tmp_path):
+    from suppliermcp.catalog.contracts import SchemaRecord
+
+    path = tmp_path / "relations.xml"
+    path.write_text(
+        "<ProductRelationList><ProductRealationParent><ProId>1</ProId><Code>A</Code><Childs><ProductRealationChild><ProId>2</ProId><Code>B</Code><Qty>1</Qty><RelTypeId>7</RelTypeId><RelTypeName>Accessory</RelTypeName></ProductRealationChild></Childs></ProductRealationParent></ProductRelationList>"
+    )
+    batch = BatchManifest(
+        interface="ed_private", domain="schema", path=str(path), endpoint="getProductRelationList"
+    )
+    records = list(EdPrivateAdapter().parse(batch))
+    assert any(
+        isinstance(r, SchemaRecord) and r.kind == "relationship" and r.values["target_id"] == "ed:2"
+        for r in records
+    )
+
+
+def test_description_budget(tmp_path):
+    path = tmp_path / "oversized.xml"
+    path.write_text(
+        "<Product><ProId>1</ProId><Code>A</Code><Description>"
+        + ("x" * 100)
+        + "</Description></Product>"
+    )
+    adapter = EdPublicAdapter()
+    adapter.max_description_bytes = 50
+    with pytest.raises(CatalogError, match="description_too_large"):
+        list(adapter.parse(BatchManifest(interface="ed_public", domain="catalog", path=str(path))))

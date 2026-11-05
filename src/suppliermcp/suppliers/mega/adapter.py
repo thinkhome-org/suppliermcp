@@ -16,6 +16,8 @@ from .capabilities import require_window
 
 
 class MegaAdapter:
+    max_expanded_bytes = 1024**3
+    max_description_bytes = 2 * 1024**2
     interface = "mega"
     endpoints = {"catalog": "StoItemBase", "stock": "StoItemQtyFree", "price": "StoItemPriceOrd"}
 
@@ -64,7 +66,7 @@ class MegaAdapter:
     def parse(self, manifest):
         contract = self.contracts.get(manifest.endpoint, {})
         root_seen = False
-        for element in parse_xml(Path(manifest.path)):
+        for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
             tag = element.tag.rsplit("}", 1)[-1]
             if tag == "Result":
                 root_seen = True
@@ -75,6 +77,8 @@ class MegaAdapter:
                 raise CatalogError("missing_product_identity")
             if manifest.endpoint == "StoItemBase":
                 values.setdefault("QtyPack", "1")
+            if any(len(str(v).encode()) > self.max_description_bytes for v in values.values()):
+                raise CatalogError("description_too_large")
             observations = [
                 Observation(
                     interface="mega",

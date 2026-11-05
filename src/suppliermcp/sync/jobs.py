@@ -31,7 +31,7 @@ def build_adapters(settings):
     adapters, contracts = {}, source_contracts(settings)
     for interface, (login, password) in settings.credentials.items():
         options = contracts.get(interface, {})
-        store = ArtifactStore(settings.artifact_dir / interface, budget=settings.artifact_budget)
+        store = ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget)
         if interface == "mega":
             transport = SupplierTransport(
                 {"i6ws.100mega.cz"},
@@ -52,6 +52,10 @@ def build_adapters(settings):
             )
             cls = EdPublicAdapter if interface == "ed_public" else EdPrivateAdapter
             adapters[interface] = cls(gateway, store, transport)
+    for adapter in adapters.values():
+        adapter.max_expanded_bytes = settings.max_expanded_bytes
+        adapter.max_description_bytes = settings.max_description_bytes
+        adapter.transport.max_bytes = settings.max_download_bytes
     return adapters
 
 
@@ -64,6 +68,24 @@ def run_refresh(conn, adapter, domain, codes=None):
         if getattr(adapter, "store", None) and manifest.path:
             adapter.store.mark(Path(manifest.path), "success", manifest)
         outcome = "ok"
+        if adapter.interface == "ed_private" and domain == "catalog" and not codes:
+            manifests, failures = adapter.enrichment()
+            if hasattr(adapter, "dictionaries"):
+                dictionaries, dictionary_failures = adapter.dictionaries()
+                manifests.extend(dictionaries)
+                failures.extend(dictionary_failures)
+            for chunk in manifests:
+                try:
+                    revision = publish(conn, stage(conn, chunk, adapter.parse(chunk)))
+                    if adapter.store and chunk.path:
+                        adapter.store.mark(Path(chunk.path), "success", chunk)
+                except CatalogError:
+                    failures.append("chunk_failed")
+                    if adapter.store and chunk.path:
+                        adapter.store.mark(Path(chunk.path), "failed", chunk)
+            if failures:
+                outcome = "partial"
+
     except Exception as exc:
         outcome = exc.code if isinstance(exc, CatalogError) else "refresh_failed"
         if manifest and getattr(adapter, "store", None) and manifest.path:
@@ -121,6 +143,8 @@ def create_app(settings):
             pass
         contracts = source_contracts(settings)
         with connect(settings) as conn:
+            conn.execute("DELETE FROM query_results WHERE expires_at < now()")
+            ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
             for interface in settings.enabled_interfaces:
                 for domain, interval in (
                     contracts.get(interface, {}).get("intervals_seconds", {}).items()
@@ -134,7 +158,8 @@ def create_app(settings):
                     if not row or (utcnow() - row[0]).total_seconds() >= interval:
                         try:
                             refresh.configure(
-                                lock=interface, queueing_lock=f"{interface}:{domain}"
+                                lock=("supplier:mega" if interface == "mega" else "supplier:ed"),
+                                queueing_lock=f"{interface}:{domain}",
                             ).defer(interface=interface, domain=domain)
                         except procrastinate.AlreadyEnqueued:
                             pass
@@ -150,6 +175,9 @@ def schedule_refresh(interface, domain, codes=None, settings=None):
     with app.open():
         return (
             app.tasks["suppliermcp.refresh"]
-            .configure(lock=interface, queueing_lock=f"{interface}:{domain}")
+            .configure(
+                lock=("supplier:mega" if interface == "mega" else "supplier:ed"),
+                queueing_lock=f"{interface}:{domain}",
+            )
             .defer(interface=interface, domain=domain, codes=codes)
         )

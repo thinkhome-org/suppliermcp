@@ -30,6 +30,8 @@ def fields(element):
 
 
 class EdPublicAdapter:
+    max_expanded_bytes = 1024**3
+    max_description_bytes = 2 * 1024**2
     interface = "ed_public"
     methods = {
         "catalog": "getProductListDownloadXML",
@@ -95,10 +97,33 @@ class EdPublicAdapter:
 
     def parse(self, manifest):
         records = 0
-        for element in parse_xml(Path(manifest.path)):
+        for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
             name = local(element.tag)
             if name == "StatusCode" and element.text == "ERROR" or name == "Fault":
                 raise CatalogError("supplier_response_error")
+            if manifest.domain == "schema" and name in {
+                "ProductRealationParent",
+                "ProductRelationParent",
+            }:
+                parent = fields(element)
+                for child in element.iter():
+                    if local(child.tag) not in {"ProductRealationChild", "ProductRelationChild"}:
+                        continue
+                    values = fields(child)
+                    if parent.get("ProId") and values.get("ProId"):
+                        yield SchemaRecord(
+                            interface=self.interface,
+                            kind="relationship",
+                            values={
+                                "item_id": "ed:" + parent["ProId"],
+                                "target_id": "ed:" + values["ProId"],
+                                "kind": values.get("RelTypeId", "unknown"),
+                                "name": values.get("RelTypeName"),
+                                "quantity": values.get("Qty"),
+                                "interface": self.interface,
+                                "endpoint": manifest.endpoint,
+                            },
+                        )
             if manifest.domain == "schema" and name in {
                 "ProductCategory",
                 "ProductSuperCategory",
@@ -118,6 +143,8 @@ class EdPublicAdapter:
             values = fields(element)
             if not values.get("ProId") or not values.get("Code"):
                 raise CatalogError("missing_product_identity")
+            if any(len(str(v).encode()) > self.max_description_bytes for v in values.values()):
+                raise CatalogError("description_too_large")
             observations = []
             for field, value in values.items():
                 placeholder = manifest.endpoint in BASELINE_METHODS and field in PLACEHOLDERS
@@ -136,6 +163,19 @@ class EdPublicAdapter:
                         artifact_sha256=manifest.artifact_sha256,
                     )
                 )
+            for child in element.iter():
+                native = fields(child)
+                if native.get("AttributeCode") and (native.get("ValueCode") or native.get("Value")):
+                    observations.append(
+                        Observation(
+                            interface=self.interface,
+                            endpoint=manifest.endpoint,
+                            field="attribute:" + native["AttributeCode"],
+                            value=native.get("Value", native.get("ValueCode")),
+                            fetched_at=manifest.started_at,
+                            artifact_sha256=manifest.artifact_sha256,
+                        )
+                    )
             for container in element:
                 if len(container):
                     observations.append(

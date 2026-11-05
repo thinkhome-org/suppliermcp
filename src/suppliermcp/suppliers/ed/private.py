@@ -22,7 +22,7 @@ class EdPrivateAdapter(EdPublicAdapter):
             raise CatalogError("source_not_configured")
         root = fromstring(self.gateway.call("getProductCommodityList"), forbid_dtd=True)
         codes = sorted({e.text for e in root.iter() if local(e.tag) == "CommodityCode" and e.text})
-        manifests, failures = [], []
+        manifests, failures = [], ([] if codes else ["commodity_list_empty"])
         for code in codes:
             try:
                 data = self.gateway.call(
@@ -47,4 +47,35 @@ class EdPrivateAdapter(EdPublicAdapter):
                 manifests.append(manifest)
             except CatalogError:
                 failures.append(code)
+        return manifests, failures
+
+    def dictionaries(self):
+        from defusedxml.ElementTree import fromstring
+
+        from suppliermcp.catalog.contracts import BatchManifest, CatalogError
+
+        from .public import local
+
+        manifests, failures = [], []
+        for endpoint in [
+            "getNavigator",
+            "getProductProducerList",
+            "getProductCommodityList",
+            "getProductRelationList",
+        ]:
+            try:
+                data = self.gateway.call(endpoint)
+                root = fromstring(data, forbid_dtd=True)
+                if any(
+                    local(e.tag) == "Fault" or local(e.tag) == "StatusCode" and e.text == "ERROR"
+                    for e in root.iter()
+                ):
+                    raise CatalogError("supplier_response_error")
+                manifest = BatchManifest(
+                    interface=self.interface, domain="schema", mode="targeted", endpoint=endpoint
+                )
+                self.store.save([data], manifest)
+                manifests.append(manifest)
+            except Exception:
+                failures.append(endpoint)
         return manifests, failures

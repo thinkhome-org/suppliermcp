@@ -47,3 +47,15 @@ def test_retention_protects_active_and_latest(tmp_path):
     with pytest.raises(CatalogError, match="artifact_budget_exceeded"):
         store.save([b"x" * 100], manifest())
     assert newest.exists() and active.exists()
+
+
+def test_same_bytes_do_not_overwrite_other_domain_pin(tmp_path):
+    store = ArtifactStore(tmp_path)
+    first = manifest()
+    a = store.save([b"identical"], first)
+    store.mark(a, "success", first)
+    second = BatchManifest(interface="ed_public", domain="stock")
+    b = store.save([b"identical"], second)
+    store.mark(b, "failed", second, now=utcnow() - timedelta(days=8))
+    store.prune(utcnow())
+    assert a.exists()

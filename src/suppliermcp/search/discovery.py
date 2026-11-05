@@ -8,7 +8,7 @@ from .index import ALIAS, normalize
 from .listing import matching_ids, materialize
 
 
-def search(conn, client, text, filters, principal):
+def search(conn, client, text, filters, principal, settings=None):
     if not text.strip() or len(text) > 1000:
         raise CatalogError("invalid_search_text")
     candidates = []
@@ -56,5 +56,6 @@ def search(conn, client, text, filters, principal):
             principal,
             digest,
             unknown_total=len(set(unknown) & set(candidates)),
+            settings=settings,
         )
         return SearchResult(**result.model_dump())

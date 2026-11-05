@@ -1,7 +1,11 @@
+import json
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.catalog.repository import get_product
+
+MAPPINGS = json.loads((Path(__file__).parents[1] / "catalog/mappings.json").read_text())
 
 BASE = {
     "supplier": "text",
@@ -17,19 +21,32 @@ BASE = {
 
 
 def catalog_schema(conn, category=None):
-    if category is not None:
+    if (
+        category is not None
+        and not conn.execute(
+            "SELECT 1 FROM source_schema WHERE kind='ProductCategory' AND 'ed:' || (data->>'CategoryCode')=%s LIMIT 1",
+            (category,),
+        ).fetchone()
+    ):
         raise CatalogError(
             "unknown_category", "No verified category mapping is installed for this category"
         )
     types = dict(BASE)
     types.update(dict(conn.execute("SELECT DISTINCT field,value_type FROM catalog_values")))
-    return {
+    result = {
         field: {
             "type": kind,
             "operators": ["eq", "in", "gte", "lte"] if kind == "number" else ["eq", "in"],
         }
         for field, kind in sorted(types.items())
     }
+
+    for native, mapping in MAPPINGS.items():
+        field = mapping["field"]
+        if field in result:
+            result[field]["unit"] = mapping.get("unit")
+            result[field]["source_field"] = native
+    return result
 
 
 def validate_filter(f, schema):
@@ -78,6 +95,22 @@ def refresh_values(conn, item_ids):
                 native[field].add(str(o.value))
         for field, entries in native.items():
             values[field] = (next(iter(entries)) if len(entries) == 1 else None, "text")
+        mapped = {}
+        for native, mapping in MAPPINGS.items():
+            value = values.get(native, (None, "text"))[0]
+            if mapping.get("type") not in {"text", "number"} or mapping["field"] in BASE:
+                raise CatalogError("invalid_mapping")
+            if value is not None and mapping["type"] == "number":
+                try:
+                    value = Decimal(value) * Decimal(mapping.get("scale", "1"))
+                    if not value.is_finite():
+                        value = None
+                except InvalidOperation:
+                    value = None
+            mapped.setdefault(mapping["field"], []).append((value, mapping["type"]))
+        for field, entries in mapped.items():
+            known = {str(v) for v, _ in entries if v is not None}
+            values[field] = (next(iter(known)) if len(known) == 1 else None, entries[0][1])
         for field, (value, kind) in values.items():
             state = "known" if value is not None and value != "unknown" else "unknown"
             conn.execute(

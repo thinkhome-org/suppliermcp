@@ -24,14 +24,14 @@ class Settings(Model):
     auth_public_key: str = ""
     auth_issuer: str = "suppliermcp"
     auth_audience: str = "suppliermcp"
-    max_download_bytes: int = 256 * 1024**2
-    max_expanded_bytes: int = 1024**3
-    artifact_budget: int = 5 * 1024**3
-    max_description_bytes: int = 2 * 1024**2
-    max_response_bytes: int = 256 * 1024
-    page_size: int = 20
-    result_ttl_seconds: int = 1800
-    max_result_rows: int = 100_000
+    max_download_bytes: int = Field(default=256 * 1024**2, gt=0)
+    max_expanded_bytes: int = Field(default=1024**3, gt=0)
+    artifact_budget: int = Field(default=5 * 1024**3, gt=0)
+    max_description_bytes: int = Field(default=2 * 1024**2, gt=0)
+    max_response_bytes: int = Field(default=256 * 1024, gt=0)
+    page_size: int = Field(default=20, gt=0, le=100)
+    result_ttl_seconds: int = Field(default=1800, gt=0)
+    max_result_rows: int = Field(default=100_000, gt=0)
 
     @property
     def enabled_interfaces(self) -> list[str]:

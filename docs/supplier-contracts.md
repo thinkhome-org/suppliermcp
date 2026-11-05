@@ -23,3 +23,9 @@ may reconcile absence only with explicitly verified complete coverage. Delta and
 targeted records never imply deletion. ResultTypeInfo and export schemas must be
 reviewed before enabling a contract; this application does not guess capability
 semantics from an undocumented HTML layout.
+
+## Explicit mappings
+
+`src/suppliermcp/catalog/mappings.json` starts empty. Each verified entry maps a `native:INTERFACE:FIELD` to `{ "field": "capacity_gb", "type": "number", "unit": "GB", "scale": "0.001" }`, for example only when the native value is proven to be decimal MB. Mapping names cannot shadow core offer/identity fields. Invalid numeric values remain unknown. Mapped facts must be reviewed against supplier schema; no manufacturer-web enrichment is used.
+
+PRIVATE refreshes fetch the complete baseline, commodity chunks and schema/relationship dictionaries. Failed chunks preserve the baseline and report partial coverage. Supplier relationships retain declared type, quantity and origin; the documented `ProductRealationParent/Child` spelling is supported. Native navigator attribute codes remain source-scoped. A known `ed:CATEGORY_CODE` is accepted by schema discovery; returned fields still require explicit category filters for product listing.

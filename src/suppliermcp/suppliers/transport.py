@@ -93,6 +93,11 @@ class SupplierTransport:
                             raise CatalogError("supplier_unavailable", retryable=True)
                         if response.status_code != 200:
                             raise CatalogError("supplier_response_error")
+                        if (
+                            response.headers.get("content-encoding", "identity").lower()
+                            != "identity"
+                        ):
+                            raise CatalogError("unsupported_content_encoding")
                         chunks, size = [], 0
                         for chunk in response.iter_bytes():
                             size += len(chunk)

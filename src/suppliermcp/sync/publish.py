@@ -65,7 +65,6 @@ def publish(conn, run_id, *, accept_reason=None):
         rows = conn.execute(
             "SELECT kind,data FROM staging WHERE run_id=%s ORDER BY ordinal", (run_id,)
         ).fetchall()
-        source = "ed" if manifest.interface.startswith("ed") else "mega"
         identities = [SourceItem.model_validate(d).item_id for k, d in rows if k == "SourceItem"]
         previous = conn.execute(
             "SELECT count(*) FROM source_presence WHERE interface=%s", (manifest.interface,)
@@ -84,6 +83,12 @@ def publish(conn, run_id, *, accept_reason=None):
             for kind, data in rows:
                 if kind == "SchemaRecord":
                     schema = SchemaRecord.model_validate(data)
+                    if schema.kind == "relationship":
+                        rel = schema.values
+                        conn.execute(
+                            "INSERT INTO relationships VALUES (%s,%s,%s,%s) ON CONFLICT(item_id,target_id,kind) DO UPDATE SET data=EXCLUDED.data",
+                            (rel["item_id"], rel["target_id"], rel["kind"], Jsonb(rel)),
+                        )
                     key = hashlib.sha256(str(sorted(schema.values.items())).encode()).hexdigest()
                     conn.execute(
                         "INSERT INTO source_schema VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
@@ -163,14 +168,24 @@ def publish(conn, run_id, *, accept_reason=None):
                     ).fetchall()
                     changed.update(r[0] for r in missing)
                 elif manifest.domain == "stock" and manifest.stock_only:
-                    for item_id, old_offer in conn.execute(
-                        "SELECT o.item_id,o.data FROM current_offers o JOIN source_items s ON s.id=o.item_id WHERE s.data->>'supplier'=%s AND NOT(s.id=ANY(%s))",
-                        (source, identities),
+                    for (item_id,) in conn.execute(
+                        "SELECT s.id FROM source_items s JOIN source_presence p ON p.item_id=s.id WHERE p.interface=%s AND s.active AND NOT(s.id=ANY(%s))",
+                        (manifest.interface, identities),
                     ).fetchall():
-                        old_offer.update(stock_qty="0", stock_state="out_of_stock")
+                        stock = Offer(
+                            item_id=item_id,
+                            stock_qty="0",
+                            stock_state="out_of_stock",
+                            evidence_at=manifest.started_at,
+                        )
                         conn.execute(
-                            "UPDATE current_offers SET data=%s WHERE item_id=%s",
-                            (Jsonb(old_offer), item_id),
+                            "INSERT INTO current_offers VALUES (%s,%s,'stock',%s) ON CONFLICT(item_id,interface,domain) DO UPDATE SET data=current_offers.data || jsonb_build_object('stock_qty','0','stock_state','out_of_stock','fetched_at',%s::text)",
+                            (
+                                item_id,
+                                manifest.interface,
+                                Jsonb(stock.model_dump(mode="json")),
+                                manifest.started_at.isoformat(),
+                            ),
                         )
                         changed.add(item_id)
             from suppliermcp.search.schema import refresh_values
