@@ -1,0 +1,12 @@
+CREATE SEQUENCE IF NOT EXISTS catalog_revision;
+CREATE TABLE IF NOT EXISTS source_items (id text PRIMARY KEY, data jsonb NOT NULL, active boolean NOT NULL DEFAULT true, revision bigint NOT NULL);
+CREATE TABLE IF NOT EXISTS current_offers (item_id text NOT NULL, interface text NOT NULL, domain text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(item_id,interface,domain));
+CREATE TABLE IF NOT EXISTS observations (item_id text NOT NULL, interface text NOT NULL, endpoint text NOT NULL, field text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(item_id,interface,endpoint,field));
+CREATE TABLE IF NOT EXISTS source_schema (interface text NOT NULL, kind text NOT NULL, key text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(interface,kind,key));
+CREATE TABLE IF NOT EXISTS relationships (item_id text NOT NULL, target_id text NOT NULL, kind text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(item_id,target_id,kind));
+CREATE TABLE IF NOT EXISTS import_runs (id uuid PRIMARY KEY, manifest jsonb NOT NULL, status text NOT NULL, revision bigint, reason text);
+CREATE TABLE IF NOT EXISTS staging (run_id uuid NOT NULL REFERENCES import_runs(id) ON DELETE CASCADE, ordinal bigint NOT NULL, kind text NOT NULL, data jsonb NOT NULL, PRIMARY KEY(run_id,ordinal));
+CREATE TABLE IF NOT EXISTS domain_checkpoints (interface text NOT NULL, domain text NOT NULL, started_at timestamptz NOT NULL, artifact_sha256 text NOT NULL, revision bigint NOT NULL, delta_to timestamptz, PRIMARY KEY(interface,domain));
+CREATE TABLE IF NOT EXISTS source_state (interface text PRIMARY KEY, data jsonb NOT NULL);
+CREATE TABLE IF NOT EXISTS index_outbox (id bigserial PRIMARY KEY, item_id text NOT NULL, revision bigint NOT NULL, done boolean NOT NULL DEFAULT false);
+CREATE INDEX IF NOT EXISTS index_outbox_pending ON index_outbox(id) WHERE NOT done;

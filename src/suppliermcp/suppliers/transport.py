@@ -19,7 +19,7 @@ class SupplierTransport:
         self.client = client or httpx.Client(timeout=30, trust_env=False)
         self.resolver, self.sleep, self.max_bytes, self.auth = resolver, sleep, max_bytes, auth
 
-    def read(self, method: str, url: str, *, endpoint: str, body: bytes | None = None) -> bytes:
+    def read(self, method: str, url: str, *, endpoint: str, body: bytes | None = None, soap_action: str | None = None) -> bytes:
         if endpoint not in self.operations or method not in {'GET', 'POST'}:
             raise CatalogError('operation_not_allowed')
         original = httpx.URL(url)
@@ -35,9 +35,11 @@ class SupplierTransport:
                         raise CatalogError('unsafe_download')
                     # Connect to validated IP; retain original hostname for certificate verification.
                     pinned = current.copy_with(host=ips[0])
-                    headers = {'Host': current.host, 'Accept-Encoding': 'identity'}
+                    headers = {'Host': current.host, 'Accept-Encoding': 'identity', 'Connection': 'close'}
                     if body is not None:
                         headers['Content-Type'] = 'text/xml; charset=utf-8'
+                    if soap_action:
+                        headers['SOAPAction'] = soap_action
                     auth = self.auth if current == original else None
                     with self.client.stream(method, pinned, headers=headers, content=body,
                                             auth=auth, extensions={'sni_hostname': current.host}) as response:

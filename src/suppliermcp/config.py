@@ -12,6 +12,7 @@ class Settings(Model):
     typesense_url: str = 'http://typesense:8108'
     typesense_key: SecretStr = Field(default=SecretStr(''), repr=False, exclude=True)
     artifact_dir: Path = Path('artifacts')
+    source_contracts_path: Path | None = None
     auth_public_key: str = ''
     auth_issuer: str = 'suppliermcp'
     auth_audience: str = 'suppliermcp'

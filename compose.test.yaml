@@ -1,0 +1,18 @@
+name: suppliermcp-test
+services:
+  postgres:
+    image: postgres@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports: ["127.0.0.1:55439:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 1s
+      retries: 30
+  typesense:
+    image: typesense/typesense@sha256:610f2d34b1f93d00762869da2c67736775e5798d19a2c8b91b014b8a0cc1e110
+    command: "--data-dir /data --api-key test-only --enable-cors=false"
+    tmpfs: ["/data"]
+    ports: ["127.0.0.1:58109:8108"]
