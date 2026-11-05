@@ -1,3 +1,5 @@
+from suppliermcp.catalog.contracts import utcnow
+
 from .public import EdPublicAdapter
 
 
@@ -24,6 +26,7 @@ class EdPrivateAdapter(EdPublicAdapter):
         codes = sorted({e.text for e in root.iter() if local(e.tag) == "CommodityCode" and e.text})
         manifests, failures = [], ([] if codes else ["commodity_list_empty"])
         for code in codes:
+            started_at = utcnow()
             try:
                 data = self.gateway.call(
                     "getProductCatalogueFullDownloadXML", onStock=False, Comodities=code
@@ -42,6 +45,7 @@ class EdPrivateAdapter(EdPublicAdapter):
                     domain="catalog",
                     mode="targeted",
                     endpoint="getProductCatalogueFullDownloadXML",
+                    started_at=started_at,
                 )
                 self.store.save([data], manifest)
                 manifests.append(manifest)
@@ -63,6 +67,7 @@ class EdPrivateAdapter(EdPublicAdapter):
             "getProductCommodityList",
             "getProductRelationList",
         ]:
+            started_at = utcnow()
             try:
                 data = self.gateway.call(endpoint)
                 root = fromstring(data, forbid_dtd=True)
@@ -72,7 +77,11 @@ class EdPrivateAdapter(EdPublicAdapter):
                 ):
                     raise CatalogError("supplier_response_error")
                 manifest = BatchManifest(
-                    interface=self.interface, domain="schema", mode="targeted", endpoint=endpoint
+                    interface=self.interface,
+                    domain="schema",
+                    mode="targeted",
+                    endpoint=endpoint,
+                    started_at=started_at,
                 )
                 self.store.save([data], manifest)
                 manifests.append(manifest)

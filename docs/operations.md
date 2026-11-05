@@ -43,3 +43,8 @@ Only verified common fields support numeric filters. Native unmapped fields rema
 ## Acceptance
 
 Synthetic tests do not validate actual account schemas, windows, commodity coverage, discount formulas, scale or real relevance. No production credentials, supplier writes, public tunnel or deployment are exercised. See `docs/validation.md` for the actual evidence and remaining gates.
+
+
+Quarantined database staging is deliberately retained until an operator reviews the import; it is not automatically discarded. Accepting the import removes its staged rows. If rejecting it, retain the compact import metadata and remove the associated staging rows through controlled database maintenance. Monitor PostgreSQL capacity while quarantine is unresolved. Terminal unchanged/superseded imports remove their staging immediately and keep compact audit records.
+
+Source status retains separate domain outcomes and the last verified complete catalog revision. A successful stock request cannot make an unknown/partial catalog complete. Every configured but never fetched interface reduces coverage. Price evidence, stock evidence and transport fetch times are independent.

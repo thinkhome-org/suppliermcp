@@ -52,6 +52,7 @@ def build_adapters(settings):
             )
             cls = EdPublicAdapter if interface == "ed_public" else EdPrivateAdapter
             adapters[interface] = cls(gateway, store, transport)
+            adapters[interface].offer_contract = options.get("offer", {})
     for adapter in adapters.values():
         adapter.max_expanded_bytes = settings.max_expanded_bytes
         adapter.max_description_bytes = settings.max_description_bytes
@@ -61,8 +62,11 @@ def build_adapters(settings):
 
 def run_refresh(conn, adapter, domain, codes=None):
     now, manifest = utcnow(), None
+    revision = None
+    outcome = "refresh_failed"
     try:
         manifest = adapter.fetch(domain, codes)
+        manifest.started_at = now
         run_id = stage(conn, manifest, adapter.parse(manifest))
         revision = publish(conn, run_id)
         if getattr(adapter, "store", None) and manifest.path:
@@ -97,7 +101,30 @@ def run_refresh(conn, adapter, domain, codes=None):
         )
         raise CatalogError(outcome, retryable=True) from None
     finally:
-        state = {"configured": True, "outcome": outcome, "attempted_at": now.isoformat()}
+        previous = conn.execute(
+            "SELECT data FROM source_state WHERE interface=%s", (adapter.interface,)
+        ).fetchone()
+        state = previous[0] if previous else {"configured": True, "domains": {}}
+        domains = state.setdefault("domains", {})
+        previous_domain = domains.get(domain, {})
+        complete = bool(
+            manifest and manifest.complete and manifest.mode == "full" and outcome == "ok"
+        )
+        domains[domain] = {
+            "outcome": outcome,
+            "attempted_at": now.isoformat(),
+            "complete": complete,
+            "last_verified_complete_revision": revision
+            if complete
+            else previous_domain.get("last_verified_complete_revision"),
+        }
+        state.update(
+            configured=True,
+            attempted_at=now.isoformat(),
+            outcome="ok" if all(d["outcome"] == "ok" for d in domains.values()) else "partial",
+        )
+        if outcome not in {"ok", "partial"}:
+            state["outcome"] = outcome
         conn.execute(
             "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
             (adapter.interface, Jsonb(state)),
@@ -122,7 +149,7 @@ def create_app(settings):
 
     @app.task(name="suppliermcp.index", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60))
     def index():
-        from suppliermcp.search.index import ALIAS, configured_client, drain_outbox, rebuild_index
+        from suppliermcp.search.index import ALIAS, configured_client, drain_pending, rebuild_index
 
         client = configured_client(settings)
         try:
@@ -130,7 +157,7 @@ def create_app(settings):
                 aliases = client.request("GET", "/aliases").json()["aliases"]
                 if not any(a["name"] == ALIAS for a in aliases):
                     rebuild_index(conn, client)
-                return drain_outbox(conn, client)
+                return drain_pending(conn, client)
         finally:
             client.http.close()
 

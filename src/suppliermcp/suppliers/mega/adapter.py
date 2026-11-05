@@ -10,6 +10,7 @@ from suppliermcp.catalog.contracts import (
     Offer,
     SourceItem,
 )
+from suppliermcp.suppliers.offer_contract import apply_contract
 from suppliermcp.sync.artifacts import parse_xml
 
 from .capabilities import require_window
@@ -39,6 +40,9 @@ class MegaAdapter:
         )
 
     def fetch(self, domain, codes=None):
+        from suppliermcp.catalog.contracts import utcnow
+
+        started_at = utcnow()
         endpoint = self.endpoints.get(domain)
         if not endpoint:
             raise CatalogError("unsupported_domain")
@@ -55,6 +59,7 @@ class MegaAdapter:
         )
         manifest = BatchManifest(
             interface="mega",
+            started_at=started_at,
             domain=domain,
             mode=mode,
             endpoint=endpoint,
@@ -64,10 +69,14 @@ class MegaAdapter:
         return manifest
 
     def parse(self, manifest):
+        export_values = {}
         contract = self.contracts.get(manifest.endpoint, {})
+        offer_contract = contract.get("offer", {})
         root_seen = False
         for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
             tag = element.tag.rsplit("}", 1)[-1]
+            if tag == offer_contract.get("export_timestamp_field"):
+                export_values[tag] = element.text
             if tag == "Result":
                 root_seen = True
             if tag != "StoItem":
@@ -127,7 +136,7 @@ class MegaAdapter:
             fees = None
             if "PriceRef" in values and "PriceRef2" in values:
                 fees = num("PriceRef") + num("PriceRef2")
-            yield Offer(
+            offer = Offer(
                 item_id="mega:" + values["Id"],
                 unit_net=num("PriceDea"),
                 fees_net=fees,
@@ -142,6 +151,7 @@ class MegaAdapter:
                 evidence_at=manifest.started_at,
                 source_updated_at=manifest.source_updated_at,
             )
+            yield apply_contract(offer, export_values | values, offer_contract, manifest)
             element.clear()
         if not root_seen:
             raise CatalogError("unexpected_export_root")

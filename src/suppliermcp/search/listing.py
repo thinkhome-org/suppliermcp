@@ -70,6 +70,7 @@ def materialize(
 
 
 def start_listing(conn, query, principal, settings=None):
+    enabled = settings.enabled_interfaces if settings is not None else None
     settings = settings or Settings()
     with conn.transaction():
         conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
@@ -117,11 +118,7 @@ def start_listing(conn, query, principal, settings=None):
             present = [p for p in products if price(p) is not None]
             missing = [p for p in products if price(p) is None]
             products = sorted(present, key=price, reverse=query.sort == "price_desc") + missing
-        coverage = read_status(conn)
-        # Completeness is scoped to persisted account data and explicitly supported fields.
-        coverage.complete = all(
-            v.get("outcome") == "ok" for v in coverage.interfaces.values()
-        ) and bool(coverage.interfaces)
+        coverage = read_status(conn, enabled)
         digest = hashlib.sha256(query.model_dump_json().encode()).hexdigest()
         return materialize(
             conn,

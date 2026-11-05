@@ -195,3 +195,44 @@ async def test_http_outages_and_host_origin(conn):
                 )
             ).structured_content["result"]
             assert result["error"]["code"] == "text_search_unavailable"
+
+
+async def test_comparison_batch_preserves_successes(conn):
+    from suppliermcp.catalog.contracts import BatchManifest, Offer, SourceItem
+    from suppliermcp.sync.publish import publish, stage
+
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog", artifact_sha256="batch"),
+            [
+                SourceItem(supplier="mega", source_id="1", sku="1", name="Product"),
+                Offer(
+                    item_id="mega:1",
+                    unit_net="10",
+                    fees_net="0",
+                    currency="CZK",
+                    order_multiple="1",
+                ),
+            ],
+        ),
+    )
+    with running_server() as (url, token):
+        async with Client(url, auth=token()) as client:
+            result = (
+                await client.call_tool(
+                    "compare_offers", {"product_ids": ["mega:1", "mega:missing"]}
+                )
+            ).structured_content["result"]
+            assert isinstance(result, list) and result[0]["offers"][0]["total_net"] == "10"
+            assert (
+                result[1]["product_id"] == "mega:missing"
+                and result[1]["error"]["code"] == "product_not_found"
+            )
+            invalid = (
+                await client.call_tool(
+                    "compare_offers", {"product_ids": ["mega:1"], "quantities": {"mega:1": "0"}}
+                )
+            ).structured_content["result"]
+            assert invalid[0]["error"]["code"] == "invalid_quantity"

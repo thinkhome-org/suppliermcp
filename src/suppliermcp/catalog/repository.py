@@ -1,15 +1,32 @@
 from suppliermcp.catalog.contracts import CatalogError, Coverage, Offer, ProductView, SourceItem
 
 
-def read_status(conn):
+def read_status(conn, enabled_interfaces=None):
     rev = conn.execute("SELECT COALESCE(max(revision),0) FROM domain_checkpoints").fetchone()[0]
     pending = conn.execute("SELECT min(revision) FROM index_outbox WHERE NOT done").fetchone()[0]
     states = dict(conn.execute("SELECT interface,data FROM source_state").fetchall())
+    configured = (
+        set(enabled_interfaces)
+        if enabled_interfaces is not None
+        else {k for k, v in states.items() if v.get("configured")}
+    )
+    for interface in ["ed_public", "ed_private", "mega"]:
+        state = states.setdefault(interface, {"outcome": "not_fetched", "domains": {}})
+        state["configured"] = interface in configured
+        if interface not in configured:
+            state["outcome"] = "disabled"
+    complete = bool(configured) and all(
+        states[k].get("outcome") == "ok"
+        and states[k].get("domains", {}).get("catalog", {}).get("complete")
+        and states[k].get("domains", {}).get("catalog", {}).get("last_verified_complete_revision")
+        is not None
+        for k in configured
+    )
     return Coverage(
         interfaces=states,
         revision=rev,
         index_revision=rev if pending is None else max(0, pending - 1),
-        complete=False,
+        complete=complete,
         warnings=["coverage_is_account_and_field_scoped"],
     )
 
@@ -26,6 +43,9 @@ def get_product(conn, product_id):
         from .contracts import Observation
 
         item.observations = [Observation.model_validate(r[0]) for r in obs]
+    from suppliermcp.search.schema import mapped_observations
+
+    item.observations.extend(mapped_observations(item.observations))
     rows = conn.execute(
         "SELECT data FROM current_offers WHERE item_id=%s", (product_id,)
     ).fetchall()
@@ -34,7 +54,8 @@ def get_product(conn, product_id):
     conflicts = []
     combined = None
     if offers:
-        combined = max(offers, key=lambda o: o.evidence_at).model_copy(deep=True)
+        priced = [o for o in offers if o.unit_net is not None]
+        combined = max(priced or offers, key=lambda o: o.evidence_at).model_copy(deep=True)
         for field in [
             "currency",
             "unit_net",
@@ -62,8 +83,9 @@ def get_product(conn, product_id):
                 conflicts.append(field)
         known_stock = [o for o in offers if o.stock_state != "unknown"]
         if known_stock:
-            latest = max(known_stock, key=lambda o: o.evidence_at)
+            latest = max(known_stock, key=lambda o: o.stock_evidence_at or o.evidence_at)
             combined.stock_state, combined.stock_qty = latest.stock_state, latest.stock_qty
+            combined.stock_evidence_at = latest.stock_evidence_at or latest.evidence_at
         price_evidence = [o for o in offers if o.unit_net is not None]
         if price_evidence:
             combined.evidence_at = min(o.evidence_at for o in price_evidence)
@@ -73,7 +95,14 @@ def get_product(conn, product_id):
                 else min((o.source_updated_at for o in price_evidence), default=None)
             )
             combined.refresh_failed = any(o.refresh_failed for o in price_evidence)
+            combined.freshness_seconds = (
+                min(o.freshness_seconds for o in price_evidence)
+                if all(o.freshness_seconds is not None for o in price_evidence)
+                else None
+            )
         price_rules = {o.price_rule for o in offers if o.unit_net is not None}
+        if len(price_rules) == 1:
+            combined.price_rule = next(iter(price_rules))
         if len(price_rules) > 1:
             combined.price_rule = "unknown"
             conflicts.append("price_rule")

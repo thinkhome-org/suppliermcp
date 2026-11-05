@@ -89,6 +89,8 @@ def refresh_values(conn, item_ids):
             values[f] = (getattr(offer, source) if offer else None, kind)
         native = {}
         for o in view.item.observations:
+            if o.derivation == "mapped":
+                continue
             field = f"native:{o.interface}:{o.field}"
             native.setdefault(field, set())
             if o.state == "known" and isinstance(o.value, (str, int, float)):
@@ -117,3 +119,39 @@ def refresh_values(conn, item_ids):
                 "INSERT INTO catalog_values VALUES (%s,%s,%s,%s,%s)",
                 (item_id, field, str(value) if value is not None else None, state, kind),
             )
+
+
+def mapped_observations(observations):
+    """Preserve supplier provenance while exposing only explicitly verified common facts."""
+    result = []
+    for observation in observations:
+        mapping = MAPPINGS.get(f"native:{observation.interface}:{observation.field}")
+        if not mapping or observation.derivation == "mapped":
+            continue
+        value, state = observation.value, observation.state
+        if state == "known" and mapping.get("type") == "number":
+            try:
+                number = Decimal(str(value)) * Decimal(mapping.get("scale", "1"))
+                if not number.is_finite():
+                    raise InvalidOperation()
+                value = str(number.normalize())
+            except InvalidOperation:
+                value, state = None, "missing"
+        result.append(
+            observation.model_copy(
+                update={
+                    "field": mapping["field"],
+                    "value": value,
+                    "state": state,
+                    "unit": mapping.get("unit"),
+                    "derivation": "mapped",
+                }
+            )
+        )
+    for field in {o.field for o in result}:
+        values = {str(o.value) for o in result if o.field == field and o.state == "known"}
+        if len(values) > 1 or any(o.field == field and o.state == "conflict" for o in result):
+            for o in result:
+                if o.field == field:
+                    o.state = "conflict"
+    return result

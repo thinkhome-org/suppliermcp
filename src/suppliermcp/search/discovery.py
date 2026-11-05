@@ -37,7 +37,7 @@ def search(conn, client, text, filters, principal, settings=None):
         allowed = set(confirmed)
         ids = list(dict.fromkeys(i for i in candidates if i in allowed))
         products = [get_product(conn, i) for i in ids]
-        coverage = read_status(conn)
+        coverage = read_status(conn, settings.enabled_interfaces if settings else None)
         coverage.complete = False
         coverage.warnings.append("text_discovery_is_not_exhaustive")
         if coverage.index_revision < coverage.revision:

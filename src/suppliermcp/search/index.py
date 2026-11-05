@@ -76,8 +76,12 @@ def configured_client(settings):
     )
 
 
-def document(row):
+def document(row, conn=None):
     item_id, data, revision = row
+    if conn is not None:
+        from suppliermcp.catalog.repository import get_product
+
+        data = get_product(conn, item_id).item.model_dump(mode="json")
     text = " ".join(str(data.get(k) or "") for k in ["name", "sku", "manufacturer", "mpn", "ean"])
     text += " " + " ".join(
         str(o.get("value") or "") for o in data.get("observations", []) if o.get("state") == "known"
@@ -92,26 +96,33 @@ def drain_outbox(conn, client):
         # Share the publication lane so a snapshot cannot overtake a newer publication.
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
         rows = conn.execute(
-            "SELECT id,item_id FROM index_outbox WHERE NOT done ORDER BY id LIMIT 200"
+            "SELECT item_id,max(id) FROM index_outbox WHERE NOT done GROUP BY item_id ORDER BY min(id) LIMIT 200"
         ).fetchall()
-        if not rows:
-            return 0
-        for event_id, item_id in rows:
+        documents, events = [], []
+        for item_id, event_id in rows:
             row = conn.execute(
                 "SELECT id,data,revision FROM source_items WHERE id=%s AND active", (item_id,)
             ).fetchone()
             if row:
-                success = client.import_documents(ALIAS, [document(row)])[0]
+                documents.append(document(row, conn=conn))
+                events.append((item_id, event_id))
             else:
                 client.request(
                     "DELETE",
                     f"/collections/{ALIAS}/documents/" + quote(item_id, safe=""),
                     params={"ignore_not_found": "true"},
                 )
-                success = True
+                count += conn.execute(
+                    "UPDATE index_outbox SET done=true WHERE item_id=%s AND id<=%s AND NOT done",
+                    (item_id, event_id),
+                ).rowcount
+        successes = client.import_documents(ALIAS, documents) if documents else []
+        for (item_id, event_id), success in zip(events, successes, strict=True):
             if success:
-                conn.execute("UPDATE index_outbox SET done=true WHERE id=%s", (event_id,))
-                count += 1
+                count += conn.execute(
+                    "UPDATE index_outbox SET done=true WHERE item_id=%s AND id<=%s AND NOT done",
+                    (item_id, event_id),
+                ).rowcount
     return count
 
 
@@ -124,8 +135,15 @@ def rebuild_index(conn, client):
         with conn.cursor(name="index_rebuild") as cursor:
             cursor.execute("SELECT id,data,revision FROM source_items WHERE active ORDER BY id")
             while rows := cursor.fetchmany(200):
-                if not all(client.import_documents(name, [document(r) for r in rows])):
+                if not all(client.import_documents(name, [document(r, conn=conn) for r in rows])):
                     raise CatalogError("index_import_failed")
         client.request("PUT", f"/aliases/{ALIAS}", json={"collection_name": name})
         conn.execute("UPDATE index_outbox SET done=true WHERE NOT done")
     return name
+
+
+def drain_pending(conn, client):
+    total = 0
+    while processed := drain_outbox(conn, client):
+        total += processed
+    return total

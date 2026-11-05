@@ -16,6 +16,7 @@ from suppliermcp.catalog.contracts import (
     SchemaRecord,
     SourceItem,
 )
+from suppliermcp.suppliers.offer_contract import apply_contract
 from suppliermcp.sync.artifacts import parse_xml
 
 from .authority import BASELINE_METHODS, PLACEHOLDERS
@@ -50,6 +51,9 @@ class EdPublicAdapter:
         )
 
     def fetch(self, domain, codes=None):
+        from suppliermcp.catalog.contracts import utcnow
+
+        started_at = utcnow()
         if not self.gateway:
             raise CatalogError("source_not_configured")
         endpoint = (
@@ -84,6 +88,7 @@ class EdPublicAdapter:
                 data = self.transport.read("GET", values["Url"], endpoint="download")
             manifest = BatchManifest(
                 interface=self.interface,
+                started_at=started_at,
                 domain=domain,
                 endpoint=endpoint,
                 mode="targeted" if codes else "full",
@@ -96,9 +101,13 @@ class EdPublicAdapter:
         raise CatalogError("export_not_ready", retryable=True)
 
     def parse(self, manifest):
+        export_values = {}
+        contract = getattr(self, "offer_contract", {})
         records = 0
         for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
             name = local(element.tag)
+            if name == contract.get("export_timestamp_field"):
+                export_values[name] = element.text
             if name == "StatusCode" and element.text == "ERROR" or name == "Fault":
                 raise CatalogError("supplier_response_error")
             if manifest.domain == "schema" and name in {
@@ -230,7 +239,7 @@ class EdPublicAdapter:
                 elif flag in {"true", "1", "false", "0"}:
                     stock = "in_stock" if flag in {"true", "1"} else "out_of_stock"
             discount_qty = number("ValuePackQty")
-            yield Offer(
+            offer = Offer(
                 item_id=item_id,
                 unit_net=unit,
                 fees_net=fees,
@@ -246,6 +255,7 @@ class EdPublicAdapter:
                 evidence_at=manifest.started_at,
                 source_updated_at=manifest.source_updated_at,
             )
+            yield apply_contract(offer, export_values | values, contract, manifest)
             records += 1
             element.clear()
         # Full baselines enumerate identity; details/stock never establish catalog completeness.

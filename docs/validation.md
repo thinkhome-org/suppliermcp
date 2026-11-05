@@ -31,3 +31,11 @@ No tunnel, public deployment, plugin installation, production load/capacity test
 Known operational limits: API errors are structured under `result.error` (MCP transport `isError` is currently false); clients must inspect the error object. Oversized individual product details fail visibly at the response budget. Unmapped native fields are text, not invented typed common attributes. Old Typesense collections require administrative cleanup after successful rebuilds.
 
 Pre-review baseline: `uv run ruff check .` passed; `uv run pytest -q` passed 80 tests with no skips in 5.25 seconds. Final review fixes and final counts, if any, are recorded below.
+
+## Whole-branch review and fix evidence
+
+A fresh-context gpt-6-astra review found nine Important issues, no Critical issues. All nine entered one implementation fix pass, with failing regression tests observed before fixes; no second review was requested. Fixes cover monotonic unchanged-run fences, independent stock evidence, per-domain/catalog completeness, accumulated descriptions in indexing, mapped packaging for matching, verified offer configuration, terminal staging cleanup, continuous bulk indexing, and per-product comparison failures. The final expanded suite passes 92 tests (6.88 seconds, no skips); `ruff check` passes. A related regression additionally prevents newer stock-only evidence from replacing ValuePack rules or price freshness.
+
+One Minor finding is deferred: text discovery against an existing empty index returns an empty non-exhaustive result instead of `catalog_not_populated`. Exact lookup/listing already return that explicit state.
+
+After the fix pass, the image was rebuilt and the authenticated disposable Compose smoke passed again, including restart persistence. Both actual Codex sessions were rerun successfully (exit 0): six completed tool calls without skills and eight with canonical project skills. Their outputs preserved SKU zeros, rejected the unsupported filter, and correctly labeled stale prices and disabled sources. No second code review was performed; regression tests and the full green suite are the fix verification.

@@ -55,12 +55,18 @@ def publish(conn, run_id, *, accept_reason=None):
                 "UPDATE import_runs SET status='superseded',revision=%s WHERE id=%s",
                 (checkpoint[2], run_id),
             )
+            conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
             return checkpoint[2]
         if checkpoint and manifest.artifact_sha256 and manifest.artifact_sha256 == checkpoint[1]:
+            conn.execute(
+                "UPDATE domain_checkpoints SET started_at=%s WHERE interface=%s AND domain=%s",
+                (manifest.started_at, manifest.interface, manifest.domain),
+            )
             conn.execute(
                 "UPDATE import_runs SET status='unchanged',revision=%s WHERE id=%s",
                 (checkpoint[2], run_id),
             )
+            conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
             return checkpoint[2]
         rows = conn.execute(
             "SELECT kind,data FROM staging WHERE run_id=%s ORDER BY ordinal", (run_id,)
@@ -133,11 +139,18 @@ def publish(conn, run_id, *, accept_reason=None):
                     changed.add(item.item_id)
                 elif kind == "Offer":
                     offer = Offer.model_validate(data)
+                    if offer.stock_state != "unknown":
+                        data["stock_evidence_at"] = (
+                            offer.stock_evidence_at or offer.evidence_at
+                        ).isoformat()
                     prior = conn.execute(
                         "SELECT data FROM current_offers WHERE item_id=%s AND interface=%s AND domain=%s",
                         (offer.item_id, manifest.interface, manifest.domain),
                     ).fetchone()
                     if prior:
+                        if offer.stock_state == "unknown":
+                            for key in ["stock_state", "stock_qty", "stock_evidence_at"]:
+                                data[key] = prior[0].get(key)
                         if offer.unit_net is None:
                             for key in [
                                 "evidence_at",
@@ -177,9 +190,10 @@ def publish(conn, run_id, *, accept_reason=None):
                             stock_qty="0",
                             stock_state="out_of_stock",
                             evidence_at=manifest.started_at,
+                            stock_evidence_at=manifest.started_at,
                         )
                         conn.execute(
-                            "INSERT INTO current_offers VALUES (%s,%s,'stock',%s) ON CONFLICT(item_id,interface,domain) DO UPDATE SET data=current_offers.data || jsonb_build_object('stock_qty','0','stock_state','out_of_stock','fetched_at',%s::text)",
+                            "INSERT INTO current_offers VALUES (%s,%s,'stock',%s) ON CONFLICT(item_id,interface,domain) DO UPDATE SET data=current_offers.data || jsonb_build_object('stock_qty','0','stock_state','out_of_stock','stock_evidence_at',%s::text)",
                             (
                                 item_id,
                                 manifest.interface,

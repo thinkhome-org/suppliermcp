@@ -58,6 +58,7 @@ def main():
         ) as http:
             rebuild_index(conn, IndexClient(http))
     output = ROOT / ".superpowers/sdd/2026-11-05-suppliermcp-v1"
+    output.mkdir(parents=True, exist_ok=True)
     with (
         fixture.running_server() as (url, token),
         tempfile.TemporaryDirectory(prefix="suppliermcp-codex-") as directory,

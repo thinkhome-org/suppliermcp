@@ -74,8 +74,9 @@ class Offer(Model):
     fetched_at: datetime = Field(default_factory=utcnow)
     source_updated_at: datetime | None = None
     evidence_at: datetime = Field(default_factory=utcnow)
+    stock_evidence_at: datetime | None = None
     refresh_failed: bool = False
-    freshness_seconds: int | None = None
+    freshness_seconds: int | None = Field(default=None, gt=0)
 
 
 class Capabilities(Model):
@@ -206,6 +207,8 @@ class OfferQuote(Model):
 
 
 class Comparison(Model):
+    product_id: str | None = None
+    error: dict | None = None
     offers: list[OfferQuote] = Field(default_factory=list)
     last_known_winner: str | None = None
     fresh_winner: str | None = None

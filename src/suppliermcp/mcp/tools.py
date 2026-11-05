@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Annotated
 
 import psycopg
-from pydantic import Field
+from pydantic import Field, ValidationError
 
 from suppliermcp.catalog import repository
 from suppliermcp.catalog.contracts import (
@@ -124,46 +124,56 @@ def register(server, settings):
         """Compare each product separately, only proven identical variants. Totals include known fees, exclude shipping/VAT. Refresh is queued."""
 
         def operation(conn):
-            quantities_checked = {
-                key: QuantityRequest(quantity=value).quantity
-                for key, value in (quantities or {}).items()
-            }
+            quantities_checked = quantities or {}
             if set(quantities_checked) - set(product_ids):
                 raise CatalogError("invalid_quantity_product")
             results = []
             for product_id in product_ids:
-                product = repository.get_product(conn, product_id)
-                candidates = conn.execute(
-                    "SELECT id FROM source_items WHERE active AND id<>%s AND ((data->>'ean'=%s) OR (lower(data->>'manufacturer')=lower(%s) AND data->>'mpn'=%s))",
-                    (product_id, product.item.ean, product.item.manufacturer, product.item.mpn),
-                ).fetchall()
-                offers = list(product.offers)
-                unresolved = False
-                for (candidate_id,) in candidates:
-                    candidate = repository.get_product(conn, candidate_id)
-                    decision = match_items(product.item, candidate.item)
-                    if decision.verdict == "same":
-                        offers.extend(candidate.offers)
-                    elif decision.verdict == "unresolved":
-                        unresolved = True
-                result = compare(offers, quantities_checked.get(product_id, Decimal(1)), utcnow())
-                if unresolved:
-                    result.warnings.append("unresolved_variants_not_combined")
-                if refresh:
-                    from suppliermcp.sync.jobs import schedule_refresh
+                try:
+                    quantity = QuantityRequest(
+                        quantity=quantities_checked.get(product_id, Decimal(1))
+                    ).quantity
+                    product = repository.get_product(conn, product_id)
+                    candidates = conn.execute(
+                        "SELECT id FROM source_items WHERE active AND id<>%s AND ((data->>'ean'=%s) OR (lower(data->>'manufacturer')=lower(%s) AND data->>'mpn'=%s))",
+                        (product_id, product.item.ean, product.item.manufacturer, product.item.mpn),
+                    ).fetchall()
+                    offers = list(product.offers)
+                    unresolved = False
+                    for (candidate_id,) in candidates:
+                        candidate = repository.get_product(conn, candidate_id)
+                        decision = match_items(product.item, candidate.item)
+                        if decision.verdict == "same":
+                            offers.extend(candidate.offers)
+                        elif decision.verdict == "unresolved":
+                            unresolved = True
+                    result = compare(offers, quantity, utcnow())
+                    if unresolved:
+                        result.warnings.append("unresolved_variants_not_combined")
+                    if refresh:
+                        from suppliermcp.sync.jobs import schedule_refresh
 
-                    for interface in settings.enabled_interfaces:
-                        if (interface == "mega") == (product.item.supplier == "mega"):
-                            try:
-                                schedule_refresh(
-                                    interface, "price", [product.item.sku], settings=settings
-                                )
-                                result.warnings.append("refresh_pending")
-                            except Exception:
-                                result.warnings.append("refresh_unavailable")
-                    if not settings.enabled_interfaces:
-                        result.warnings.append("refresh_unavailable")
-                results.append(result)
+                        for interface in settings.enabled_interfaces:
+                            if (interface == "mega") == (product.item.supplier == "mega"):
+                                try:
+                                    schedule_refresh(
+                                        interface, "price", [product.item.sku], settings=settings
+                                    )
+                                    result.warnings.append("refresh_pending")
+                                except Exception:
+                                    result.warnings.append("refresh_unavailable")
+                        if not settings.enabled_interfaces:
+                            result.warnings.append("refresh_unavailable")
+                    result.product_id = product_id
+                    results.append(result)
+                except ValidationError:
+                    results.append(
+                        Comparison(
+                            product_id=product_id, error=CatalogError("invalid_quantity").as_dict()
+                        )
+                    )
+                except CatalogError as error:
+                    results.append(Comparison(product_id=product_id, error=error.as_dict()))
             return results
 
         return safe(settings, operation)
@@ -173,7 +183,7 @@ def register(server, settings):
         """Report configured/disabled sources, refresh failures and database/index revisions."""
 
         def operation(conn):
-            status = repository.read_status(conn)
+            status = repository.read_status(conn, settings.enabled_interfaces)
             for interface in ["ed_public", "ed_private", "mega"]:
                 state = status.interfaces.setdefault(interface, {"outcome": "not_fetched"})
                 state["configured"] = interface in settings.enabled_interfaces
