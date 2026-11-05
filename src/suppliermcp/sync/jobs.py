@@ -71,9 +71,26 @@ def create_app(settings):
         with connect(settings) as conn:
             return run_refresh(conn,adapters[interface],domain,codes)
 
+    @app.task(name='suppliermcp.index', retry=procrastinate.RetryStrategy(max_attempts=3,wait=60))
+    def index():
+        from suppliermcp.search.index import configured_client,drain_outbox,rebuild_index,ALIAS
+        client=configured_client(settings)
+        try:
+            with connect(settings) as conn:
+                aliases=client.request('GET','/aliases').json()['aliases']
+                if not any(a['name']==ALIAS for a in aliases):
+                    rebuild_index(conn,client)
+                return drain_outbox(conn,client)
+        finally:
+            client.http.close()
+
     @app.periodic(cron='* * * * *')
     @app.task(name='suppliermcp.tick')
     def tick(timestamp):
+        try:
+            index.configure(lock='index',queueing_lock='index').defer()
+        except procrastinate.AlreadyEnqueued:
+            pass
         contracts = source_contracts(settings)
         with connect(settings) as conn:
             for interface in settings.enabled_interfaces:

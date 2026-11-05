@@ -1,0 +1,242 @@
+[
+  {
+    "family": "memory",
+    "id": "memory0",
+    "name": "Paměť DDR5 32GB",
+    "query": "paměť DDR5",
+    "exclude": [
+      "memory1",
+      "memory2"
+    ]
+  },
+  {
+    "family": "memory",
+    "id": "memory0",
+    "name": "Paměť DDR5 32GB",
+    "query": "memory DDR5",
+    "exclude": [
+      "memory1",
+      "memory2"
+    ]
+  },
+  {
+    "family": "memory",
+    "id": "memory1",
+    "name": "SSD NVMe storage 1TB",
+    "query": "úložiště NVMe",
+    "exclude": [
+      "memory0",
+      "memory2"
+    ]
+  },
+  {
+    "family": "memory",
+    "id": "memory1",
+    "name": "SSD NVMe storage 1TB",
+    "query": "storage NVMe",
+    "exclude": [
+      "memory0",
+      "memory2"
+    ]
+  },
+  {
+    "family": "memory",
+    "id": "memory2",
+    "name": "Memory DDR4 16GB",
+    "query": "paměť DDR4",
+    "exclude": [
+      "memory0",
+      "memory1"
+    ]
+  },
+  {
+    "family": "memory",
+    "id": "memory2",
+    "name": "Memory DDR4 16GB",
+    "query": "memory DDR4",
+    "exclude": [
+      "memory0",
+      "memory1"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network0",
+    "name": "Síťový přepínač PoE 8port",
+    "query": "síťový přepínač PoE",
+    "exclude": [
+      "network1",
+      "network2"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network0",
+    "name": "Síťový přepínač PoE 8port",
+    "query": "network switch PoE",
+    "exclude": [
+      "network1",
+      "network2"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network1",
+    "name": "Bezdrátový směrovač AX3000",
+    "query": "bezdrátový směrovač",
+    "exclude": [
+      "network0",
+      "network2"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network1",
+    "name": "Bezdrátový směrovač AX3000",
+    "query": "wireless router",
+    "exclude": [
+      "network0",
+      "network2"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network2",
+    "name": "Network switch SFP 24port",
+    "query": "přepínač SFP",
+    "exclude": [
+      "network0",
+      "network1"
+    ]
+  },
+  {
+    "family": "network",
+    "id": "network2",
+    "name": "Network switch SFP 24port",
+    "query": "switch SFP",
+    "exclude": [
+      "network0",
+      "network1"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables0",
+    "name": "Kabel USB-C 2m",
+    "query": "kabel USB-C",
+    "exclude": [
+      "cables1",
+      "cables2"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables0",
+    "name": "Kabel USB-C 2m",
+    "query": "cable USB-C",
+    "exclude": [
+      "cables1",
+      "cables2"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables1",
+    "name": "Konektor RJ45 Cat6",
+    "query": "konektor RJ45",
+    "exclude": [
+      "cables0",
+      "cables2"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables1",
+    "name": "Konektor RJ45 Cat6",
+    "query": "connector RJ45",
+    "exclude": [
+      "cables0",
+      "cables2"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables2",
+    "name": "Cable HDMI 4K",
+    "query": "kabel HDMI",
+    "exclude": [
+      "cables0",
+      "cables1"
+    ]
+  },
+  {
+    "family": "cables",
+    "id": "cables2",
+    "name": "Cable HDMI 4K",
+    "query": "cable HDMI",
+    "exclude": [
+      "cables0",
+      "cables1"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops0",
+    "name": "Notebook Acme Ultra 14",
+    "query": "notebook Ultra",
+    "exclude": [
+      "laptops1",
+      "laptops2"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops0",
+    "name": "Notebook Acme Ultra 14",
+    "query": "laptop Ultra",
+    "exclude": [
+      "laptops1",
+      "laptops2"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops1",
+    "name": "Přenosný notebook Acme Pro 16",
+    "query": "přenosný notebook Pro",
+    "exclude": [
+      "laptops0",
+      "laptops2"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops1",
+    "name": "Přenosný notebook Acme Pro 16",
+    "query": "portable laptop Pro",
+    "exclude": [
+      "laptops0",
+      "laptops2"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops2",
+    "name": "Laptop Acme Basic 15",
+    "query": "notebook Basic",
+    "exclude": [
+      "laptops0",
+      "laptops1"
+    ]
+  },
+  {
+    "family": "laptops",
+    "id": "laptops2",
+    "name": "Laptop Acme Basic 15",
+    "query": "laptop Basic",
+    "exclude": [
+      "laptops0",
+      "laptops1"
+    ]
+  }
+]
