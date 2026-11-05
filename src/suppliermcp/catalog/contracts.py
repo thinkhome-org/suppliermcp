@@ -101,7 +101,13 @@ class BatchManifest(Model):
     delta_to: datetime | None = None
 
 
-ParsedRecord = SourceItem | Offer
+class SchemaRecord(Model):
+    interface: Interface
+    kind: str
+    values: dict[str, Any]
+
+
+ParsedRecord = SourceItem | Offer | SchemaRecord
 
 
 class ImportBatch(BatchManifest):
