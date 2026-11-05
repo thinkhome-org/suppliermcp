@@ -1,0 +1,1917 @@
+{
+  "observed_at": "2026-11-05",
+  "source": "https://public-ws-cz.elinkx.biz/service.asmx?WSDL",
+  "authenticated": true,
+  "operations": [
+    {
+      "name": "getAuthTokenEshop",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getClaimList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getDeliveryDetail",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getDeliveryList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getExpeditionDetail",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getExpeditionList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getInvoiceDetail",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getInvoiceDetailDownloadXMLWithTransform",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getInvoiceList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getInvoiceListDownloadXMLWithTransform_INT",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getOrderDetail",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getOrderList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getOrderListDownloadXMLWithTransform_INT",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductListDownloadXML",
+      "classification": "product_read",
+      "live_validation": "export_status_success"
+    },
+    {
+      "name": "getProductListDownloadXMLWithTransform",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductListDownloadZIP",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductListDownloadZIPWithTransform",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getSellerInfo",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    }
+  ],
+  "types": [
+    {
+      "name": "ResponseProductList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductList",
+          "type": "tns:ArrayOfProduct"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AddressId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Count",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "GeneratedDate",
+          "type": "s:dateTime"
+        }
+      ]
+    },
+    {
+      "name": "ResponseList",
+      "fields": []
+    },
+    {
+      "name": "Response",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "StatusCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ErrorText",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProduct",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "Product",
+          "nillable": "true",
+          "type": "tns:Product"
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ProId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "YourPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "YourPriceWithFees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "GarbageFee",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AuthorFee",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValuePack",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValuePackQty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Warranty",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DealerPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "EndUserPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Vat",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PartNumber",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "OnStock",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OnStockText",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ImageUrl",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProducerName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "RateOfDutyCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EANCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NameB2C",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DescriptionShort",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "MultipleQuantity",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PriceCurrency",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Description",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductListStatus",
+          "type": "tns:RequestProductListStatus"
+        }
+      ]
+    },
+    {
+      "name": "RequestProductListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "url",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "fileName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "isReady",
+          "type": "s:boolean"
+        }
+      ]
+    },
+    {
+      "name": "ResponseInvoiceStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceStatus",
+          "type": "tns:ResponseDownloadInfo"
+        }
+      ]
+    },
+    {
+      "name": "ResponseDownloadInfo",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "url",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "fileName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "isReady",
+          "type": "s:boolean"
+        }
+      ]
+    },
+    {
+      "name": "ResponseInvoiceList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceList",
+          "type": "tns:ArrayOfInvoiceHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Info",
+          "type": "tns:ResponseInfo"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfInvoiceHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "InvoiceHead",
+          "nillable": "true",
+          "type": "tns:InvoiceHead"
+        }
+      ]
+    },
+    {
+      "name": "InvoiceHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Items",
+          "type": "tns:ArrayOfInvoiceItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceAddress",
+          "type": "tns:InvoiceAddress"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ShippingAddressList",
+          "type": "tns:ArrayOfShippingAddress"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Orders",
+          "type": "tns:ArrayOfOrderHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Delivery",
+          "type": "tns:ArrayOfDeliveryHead"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateCreated",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "VariableSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "VariableConSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "InvoiceDateDue",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "InvoiceDate",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "InvoiceDateAcc",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "InvoiceDateVat",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Payed",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Cust",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "WithVat",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Currency",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Rate",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceBrutto",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceNetto",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Vat",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Rnd",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Subjekt",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgVat",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SubjektID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Tel",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Fax",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "BankNameType",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "BankName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "BankCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "BankAccountPre",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "BankAccountNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Trackus",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceType",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceTypeCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DocumentTypeCode",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfInvoiceItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "InvoiceItem",
+          "nillable": "true",
+          "type": "tns:InvoiceItem"
+        }
+      ]
+    },
+    {
+      "name": "InvoiceItem",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PartNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EANCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPriceWithFees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Vat",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Fees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SNC",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AO",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IsText",
+          "type": "s:boolean"
+        }
+      ]
+    },
+    {
+      "name": "InvoiceAddress",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name2",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgVat",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Street",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ZipCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "City",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CountryCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Contact",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ContactEmail",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ContactTel",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ShippingAddress",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DeliverySymbol",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfShippingAddress",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ShippingAddress",
+          "nillable": "true",
+          "type": "tns:ShippingAddress"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfOrderHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "OrderHead",
+          "nillable": "true",
+          "type": "tns:OrderHead"
+        }
+      ]
+    },
+    {
+      "name": "OrderHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Items",
+          "type": "tns:ArrayOfOrderItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceAdress",
+          "type": "tns:InvoiceAddress"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ShippingAddress",
+          "type": "tns:ShippingAddress"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateCreated",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderOriginalSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Currency",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceBrutto",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceNetto",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Subjekt",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SubjektID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Trackus",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Allocated",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Completed",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ExpirationDate",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AdvancePayed",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AdvancePayementRequired",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderNote",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderNote1",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Checked",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Rate",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Cust",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "WithVat",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "APTName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "StateId",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "EventDate",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EventMessage",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DeferredInvoicing",
+          "type": "s:boolean"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfOrderItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "OrderItem",
+          "nillable": "true",
+          "type": "tns:OrderItem"
+        }
+      ]
+    },
+    {
+      "name": "OrderItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "QueueList",
+          "type": "tns:ArrayOfQueue"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DocReferenceList",
+          "type": "tns:ArrayOfDocReference"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PartNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EANCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPriceWithFees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Vat",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Fees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SNC",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AO",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Delivered",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Invoiced",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PutBack",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Canceled",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Credited",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Allocated",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "CustFlag",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ID",
+          "type": "s:int"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfQueue",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "Queue",
+          "nillable": "true",
+          "type": "tns:Queue"
+        }
+      ]
+    },
+    {
+      "name": "Queue",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateTermDelivery",
+          "type": "s:dateTime"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfDocReference",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "DocReference",
+          "nillable": "true",
+          "type": "tns:DocReference"
+        }
+      ]
+    },
+    {
+      "name": "DocReference",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item1Id",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item1Type",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item1HeadId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Item1HeadNumber",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item2Type",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item2Id",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Item2HeadId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Item2HeadNumber",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfDeliveryHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "DeliveryHead",
+          "nillable": "true",
+          "type": "tns:DeliveryHead"
+        }
+      ]
+    },
+    {
+      "name": "DeliveryHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Items",
+          "type": "tns:ArrayOfDeliveryItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Parcels",
+          "type": "tns:ArrayOfParcelItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DeliverySymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExpeditionSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateCreated",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Trackus",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ShipAddress",
+          "type": "tns:Address"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceBrutto",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceNetto",
+          "type": "s:decimal"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfDeliveryItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "DeliveryItem",
+          "nillable": "true",
+          "type": "tns:DeliveryItem"
+        }
+      ]
+    },
+    {
+      "name": "DeliveryItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "UnitPriceWithFees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "WarrantyList",
+          "type": "tns:ArrayOfWarrantyItem"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfWarrantyItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "WarrantyItem",
+          "nillable": "true",
+          "type": "tns:WarrantyItem"
+        }
+      ]
+    },
+    {
+      "name": "WarrantyItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "WarrantyType",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "WarrantyLength",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "SerialNumber",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfParcelItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ParcelItem",
+          "nillable": "true",
+          "type": "tns:ParcelItem"
+        }
+      ]
+    },
+    {
+      "name": "ParcelItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseInfo",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateFrom",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateTo",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Count",
+          "type": "s:int"
+        }
+      ]
+    },
+    {
+      "name": "ResponseInvoiceListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceListStatus",
+          "type": "tns:ResponseDownloadInfo"
+        }
+      ]
+    },
+    {
+      "name": "ResponseInvoiceDetail",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Invoice",
+          "type": "tns:InvoiceHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseDeliveryList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DeliveryList",
+          "type": "tns:ArrayOfDeliveryHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Info",
+          "type": "tns:ResponseInfo"
+        }
+      ]
+    },
+    {
+      "name": "ResponseDeliveryDetail",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DeliveryHead",
+          "type": "tns:DeliveryHead"
+        }
+      ]
+    },
+    {
+      "name": "ResponseOrderDetail",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Order",
+          "type": "tns:OrderHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseOrderList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderList",
+          "type": "tns:ArrayOfOrderHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Info",
+          "type": "tns:ResponseInfo"
+        }
+      ]
+    },
+    {
+      "name": "ResponseOrderListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderListStatus",
+          "type": "tns:ResponseDownloadInfo"
+        }
+      ]
+    },
+    {
+      "name": "ResponseExpeditionList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExpeditionList",
+          "type": "tns:ArrayOfExpeditionHead"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Info",
+          "type": "tns:ResponseInfo"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfExpeditionHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ExpeditionHead",
+          "nillable": "true",
+          "type": "tns:ExpeditionHead"
+        }
+      ]
+    },
+    {
+      "name": "ExpeditionHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Parcels",
+          "type": "tns:ArrayOfParcelItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExpeditionSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExpeditionOriginalSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateCreated",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateSent",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Trackus",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ShipAddress",
+          "type": "tns:Address"
+        }
+      ]
+    },
+    {
+      "name": "ResponseClaimList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ClaimList",
+          "type": "tns:ArrayOfClaim"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Info",
+          "type": "tns:ResponseInfo"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfClaim",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "Claim",
+          "nillable": "true",
+          "type": "tns:Claim"
+        }
+      ]
+    },
+    {
+      "name": "Claim",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "AVZ",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductSN",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ErrorDesc",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateCreated",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateReceived",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SettlementDate",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceSymbolCre",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NewProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NewProductSN",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "State",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Settlement",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Parcels",
+          "type": "tns:ArrayOfParcelItem"
+        }
+      ]
+    },
+    {
+      "name": "ResponseExpeditionDetail",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExpeditionHead",
+          "type": "tns:ExpeditionHead"
+        }
+      ]
+    },
+    {
+      "name": "ResponseSubjectIdentification",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Identification",
+          "type": "tns:SubjectIdentification"
+        }
+      ]
+    },
+    {
+      "name": "SubjectIdentification",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ID",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EAN",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgVat",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrgNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Street",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "City",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Zip",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CountryCode",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseAuthenticationData",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "AuthenticationData",
+          "type": "tns:AuthenticationData"
+        }
+      ]
+    },
+    {
+      "name": "AuthenticationData",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Token",
+          "type": "s:string"
+        }
+      ]
+    }
+  ]
+}

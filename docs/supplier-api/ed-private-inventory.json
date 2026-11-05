@@ -1,0 +1,1727 @@
+{
+  "observed_at": "2026-11-05",
+  "source": "https://private-ws-cz.elinkx.biz/service.asmx?WSDL",
+  "authenticated": false,
+  "operations": [
+    {
+      "name": "changeDocument",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "createNewOrder",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "createNewOrderCustomer",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "createNewOrderXML",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getNavigator",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueDownloadZIP",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadXMLExt",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadXMLWithTransform",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadXMLv1",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadZIP",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadZIPExt",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullDownloadZIPv1",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullNavFilterDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullNavFilterSOAPDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueFullPremiumDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueShortDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCatalogueStockDownloadXML",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCategoryAttributeList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCategoryAttributeValueList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCategoryList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductCommodityList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductDetail",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductIndexTree1",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductIndexTree2",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductInformationList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductProducerList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductRelationList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getProductSuperCategoryList",
+      "classification": "product_read",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getTransportationList",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    },
+    {
+      "name": "getTransportationListCustomer",
+      "classification": "excluded_by_v1",
+      "live_validation": "not_tested"
+    }
+  ],
+  "types": [
+    {
+      "name": "ResponseProductComplete",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductComplete",
+          "type": "tns:ProductComplete"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AddressId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Count",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "GeneratedDate",
+          "type": "s:dateTime"
+        }
+      ]
+    },
+    {
+      "name": "ResponseList",
+      "fields": []
+    },
+    {
+      "name": "Response",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "StatusCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ErrorText",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ProductComplete",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IsTop",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "InfoCode",
+          "type": "s:unsignedByte"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexSort1",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexCode1",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexOrder1",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexImplicit1",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexSort2",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexCode2",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexOrder2",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexImplicit2",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "WarrantyTerm",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "WarrantyUnit",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PartNumber2",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DateAvailible",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DealerPrice1",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Unit",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "OnStockCount",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ImgCount",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ImgLastChanged",
+          "type": "s:dateTime"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProducerCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "CategoryCode",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "B2C",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "B2FPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ImageList",
+          "type": "tns:ArrayOfProductImage"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductNavigatorDataList",
+          "type": "tns:ArrayOfProductNavigatorData"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "LogisticDataList",
+          "type": "tns:ArrayOfProductLogisticData"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "RCStatus",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "RCCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IsPremium",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ExtInfoCodes",
+          "type": "tns:ArrayOfProductInformation"
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ProId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "YourPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "YourPriceWithFees",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "GarbageFee",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AuthorFee",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValuePack",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValuePackQty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Warranty",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DealerPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "EndUserPrice",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Vat",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PartNumber",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "OnStock",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OnStockText",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ImageUrl",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProducerName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "RateOfDutyCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "EANCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NameB2C",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "DescriptionShort",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "MultipleQuantity",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "PriceCurrency",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Description",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductImage",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductImage",
+          "nillable": "true",
+          "type": "tns:ProductImage"
+        }
+      ]
+    },
+    {
+      "name": "ProductImage",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "URL",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductNavigatorData",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductNavigatorData",
+          "nillable": "true",
+          "type": "tns:ProductNavigatorData"
+        }
+      ]
+    },
+    {
+      "name": "ProductNavigatorData",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AttributeCode",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValueCode",
+          "type": "s:int"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductLogisticData",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductLogisticData",
+          "nillable": "true",
+          "type": "tns:ProductLogisticData"
+        }
+      ]
+    },
+    {
+      "name": "ProductLogisticData",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "typ",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "count",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "weight",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "length",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "width",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "height",
+          "type": "s:double"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductInformation",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductInformation",
+          "nillable": "true",
+          "type": "tns:ProductInformation"
+        }
+      ]
+    },
+    {
+      "name": "ProductInformation",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InfoCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InfoName",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "NewOrderHead",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ShippingAddress",
+          "type": "tns:Address"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NewOrderItems",
+          "type": "tns:ArrayOfNewOrderItem"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderNote",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderSymbolCustomer",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "TransportCode",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "telephone",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "email",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Street",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ZipCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "City",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CountryCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Contact",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ContactEmail",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ContactTel",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfNewOrderItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "NewOrderItem",
+          "nillable": "true",
+          "type": "tns:NewOrderItem"
+        }
+      ]
+    },
+    {
+      "name": "NewOrderItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:double"
+        }
+      ]
+    },
+    {
+      "name": "ResponseNewOrder",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "OrderSymbol",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "NewOrderHeadCustomer",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "InvoiceAddress",
+          "type": "tns:Address"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "customerName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "customerOrgNo",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "customerOrgVat",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "created",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "custumerInvoiceCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "price",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "priceVat",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "priceTotal",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "customerCurrency",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "deliveryWithoutInvoice",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "deliveryWithoutDeliveryNote",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "noCashOnDelivery",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "deferredInvoicing",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "NewOrderCustomerItems",
+          "type": "tns:ArrayOfNewOrderItemCustomer"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfNewOrderItemCustomer",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "NewOrderItemCustomer",
+          "nillable": "true",
+          "type": "tns:NewOrderItemCustomer"
+        }
+      ]
+    },
+    {
+      "name": "NewOrderItemCustomer",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Price",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "PriceVat",
+          "type": "s:double"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "VatRate",
+          "type": "s:double"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductListStatus",
+          "type": "tns:RequestProductListStatus"
+        }
+      ]
+    },
+    {
+      "name": "RequestProductListStatus",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "url",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "fileName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "isReady",
+          "type": "s:boolean"
+        }
+      ]
+    },
+    {
+      "name": "ResponseTransportationList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "TransportationList",
+          "type": "tns:ArrayOfTransportation"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfTransportation",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "Transportation",
+          "nillable": "true",
+          "type": "tns:Transportation"
+        }
+      ]
+    },
+    {
+      "name": "Transportation",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Name",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "TypeCode",
+          "type": "s:unsignedByte"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductInformationList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductInformationList",
+          "type": "tns:ArrayOfProductInformation"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductSuperCategoryList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductSuperCategoryList",
+          "type": "tns:ArrayOfProductSuperCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductSuperCategory",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductSuperCategory",
+          "nillable": "true",
+          "type": "tns:ProductSuperCategory"
+        }
+      ]
+    },
+    {
+      "name": "ProductSuperCategory",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryList",
+          "type": "tns:ArrayOfProductCategory"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "SuperCategoryCode",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "SuperCategoryName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ParentSuperCategoryCode",
+          "type": "s:int"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductCategory",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductCategory",
+          "nillable": "true",
+          "type": "tns:ProductCategory"
+        }
+      ]
+    },
+    {
+      "name": "ProductCategory",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "CategoryCode",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CategoryName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductAttributeList",
+          "type": "tns:ArrayOfProductCategoryAttribute"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ImageList",
+          "type": "tns:ArrayOfProductCategoryImage"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductCategoryAttribute",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductCategoryAttribute",
+          "nillable": "true",
+          "type": "tns:ProductCategoryAttribute"
+        }
+      ]
+    },
+    {
+      "name": "ProductCategoryAttribute",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AttributeCode",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "AttributeName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IsPrimary",
+          "type": "s:boolean"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "FilterOperator",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductCategoryImage",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductCategoryImage",
+          "nillable": "true",
+          "type": "tns:ProductCategoryImage"
+        }
+      ]
+    },
+    {
+      "name": "ProductCategoryImage",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "URL",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductCategoryList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryList",
+          "type": "tns:ArrayOfProductCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductCategoryAttributeList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryAttributeList",
+          "type": "tns:ArrayOfProductCategoryAttribute"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductCategoryAttributeValueList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryAttributeValueList",
+          "type": "tns:ArrayOfProductCategoryAttributeValue"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductCategoryAttributeValue",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductCategoryAttributeValue",
+          "nillable": "true",
+          "type": "tns:ProductCategoryAttributeValue"
+        }
+      ]
+    },
+    {
+      "name": "ProductCategoryAttributeValue",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValueCode",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AttributeCode",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Value",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ValueSort",
+          "type": "s:int"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductNavigator",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductSuperCategoryList",
+          "type": "tns:ArrayOfProductSuperCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryList",
+          "type": "tns:ArrayOfProductCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryAttributeList",
+          "type": "tns:ArrayOfProductCategoryAttribute"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCategoryAttributeValueList",
+          "type": "tns:ArrayOfProductCategoryAttributeValue"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductCommodityList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductCommodityList",
+          "type": "tns:ArrayOfProductCommodity"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductCommodity",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductCommodity",
+          "nillable": "true",
+          "type": "tns:ProductCommodity"
+        }
+      ]
+    },
+    {
+      "name": "ProductCommodity",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityParentCode",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductProducerList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductProducerList",
+          "type": "tns:ArrayOfProductProducer"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductProducer",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductProducer",
+          "nillable": "true",
+          "type": "tns:ProductProducer"
+        }
+      ]
+    },
+    {
+      "name": "ProductProducer",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ProducerId",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProducerCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProducerName",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductIndexTree",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductIndexRoot",
+          "type": "tns:ProductIndexItem"
+        }
+      ]
+    },
+    {
+      "name": "ProductIndexItem",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexCode",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "CommodityCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexSort",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexSortCode",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexLevel",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "IndexOrder",
+          "type": "s:short"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "IndexCodeName",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductIndexList",
+          "type": "tns:ArrayOfProductIndexItem"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductIndexItem",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductIndexItem",
+          "nillable": "true",
+          "type": "tns:ProductIndexItem"
+        }
+      ]
+    },
+    {
+      "name": "ProductNavigatorFilter",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "superCategory",
+          "type": "tns:ProductSuperCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "category",
+          "type": "tns:ProductCategory"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "productProducerList",
+          "type": "tns:ArrayOfProductProducer"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "productNavigatorDataList",
+          "type": "tns:ArrayOfProductNavigatorData"
+        }
+      ]
+    },
+    {
+      "name": "ResponseProductRelationList",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ProductRelationList",
+          "type": "tns:ArrayOfProductRealationParent"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "AddressId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Count",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "GeneratedDate",
+          "type": "s:dateTime"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductRealationParent",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductRealationParent",
+          "nillable": "true",
+          "type": "tns:ProductRealationParent"
+        }
+      ]
+    },
+    {
+      "name": "ProductRealationParent",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ProId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Childs",
+          "type": "tns:ArrayOfProductRealationChild"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfProductRealationChild",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "unbounded",
+          "name": "ProductRealationChild",
+          "nillable": "true",
+          "type": "tns:ProductRealationChild"
+        }
+      ]
+    },
+    {
+      "name": "ProductRealationChild",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ProId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Qty",
+          "type": "s:decimal"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "RelTypeId",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "RelTypeName",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "DocumentChangeDefinition",
+      "fields": [
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "Id",
+          "type": "s:int"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Code",
+          "type": "s:string"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "DocumentType",
+          "type": "tns:eDocumentType"
+        },
+        {
+          "minOccurs": "1",
+          "maxOccurs": "1",
+          "name": "ChangeType",
+          "type": "tns:eChangeType"
+        },
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "ChangeParametr",
+          "type": "s:string"
+        }
+      ]
+    },
+    {
+      "name": "ResponseChangeDocument",
+      "fields": [
+        {
+          "minOccurs": "0",
+          "maxOccurs": "1",
+          "name": "Status",
+          "type": "tns:ResponseStatus"
+        }
+      ]
+    }
+  ]
+}
