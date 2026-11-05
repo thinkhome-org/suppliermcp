@@ -100,7 +100,9 @@ async def verify(url, token):
                     & {r["product_id"] for r in more.get("results", [])}
                 )
             search = unpack(
-                await client.call_tool("search_products", {"text": (item["name"] or item["sku"])[:1000]})
+                await client.call_tool(
+                    "search_products", {"text": (item["name"] or item["sku"])[:1000]}
+                )
             )
             sample["search_available"] = "error" not in search
             sample["search_matches"] = len(search.get("results", []))

@@ -13,19 +13,29 @@ def search(conn, client, text, filters, principal, settings=None):
         raise CatalogError("invalid_search_text")
     candidates = []
     found = 0
+    params = {
+        "q": normalize(text),
+        "query_by": "text",
+        "per_page": 250,
+        "drop_tokens_threshold": 0,
+        "num_typos": 0,
+        "prefix": "false",
+    }
+    supplier_clauses = []
+    for f in filters:
+        if f.field != "supplier" or f.operator not in {"eq", "in"}:
+            continue
+        values = [f.value] if f.operator == "eq" else f.value
+        if isinstance(values, list) and values and all(v in ("ed", "mega") for v in values):
+            supplier_clauses.append("supplier:=[" + ",".join(values) + "]")
+    if supplier_clauses:
+        # Rank within the requested suppliers before applying the candidate limit.
+        params["filter_by"] = " && ".join(supplier_clauses)
     for page in range(1, 5):
         data = client.request(
             "GET",
             f"/collections/{ALIAS}/documents/search",
-            params={
-                "q": normalize(text),
-                "query_by": "text",
-                "per_page": 250,
-                "page": page,
-                "drop_tokens_threshold": 0,
-                "num_typos": 0,
-                "prefix": "false",
-            },
+            params={**params, "page": page},
         ).json()
         found = data["found"]
         candidates.extend(hit["document"]["id"] for hit in data["hits"])

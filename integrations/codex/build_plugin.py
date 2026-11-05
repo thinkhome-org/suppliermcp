@@ -73,4 +73,8 @@ if __name__ == "__main__":
     parser.add_argument("--url", required=True)
     parser.add_argument("--codex", action="store_true", help="Build the native Codex package")
     args = parser.parse_args()
-    print(build_plugin(Path(__file__).resolve().parents[2], args.destination, args.url, codex=args.codex))
+    print(
+        build_plugin(
+            Path(__file__).resolve().parents[2], args.destination, args.url, codex=args.codex
+        )
+    )

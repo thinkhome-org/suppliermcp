@@ -196,7 +196,11 @@ def create_app(settings):
         try:
             with connect(settings) as conn:
                 aliases = client.request("GET", "/aliases").json()["aliases"]
-                if not any(a["name"] == ALIAS for a in aliases):
+                exists = any(a["name"] == ALIAS for a in aliases)
+                if not exists or not any(
+                    f["name"] == "supplier"
+                    for f in client.request("GET", f"/collections/{ALIAS}").json()["fields"]
+                ):
                     rebuild_index(conn, client)
                 return drain_pending(conn, client)
         finally:

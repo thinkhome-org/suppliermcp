@@ -61,6 +61,7 @@ class IndexClient:
                 "fields": [
                     {"name": "text", "type": "string"},
                     {"name": "revision", "type": "int64"},
+                    {"name": "supplier", "type": "string", "facet": True},
                 ],
             },
         )
@@ -84,7 +85,12 @@ def document(row, conn=None):
     text += " " + " ".join(
         str(o.get("value") or "") for o in data.get("observations", []) if o.get("state") == "known"
     )
-    return {"id": item_id, "text": normalize(text), "revision": revision}
+    return {
+        "id": item_id,
+        "text": normalize(text),
+        "revision": revision,
+        "supplier": data.get("supplier", item_id.partition(":")[0]),
+    }
 
 
 def documents(conn, rows):

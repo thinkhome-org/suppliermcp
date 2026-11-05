@@ -1,3 +1,5 @@
+import os
+
 import httpx
 import pytest
 
@@ -67,3 +69,56 @@ def test_search_outage_typed(conn):
         with pytest.raises(CatalogError) as error:
             search(conn, IndexClient(http), "memory", [], "alice")
     assert error.value.code == "text_search_unavailable"
+
+
+@pytest.mark.parametrize("operator,value", [("eq", "ed"), ("in", ["ed"])])
+def test_supplier_filter_precedes_candidate_limit(conn, index, operator, value):
+    for supplier, count in [("ed", 1), ("mega", 1001)]:
+        publish(
+            conn,
+            stage(
+                conn,
+                BatchManifest(
+                    interface="ed_public" if supplier == "ed" else "mega",
+                    domain="catalog",
+                    artifact_sha256=supplier,
+                    complete=True,
+                ),
+                [
+                    SourceItem(supplier=supplier, source_id=str(n), sku=str(n), name="SSD")
+                    for n in range(count)
+                ],
+            ),
+        )
+    rebuild_index(conn, index)
+    result = search(
+        conn, index, "ssd", [Filter(field="supplier", operator=operator, value=value)], "alice"
+    )
+    assert [p.product_id for p in result.results] == ["ed:0"]
+    assert "candidate_scan_limited_to_1000" not in result.coverage.warnings
+
+
+def test_worker_upgrades_index_without_supplier_field(conn, index):
+    from suppliermcp.config import Settings
+    from suppliermcp.sync.jobs import create_app
+
+    add(conn)
+    index.request(
+        "POST",
+        "/collections",
+        json={
+            "name": "legacy",
+            "fields": [{"name": "text", "type": "string"}, {"name": "revision", "type": "int64"}],
+        },
+    )
+    index.request("PUT", "/aliases/supplier_catalog", json={"collection_name": "legacy"})
+    settings = Settings(
+        database_url=os.getenv(
+            "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+        ),
+        typesense_url="http://localhost:58109",
+        typesense_key="test-only",
+    )
+    create_app(settings).tasks["suppliermcp.index"].func()
+    fields = index.request("GET", "/collections/supplier_catalog").json()["fields"]
+    assert any(f["name"] == "supplier" for f in fields)
