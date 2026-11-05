@@ -81,6 +81,9 @@ def publish(conn, run_id, *, accept_reason=None):
                     prior = conn.execute('SELECT data FROM current_offers WHERE item_id=%s AND interface=%s AND domain=%s',
                                          (offer.item_id,manifest.interface,manifest.domain)).fetchone()
                     if prior:
+                        if offer.unit_net is None:
+                            for key in ['evidence_at','source_updated_at','price_rule','discount_min_qty','discount','freshness_seconds']:
+                                data[key] = prior[0].get(key)
                         for key,value in data.items():
                             if value is None:
                                 data[key] = prior[0].get(key)
