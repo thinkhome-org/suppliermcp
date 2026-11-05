@@ -6,6 +6,7 @@ from suppliermcp.catalog.contracts import CatalogError
 
 READS = {
     "getProductListDownloadXML",
+    "getProductListDownloadZIP",
     "getProductCatalogueDownloadXML",
     "getProductDetail",
     "getProductCatalogueStockDownloadXML",

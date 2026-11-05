@@ -59,3 +59,13 @@ def test_same_bytes_do_not_overwrite_other_domain_pin(tmp_path):
     store.mark(b, "failed", second, now=utcnow() - timedelta(days=8))
     store.prune(utcnow())
     assert a.exists()
+
+
+def test_processed_records_are_released_from_parent(tmp_path):
+    p = tmp_path / "catalog.xml"
+    p.write_text("<Result>" + '<Row Id="1"><Value>data</Value></Row>' * 1000 + "</Result>")
+    for element in parse_xml(p):
+        if element.tag == "Row":
+            element.clear()
+        if element.tag == "Result":
+            assert len(element) == 0

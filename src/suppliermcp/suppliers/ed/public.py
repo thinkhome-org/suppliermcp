@@ -35,9 +35,9 @@ class EdPublicAdapter:
     max_description_bytes = 2 * 1024**2
     interface = "ed_public"
     methods = {
-        "catalog": "getProductListDownloadXML",
-        "price": "getProductListDownloadXML",
-        "stock": "getProductListDownloadXML",
+        "catalog": "getProductListDownloadZIP",
+        "price": "getProductListDownloadZIP",
+        "stock": "getProductListDownloadZIP",
     }
 
     def __init__(self, gateway=None, store=None, transport=None, sleep=time.sleep):
@@ -81,11 +81,9 @@ class EdPublicAdapter:
                 local(e.tag) == "Fault" for e in root.iter()
             ):
                 raise CatalogError("supplier_response_error")
-            if (values.get("IsReady") or "").lower() in {"false", "0"}:
+            if (values.get("isReady", values.get("IsReady")) or "").lower() in {"false", "0"}:
                 self.sleep(10)
                 continue
-            if values.get("Url"):
-                data = self.transport.read("GET", values["Url"], endpoint="download")
             manifest = BatchManifest(
                 interface=self.interface,
                 started_at=started_at,
@@ -96,7 +94,11 @@ class EdPublicAdapter:
             )
             if not self.store:
                 raise CatalogError("artifact_store_not_configured")
-            self.store.save([data], manifest)
+            url = values.get("url", values.get("Url"))
+            if url:
+                self.transport.download(url, self.store, manifest)
+            else:
+                self.store.save([data], manifest)
             return manifest
         raise CatalogError("export_not_ready", retryable=True)
 
@@ -258,7 +260,10 @@ class EdPublicAdapter:
             yield apply_contract(offer, export_values | values, contract, manifest)
             records += 1
             element.clear()
+        if not records and manifest.domain != "schema":
+            raise CatalogError("invalid_export")
         # Full baselines enumerate identity; details/stock never establish catalog completeness.
         manifest.complete = records > 0 and manifest.endpoint in (
-            {"getProductListDownloadXML", "getProductList"} | BASELINE_METHODS
+            {"getProductListDownloadXML", "getProductListDownloadZIP", "getProductList"}
+            | BASELINE_METHODS
         )

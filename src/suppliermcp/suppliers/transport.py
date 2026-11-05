@@ -32,15 +32,31 @@ class SupplierTransport:
         self.client = client or httpx.Client(timeout=30, trust_env=False)
         self.resolver, self.sleep, self.max_bytes, self.auth = resolver, sleep, max_bytes, auth
 
-    def read(
+    def read(self, method, url, *, endpoint, body=None, soap_action=None) -> bytes:
+        return self._request(
+            method,
+            url,
+            endpoint=endpoint,
+            body=body,
+            soap_action=soap_action,
+            consume=lambda chunks: b"".join(chunks),
+        )
+
+    def download(self, url, store, manifest):
+        return self._request(
+            "GET", url, endpoint="download", consume=lambda chunks: store.save(chunks, manifest)
+        )
+
+    def _request(
         self,
         method: str,
         url: str,
         *,
         endpoint: str,
+        consume,
         body: bytes | None = None,
         soap_action: str | None = None,
-    ) -> bytes:
+    ):
         if endpoint not in self.operations or method not in {"GET", "POST"}:
             raise CatalogError("operation_not_allowed")
         original = httpx.URL(url)
@@ -98,13 +114,16 @@ class SupplierTransport:
                             != "identity"
                         ):
                             raise CatalogError("unsupported_content_encoding")
-                        chunks, size = [], 0
-                        for chunk in response.iter_bytes():
-                            size += len(chunk)
-                            if size > self.max_bytes:
-                                raise CatalogError("payload_too_large")
-                            chunks.append(chunk)
-                        return b"".join(chunks)
+
+                        def chunks():
+                            size = 0
+                            for chunk in response.iter_bytes():
+                                size += len(chunk)
+                                if size > self.max_bytes:
+                                    raise CatalogError("payload_too_large")
+                                yield chunk
+
+                        return consume(chunks())
             except CatalogError:
                 raise
             except (httpx.HTTPError, OSError, ValueError, KeyError):
