@@ -29,7 +29,7 @@ from suppliermcp.search.discovery import search
 from suppliermcp.search.exact import lookup
 from suppliermcp.search.index import configured_client
 from suppliermcp.search.listing import next_page, start_listing
-from suppliermcp.search.schema import catalog_schema
+from suppliermcp.search.schema import catalog_schema_page
 
 from .auth import principal
 
@@ -118,9 +118,14 @@ def register(server, settings):
         )
 
     @server.tool(annotations=read)
-    def get_catalog_schema(category: str | None = None) -> dict | ErrorResult:
+    def get_catalog_schema(
+        category: str | None = None, cursor: str | None = None
+    ) -> dict | ErrorResult:
         """Discover supported native/common filter fields and operators; never invent unsupported attributes."""
-        return safe(settings, lambda conn: catalog_schema(conn, category))
+        return safe(
+            settings,
+            lambda conn: catalog_schema_page(conn, category, cursor, principal(), settings),
+        )
 
     @server.tool(annotations={**read, "idempotentHint": False})
     def compare_offers(

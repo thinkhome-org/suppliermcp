@@ -96,6 +96,11 @@ def documents(conn, rows):
             "SELECT data->>'code',data->>'label' FROM source_schema WHERE kind='parameter'"
         )
     )
+    categories = dict(
+        conn.execute(
+            "SELECT data->>'Id',data->>'Name' FROM source_schema WHERE kind IN ('SCategorySys','SCategorySys_El')"
+        )
+    )
     result = []
     for item_id, _, revision in rows:
         view = views[item_id]
@@ -105,6 +110,11 @@ def documents(conn, rows):
             labels.get(o.field.removeprefix("parameter:"), "")
             for o in view.item.observations
             if o.field.startswith("parameter:")
+        )
+        extra.extend(
+            categories.get(str(o.value), "") or ""
+            for o in view.item.observations
+            if o.interface == "mega" and o.field == "ScaId" and o.state == "known"
         )
         doc = document((item_id, data, revision))
         doc["text"] += " " + normalize(" ".join(extra))

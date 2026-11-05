@@ -48,3 +48,21 @@ Synthetic tests do not validate actual account schemas, windows, commodity cover
 Quarantined database staging is deliberately retained until an operator reviews the import; it is not automatically discarded. Accepting the import removes its staged rows. If rejecting it, retain the compact import metadata and remove the associated staging rows through controlled database maintenance. Monitor PostgreSQL capacity while quarantine is unresolved. Terminal unchanged/superseded imports remove their staging immediately and keep compact audit records.
 
 Source status retains separate domain outcomes and the last verified complete catalog revision. A successful stock request cannot make an unknown/partial catalog complete. Every configured but never fetched interface reduces coverage. Price evidence, stock evidence and transport fetch times are independent.
+
+## Persistent local runtime
+
+The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Its protected configuration is in `/Users/samuel/.local/share/suppliermcp-live/`: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
+
+From the repository:
+
+```sh
+docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env up -d --build
+docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh ed_public
+docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
+```
+
+The last command is permitted only within the verified full-export window. Outside it, the scheduler records `outside_supplier_window` and `next_allowed_at`. Do not bypass windows by looping targeted reads. One canonical representation per scheduled family is used; equivalent `_El` variants remain available for explicit product-only probes. PUBLIC catalog refreshes hourly; 100MEGA baseline daily, prices/stock hourly, selected enrichment daily. eD PRIVATE is disabled until separately configured. The initial budget is 1 GiB compressed/downloaded, 2 GiB expanded and 20 GiB retained artifacts, rather than assuming one account's measured export size is a universal maximum.
+
+MCP is bound only to `http://127.0.0.1:8000/mcp`. `/health/live` checks the process and `/health/ready` checks the database, neither proves supplier/catalog completeness. Use `get_catalog_status` for endpoint coverage. No tunnel is provisioned. Restart with `docker compose ... restart`; do not use `down -v`, which deletes retained catalogs.
+
+A failed publication keeps its staged import and raw artifact. After fixing the cause, `python -m suppliermcp.worker resume-import RUN_ID` publishes that retained run and reconciles endpoint status without fetching again or changing its original source/fetch evidence time. It does not bypass quarantine; only the separate `accept-import RUN_ID --reason ...` operation does. Never use an acceptance override merely to hide an incomplete or malformed download.

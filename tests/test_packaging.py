@@ -57,3 +57,17 @@ def test_remote_skill_content_matches_source():
 
     for name in ["product-discovery", "offer-comparison"]:
         assert skill_text(name) == (ROOT / f"skills/{name}/SKILL.md").read_text()
+
+
+def test_runtime_mounts_contracts_for_both_processes():
+    import yaml
+
+    compose = yaml.safe_load((ROOT / "compose.yaml").read_text())
+    for name in ["mcp", "worker"]:
+        service = compose["services"][name]
+        assert (
+            service["environment"]["SUPPLIERMCP_SOURCE_CONTRACTS_PATH"]
+            == "/config/source-contracts.json"
+        )
+        assert any("/config/source-contracts.json:ro" in v for v in service["volumes"])
+        assert service["env_file"][0]["path"] == "${SUPPLIERMCP_ENV_FILE:-.env}"

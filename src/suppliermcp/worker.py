@@ -11,7 +11,8 @@ from suppliermcp.sync.publish import publish
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "command", choices=["migrate", "run", "refresh", "accept-import", "rebuild-index"]
+        "command",
+        choices=["migrate", "run", "refresh", "accept-import", "resume-import", "rebuild-index"],
     )
     parser.add_argument("run_id", nargs="?")
     parser.add_argument("--reason")
@@ -54,9 +55,43 @@ def main():
             finally:
                 client.http.close()
         else:
-            if not args.run_id or not args.reason:
-                parser.error("accept-import requires RUN_ID and --reason")
-            publish(conn, args.run_id, accept_reason=args.reason)
+            if not args.run_id or (args.command == "accept-import" and not args.reason):
+                parser.error(
+                    "import recovery requires RUN_ID; accept-import also requires --reason"
+                )
+            from suppliermcp.catalog.contracts import BatchManifest, CatalogError
+            from suppliermcp.sync.jobs import build_adapters, record_refresh_outcome
+
+            row = conn.execute(
+                "SELECT manifest FROM import_runs WHERE id=%s", (args.run_id,)
+            ).fetchone()
+            if not row:
+                raise CatalogError("import_not_found")
+            manifest = BatchManifest.model_validate(row[0])
+            revision = publish(
+                conn,
+                args.run_id,
+                accept_reason=args.reason if args.command == "accept-import" else None,
+            )
+            adapter = build_adapters(settings).get(manifest.interface)
+            if adapter:
+                try:
+                    record_refresh_outcome(
+                        conn,
+                        adapter,
+                        manifest.domain,
+                        manifest.endpoint,
+                        manifest.started_at,
+                        "ok",
+                        manifest,
+                        revision,
+                    )
+                    if manifest.path:
+                        from pathlib import Path
+
+                        adapter.store.mark(Path(manifest.path), "success", manifest)
+                finally:
+                    adapter.transport.client.close()
 
 
 if __name__ == "__main__":

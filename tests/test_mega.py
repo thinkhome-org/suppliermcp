@@ -72,3 +72,14 @@ def test_missing_identity_and_invalid_schema(tmp_path):
         parse(tmp_path, '<Result><StoItem Name="Broken"/></Result>')
     with pytest.raises(CatalogError, match="unexpected_export_root"):
         parse(tmp_path, "<html><body>Error</body></html>")
+
+
+def test_currency_export_and_mode_windows_are_selected_when_verified():
+    contract = {
+        "modes": ["full"],
+        "timezone": "Europe/Prague",
+        "windows": {"full": {"days": [0], "hours": [21]}},
+    }
+    adapter = MegaAdapter(contracts={"StoItemPriceOrdCur": contract})
+    assert adapter.endpoints["price"] == "StoItemPriceOrdCur"
+    assert adapter.discover().windows["StoItemPriceOrdCur"]["windows"] == contract["windows"]

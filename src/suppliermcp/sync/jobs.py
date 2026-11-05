@@ -115,54 +115,61 @@ def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
         )
         raise CatalogError(outcome, retryable=True) from None
     finally:
-        previous = conn.execute(
-            "SELECT data FROM source_state WHERE interface=%s", (adapter.interface,)
-        ).fetchone()
-        state = previous[0] if previous else {"configured": True, "domains": {}}
-        domains = state.setdefault("domains", {})
-        previous_domain = domains.get(domain, {})
-        complete = bool(
-            manifest and manifest.complete and manifest.mode == "full" and outcome == "ok"
+        record_refresh_outcome(
+            conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes
         )
-        domains[domain] = {
-            "outcome": outcome,
-            "attempted_at": now.isoformat(),
-            "complete": complete,
-            "last_verified_complete_revision": revision
-            if complete
-            else previous_domain.get("last_verified_complete_revision"),
-        }
-        endpoints = state.setdefault("endpoints", {})
-        prior_endpoint = endpoints.get(source_endpoint, {})
-        next_allowed = None
-        if outcome == "outside_supplier_window":
-            from suppliermcp.suppliers.mega.capabilities import next_window
 
-            next_allowed = next_window(
-                adapter.contracts.get(source_endpoint, {}), "targeted" if codes else "full"
-            )
-        endpoints[source_endpoint] = {
-            "outcome": outcome,
-            "attempted_at": now.isoformat(),
-            "last_success_at": now.isoformat()
-            if outcome == "ok"
-            else prior_endpoint.get("last_success_at"),
-            "next_allowed_at": next_allowed.isoformat() if next_allowed else None,
-            "complete": complete,
-            "revision": revision if outcome == "ok" else prior_endpoint.get("revision"),
-        }
-        state.update(
-            configured=True,
-            attempted_at=now.isoformat(),
-            outcome="ok" if all(d["outcome"] == "ok" for d in endpoints.values()) else "partial",
-        )
-        if outcome not in {"ok", "partial"}:
-            state["outcome"] = outcome
-        conn.execute(
-            "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
-            (adapter.interface, Jsonb(state)),
-        )
     return revision
+
+
+def record_refresh_outcome(
+    conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes=None
+):
+    previous = conn.execute(
+        "SELECT data FROM source_state WHERE interface=%s", (adapter.interface,)
+    ).fetchone()
+    state = previous[0] if previous else {"configured": True, "domains": {}}
+    domains = state.setdefault("domains", {})
+    previous_domain = domains.get(domain, {})
+    complete = bool(manifest and manifest.complete and manifest.mode == "full" and outcome == "ok")
+    domains[domain] = {
+        "outcome": outcome,
+        "attempted_at": now.isoformat(),
+        "complete": complete,
+        "last_verified_complete_revision": revision
+        if complete
+        else previous_domain.get("last_verified_complete_revision"),
+    }
+    endpoints = state.setdefault("endpoints", {})
+    prior_endpoint = endpoints.get(source_endpoint, {})
+    next_allowed = None
+    if outcome == "outside_supplier_window":
+        from suppliermcp.suppliers.mega.capabilities import next_window
+
+        next_allowed = next_window(
+            adapter.contracts.get(source_endpoint, {}), "targeted" if codes else "full"
+        )
+    endpoints[source_endpoint] = {
+        "outcome": outcome,
+        "attempted_at": now.isoformat(),
+        "last_success_at": now.isoformat()
+        if outcome == "ok"
+        else prior_endpoint.get("last_success_at"),
+        "next_allowed_at": next_allowed.isoformat() if next_allowed else None,
+        "complete": complete,
+        "revision": revision if outcome == "ok" else prior_endpoint.get("revision"),
+    }
+    state.update(
+        configured=True,
+        attempted_at=now.isoformat(),
+        outcome="ok" if all(d["outcome"] == "ok" for d in endpoints.values()) else "partial",
+    )
+    if outcome not in {"ok", "partial"}:
+        state["outcome"] = outcome
+    conn.execute(
+        "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
+        (adapter.interface, Jsonb(state)),
+    )
 
 
 def create_app(settings):

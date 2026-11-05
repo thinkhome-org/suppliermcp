@@ -122,3 +122,24 @@ def test_hundred_thousand_compact_rows(conn):
         ).fetchone()[0]
         == 100000
     )
+
+
+def test_large_schema_has_complete_immutable_continuation(conn):
+    from suppliermcp.search.schema import catalog_schema_page
+
+    seed(conn)
+    conn.execute(
+        "INSERT INTO catalog_values(item_id,field,value,state,value_type) SELECT 'mega:1','native:mega:parameter:'||i,'x','known','text' FROM generate_series(1,300) i"
+    )
+    settings = Settings(max_response_bytes=4096)
+    page = catalog_schema_page(conn, None, None, "alice", settings)
+    fields = {}
+    assert page.get("_continuation", {}).get("next_cursor")
+    while True:
+        assert len(json.dumps(page).encode()) <= 4096
+        continuation = page.pop("_continuation", {})
+        fields.update(page)
+        if not continuation.get("next_cursor"):
+            break
+        page = catalog_schema_page(conn, None, continuation["next_cursor"], "alice", settings)
+    assert all("native:mega:parameter:" + str(i) in fields for i in range(1, 301))

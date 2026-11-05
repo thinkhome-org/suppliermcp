@@ -13,8 +13,9 @@ def lookup(conn, identifiers):
         query = "SELECT id FROM source_items WHERE active AND data->>%s=%s"
         params = [field, identifier.value]
         if identifier.kind == "ean":
-            query = "SELECT id FROM source_items s WHERE active AND (data->>%s=%s OR EXISTS(SELECT 1 FROM catalog_values v WHERE v.item_id=s.id AND v.state='known' AND v.value=%s AND v.field=ANY(%s)))"
+            query = "SELECT id FROM source_items s WHERE active AND (data->>%s=%s OR EXISTS(SELECT 1 FROM catalog_values v WHERE v.item_id=s.id AND v.state='known' AND md5(v.value)=md5(%s) AND v.value=%s AND v.field=ANY(%s)))"
             params += [
+                identifier.value,
                 identifier.value,
                 [
                     "native:mega:EAN",

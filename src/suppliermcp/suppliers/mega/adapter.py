@@ -29,13 +29,16 @@ class MegaAdapter:
     ):
         self.transport, self.store = transport, store
         self.contracts, self.base_url = contracts or {}, base_url
+        self.endpoints = dict(type(self).endpoints)
+        if "StoItemPriceOrdCur" in self.contracts:
+            self.endpoints["price"] = "StoItemPriceOrdCur"
 
     def discover(self):
         return Capabilities(
             domains=[d for d, e in self.endpoints.items() if e in self.contracts],
             endpoints={e: c.get("modes", []) for e, c in self.contracts.items()},
             windows={
-                e: {k: c.get(k) for k in ["timezone", "days", "hours"]}
+                e: {k: c.get(k) for k in ["timezone", "days", "hours", "windows"]}
                 for e, c in self.contracts.items()
             },
             coverage="partial" if self.contracts else "unknown",

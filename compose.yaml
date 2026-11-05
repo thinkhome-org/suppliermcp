@@ -2,13 +2,16 @@ x-app: &app
   build: .
   image: suppliermcp:local
   env_file:
-    - path: .env
+    - path: ${SUPPLIERMCP_ENV_FILE:-.env}
       required: false
   environment:
     SUPPLIERMCP_DATABASE_URL: postgresql://suppliermcp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres/suppliermcp
     SUPPLIERMCP_TYPESENSE_URL: http://typesense:8108
     SUPPLIERMCP_ARTIFACT_DIR: /data/artifacts
-  volumes: ["artifacts:/data/artifacts"]
+    SUPPLIERMCP_SOURCE_CONTRACTS_PATH: /config/source-contracts.json
+  volumes:
+    - "artifacts:/data/artifacts"
+    - "${SUPPLIERMCP_CONTRACTS_FILE:-./config/source-contracts.json}:/config/source-contracts.json:ro"
   restart: unless-stopped
   depends_on:
     postgres:

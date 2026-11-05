@@ -9,6 +9,7 @@ MAPPINGS = json.loads((Path(__file__).parents[1] / "catalog/mappings.json").read
 
 BASE = {
     "supplier": "text",
+    "category": "text",
     "manufacturer": "text",
     "sku": "text",
     "ean": "text",
@@ -126,6 +127,11 @@ def _value_rows(view):
                     conflicted.add(field)
                     continue
             native[field].add(value)
+    categories = {"mega:" + value for value in native.get("native:mega:ScaId", set())}
+    if categories:
+        native["category"] = categories
+        native_types["category"] = {"text"}
+        many.add("category")
     for field, entries in native.items():
         if len(native_types[field]) != 1:
             conflicted.add(field)
@@ -134,8 +140,8 @@ def _value_rows(view):
             "number" if native_types[field] == {"number"} else "text",
         )
     mapped = {}
-    for native, mapping in MAPPINGS.items():
-        value = values.get(native, (None, "text"))[0]
+    for native_field, mapping in MAPPINGS.items():
+        value = values.get(native_field, (None, "text"))[0]
         if mapping.get("type") not in {"text", "number"} or mapping["field"] in BASE:
             raise CatalogError("invalid_mapping")
         if value is not None and mapping["type"] == "number":
@@ -197,3 +203,79 @@ def mapped_observations(observations):
                 if o.field == field:
                     o.state = "conflict"
     return result
+
+
+def catalog_schema_page(conn, category, cursor, principal, settings):
+    """Keep the legacy field map; reserve _continuation for large schema snapshots."""
+    import secrets
+    from datetime import timedelta
+
+    from psycopg.types.json import Jsonb
+
+    from suppliermcp.catalog.contracts import utcnow
+
+    if cursor:
+        if category is not None:
+            raise CatalogError("result_query_mismatch")
+        row = conn.execute(
+            "SELECT r.id,r.principal,r.expires_at,r.data,c.offset_value FROM query_cursors c JOIN query_results r ON r.id=c.result_id WHERE c.id=%s",
+            (cursor,),
+        ).fetchone()
+        if not row or row[1] != principal:
+            raise CatalogError("result_not_found")
+        result_id, _, expires, data, offset = row
+        if expires <= utcnow():
+            raise CatalogError("result_expired")
+        if data.get("kind") != "schema":
+            raise CatalogError("result_query_mismatch")
+    else:
+        schema = catalog_schema(conn, category)
+        if len(json.dumps(schema).encode()) <= settings.max_response_bytes:
+            return schema
+        result_id = secrets.token_urlsafe(24)
+        expires = utcnow() + timedelta(seconds=settings.result_ttl_seconds)
+        data = {
+            "kind": "schema",
+            "count": len(schema),
+            "max_response_bytes": settings.max_response_bytes,
+        }
+        offset = 0
+        with conn.transaction():
+            conn.execute("DELETE FROM query_results WHERE expires_at<now()")
+            conn.execute(
+                "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
+                (result_id, principal, "schema", expires, Jsonb(data)),
+            )
+            with conn.cursor().copy(
+                "COPY query_result_rows (result_id,ordinal,data) FROM STDIN"
+            ) as copy:
+                for i, (field, meta) in enumerate(sorted(schema.items())):
+                    copy.write_row((result_id, i, Jsonb({field: meta})))
+    continuation = secrets.token_urlsafe(24)
+    page = {
+        "_continuation": {
+            "next_cursor": continuation,
+            "snapshot_id": result_id,
+            "expires_at": expires.isoformat(),
+        }
+    }
+    count = 0
+    with conn.transaction(), conn.cursor(name="schema_page") as rows:
+        rows.execute(
+            "SELECT data FROM query_result_rows WHERE result_id=%s AND ordinal>=%s ORDER BY ordinal",
+            (result_id, offset),
+        )
+        for (entry,) in rows:
+            if len(json.dumps(page | entry).encode()) > data["max_response_bytes"]:
+                if not count:
+                    raise CatalogError("response_budget_too_small")
+                break
+            page.update(entry)
+            count += 1
+    if offset + count < data["count"]:
+        conn.execute(
+            "INSERT INTO query_cursors VALUES (%s,%s,%s)", (continuation, result_id, offset + count)
+        )
+    else:
+        page["_continuation"]["next_cursor"] = None
+    return page

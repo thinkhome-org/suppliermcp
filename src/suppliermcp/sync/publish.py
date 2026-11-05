@@ -35,10 +35,12 @@ def stage(conn, manifest, rows):
                 )
         conn.execute(
             """UPDATE staging t SET data=jsonb_set(t.data,'{values,item_id}',to_jsonb(s.id))
-            FROM source_items s WHERE t.run_id=%s AND t.kind='SchemaRecord'
+            FROM (SELECT min(id) id,data->>'supplier' supplier,data->>'sku' sku FROM source_items
+                WHERE active GROUP BY data->>'supplier',data->>'sku' HAVING count(*)=1) s
+            WHERE t.run_id=%s AND t.kind='SchemaRecord'
             AND t.data->>'kind'='product_facts' AND t.data->'values'->>'item_id' IS NULL
-            AND s.data->>'supplier'=t.data->'values'->>'supplier'
-            AND s.data->>'sku'=t.data->'values'->>'sku'""",
+            AND s.supplier=t.data->'values'->>'supplier'
+            AND s.sku=t.data->'values'->>'sku'""",
             (run_id,),
         )
         if conn.execute(
@@ -58,6 +60,7 @@ def publish(conn, run_id, *, accept_reason=None):
     quarantine = False
     with conn.transaction():
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
+        conn.execute("SET LOCAL work_mem = '64MB'")
         record = conn.execute(
             "SELECT manifest,status,revision FROM import_runs WHERE id=%s FOR UPDATE", (run_id,)
         ).fetchone()
@@ -157,6 +160,7 @@ def publish(conn, run_id, *, accept_reason=None):
                 """,
                 (run_id,),
             )
+            dictionary_fields = set()
             seen = {}
             cursor = conn.cursor(name="publish_rows")
             cursor.execute(
@@ -165,6 +169,10 @@ def publish(conn, run_id, *, accept_reason=None):
             for kind, data in cursor:
                 if kind == "SchemaRecord":
                     schema = SchemaRecord.model_validate(data)
+                    if schema.kind in {"SCategorySys", "SCategorySys_El"}:
+                        dictionary_fields.add("native:mega:ScaId")
+                    elif schema.kind == "parameter":
+                        dictionary_fields.add("native:mega:parameter:" + schema.values["code"])
                     if schema.kind == "product_facts":
                         changed.add(schema.values["item_id"])
                         continue
@@ -291,8 +299,18 @@ def publish(conn, run_id, *, accept_reason=None):
                             ),
                         )
                         changed.add(item_id)
+            if dictionary_fields:
+                changed.update(
+                    r[0]
+                    for r in conn.execute(
+                        "SELECT DISTINCT item_id FROM catalog_values WHERE field=ANY(%s)",
+                        (list(dictionary_fields),),
+                    )
+                )
             from suppliermcp.search.schema import refresh_values
 
+            # Bulk imports need current statistics before repeated projection lookups.
+            conn.execute("ANALYZE source_items, observations, current_offers")
             refresh_values(conn, changed)
             for item_id in changed:
                 conn.execute(

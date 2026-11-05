@@ -158,3 +158,124 @@ def test_index_contains_parameter_labels_and_relationships(conn):
     )
     text = document(("mega:1", {}, 1), conn=conn)["text"]
     assert "color" in text and "compatible adapter" in text
+
+
+def test_multivalued_native_survives_installed_common_mapping(conn, monkeypatch):
+    from suppliermcp.search import schema
+
+    monkeypatch.setattr(
+        schema, "MAPPINGS", {"native:mega:EAN2": {"field": "alternate_identifier", "type": "text"}}
+    )
+    seed(conn)
+    yes, _ = matching_ids(
+        conn,
+        CatalogQuery(
+            filters=[Filter(field="native:mega:parameter:42", operator="eq", value="blue")]
+        ),
+    )
+    assert yes == ["mega:1"]
+
+
+def test_sku_only_enrichment_rejects_ambiguous_identity(conn):
+    import pytest
+
+    from suppliermcp.catalog.contracts import CatalogError
+
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog"),
+            [
+                SourceItem(supplier="mega", source_id=str(i), sku="shared", name="Product")
+                for i in [1, 2]
+            ],
+        ),
+    )
+    with pytest.raises(CatalogError, match="unresolved_product_reference"):
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="schema"),
+            [
+                SchemaRecord(
+                    interface="mega",
+                    kind="product_facts",
+                    values={"supplier": "mega", "sku": "shared", "observations": []},
+                )
+            ],
+        )
+
+
+def test_source_category_filter_and_dictionary_search_name(conn):
+    from suppliermcp.search.index import document
+
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog", endpoint="base"),
+            [
+                SourceItem(
+                    supplier="mega",
+                    source_id="1",
+                    sku="1",
+                    name="X",
+                    observations=[
+                        Observation(interface="mega", endpoint="base", field="ScaId", value="7")
+                    ],
+                )
+            ],
+        ),
+    )
+    conn.execute("UPDATE index_outbox SET done=true")
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="schema", endpoint="SCategorySys"),
+            [
+                SchemaRecord(
+                    interface="mega",
+                    kind="SCategorySys",
+                    values={"Id": "7", "Name": "Memory modules"},
+                )
+            ],
+        ),
+    )
+    assert matching_ids(
+        conn, CatalogQuery(filters=[Filter(field="category", operator="eq", value="mega:7")])
+    )[0] == ["mega:1"]
+    assert "memory modules" in document(("mega:1", {}, 1), conn=conn)["text"]
+    assert conn.execute("SELECT 1 FROM index_outbox WHERE item_id='mega:1' AND NOT done").fetchone()
+
+
+def test_large_incompressible_supplier_description_is_publishable(conn):
+    import random
+
+    from suppliermcp.catalog.repository import get_product
+
+    text = random.Random(42).randbytes(12000).hex()
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="ed_public", domain="catalog"),
+            [
+                SourceItem(
+                    supplier="ed",
+                    source_id="large",
+                    sku="large",
+                    name="Product",
+                    observations=[
+                        Observation(
+                            interface="ed_public",
+                            endpoint="catalog",
+                            field="Description",
+                            value=text,
+                        )
+                    ],
+                )
+            ],
+        ),
+    )
+    assert get_product(conn, "ed:large").item.observations[0].value == text
