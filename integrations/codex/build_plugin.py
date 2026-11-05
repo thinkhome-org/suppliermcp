@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
-def build_plugin(source: Path, destination: Path, mcp_url: str) -> Path:
+def build_plugin(source: Path, destination: Path, mcp_url: str, *, codex: bool = False) -> Path:
     url = urlsplit(mcp_url)
     if (
         url.scheme not in {"http", "https"}
@@ -44,10 +44,19 @@ def build_plugin(source: Path, destination: Path, mcp_url: str) -> Path:
         "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
         "mcpServers": {"suppliermcp": {"type": "streamable-http", "url": mcp_url}},
     }
+    manifest_path, mcp_path = "plugin.json", "mcp.json"
+    if codex:
+        manifest.pop("$schema")
+        manifest.update(skills="./skills", mcpServers="./.mcp.json")
+        mcp.pop("$schema")
+        mcp["mcpServers"]["suppliermcp"].update(
+            type="http", bearer_token_env_var="SUPPLIERMCP_THINKHOME_TOKEN"
+        )
+        manifest_path, mcp_path = ".codex-plugin/plugin.json", ".mcp.json"
     files.update(
         {
-            "plugin.json": json.dumps(manifest, indent=2) + "\n",
-            "mcp.json": json.dumps(mcp, indent=2) + "\n",
+            manifest_path: json.dumps(manifest, indent=2) + "\n",
+            mcp_path: json.dumps(mcp, indent=2) + "\n",
         }
     )
     destination.mkdir(parents=True, exist_ok=False)
@@ -62,5 +71,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("destination", type=Path)
     parser.add_argument("--url", required=True)
+    parser.add_argument("--codex", action="store_true", help="Build the native Codex package")
     args = parser.parse_args()
-    print(build_plugin(Path(__file__).resolve().parents[2], args.destination, args.url))
+    print(build_plugin(Path(__file__).resolve().parents[2], args.destination, args.url, codex=args.codex))

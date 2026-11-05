@@ -37,6 +37,22 @@ def test_reject_skill_symlink(tmp_path):
         module.build_plugin(tmp_path, tmp_path / "output", "https://example.com/mcp")
 
 
+def test_codex_package_declares_skills_and_secret_free_bearer_auth(tmp_path):
+    result = module.build_plugin(
+        ROOT, tmp_path / "codex", "https://suppliermcp.thinkhome.org/mcp", codex=True
+    )
+    manifest = json.loads((result / ".codex-plugin/plugin.json").read_text())
+    assert (result / manifest["skills"]).is_dir()
+    mcp = json.loads((result / manifest["mcpServers"]).read_text())
+    assert mcp["mcpServers"]["suppliermcp"] == {
+        "type": "http",
+        "url": "https://suppliermcp.thinkhome.org/mcp",
+        "bearer_token_env_var": "SUPPLIERMCP_THINKHOME_TOKEN",
+    }
+    assert len(list(result.rglob("SKILL.md"))) == 2
+    assert not (result / "mcp.json").exists()
+
+
 def test_compose_isolation():
     import yaml
 

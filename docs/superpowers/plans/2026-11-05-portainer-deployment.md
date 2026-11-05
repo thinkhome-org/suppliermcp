@@ -43,3 +43,12 @@
 
 ## Self-review
 The two tasks share image reference, config delivery and network alias. Task 1 establishes those contracts before Task 2 uses them. Application logic is reused. All five review-focus conditions have rendered-config, boot, or target acceptance checks; no additional supplier semantics are introduced.
+
+### Task 3: Complete live acceptance and ship the Codex release
+User-authorized continuation, 2026-11-06: wait for available supplier imports, test both suppliers live, connect this Codex installation, and publish a complete GitHub release including the Codex plugin.
+
+- [ ] Finish scheduled available exports, inspect every endpoint outcome, and compare published/index revisions and counts. Do not label unavailable upstream exports as imported.
+- [ ] Exercise exact lookup, ranked search, filtering, listing, details, pagination, and per-product comparison for eD PUBLIC and 100MEGA over public HTTPS.
+- [ ] Add the smallest native Codex package variant, retaining the portable format and canonical skills. Verify secret-free manifests and installation with the actual Codex CLI.
+- [ ] Install an authenticated connection and plugin in the operator's Codex. Verify tool discovery with Codex itself; distinguish new-process verification from the already running desktop session.
+- [ ] Publish v1.0.0 with native/portable plugin archives, checksums, release notes, and payload-free live acceptance evidence. Keep all credentials outside release assets and Git.
