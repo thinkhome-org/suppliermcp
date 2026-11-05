@@ -1,0 +1,47 @@
+x-app: &app
+  build: .
+  image: suppliermcp:local
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    SUPPLIERMCP_DATABASE_URL: postgresql://suppliermcp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres/suppliermcp
+    SUPPLIERMCP_TYPESENSE_URL: http://typesense:8108
+    SUPPLIERMCP_ARTIFACT_DIR: /data/artifacts
+  volumes: ["artifacts:/data/artifacts"]
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+services:
+  mcp:
+    <<: *app
+    ports: ["127.0.0.1:8000:8000"]
+  worker:
+    <<: *app
+    command: ["python", "-m", "suppliermcp.worker", "run"]
+    healthcheck:
+      disable: true
+  postgres:
+    image: postgres@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+    environment:
+      POSTGRES_USER: suppliermcp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: suppliermcp
+    volumes: ["postgres:/var/lib/postgresql"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suppliermcp -d suppliermcp"]
+      interval: 5s
+      retries: 20
+  typesense:
+    image: typesense/typesense@sha256:610f2d34b1f93d00762869da2c67736775e5798d19a2c8b91b014b8a0cc1e110
+    environment:
+      TYPESENSE_API_KEY: ${SUPPLIERMCP_TYPESENSE_KEY:?Set SUPPLIERMCP_TYPESENSE_KEY}
+      TYPESENSE_DATA_DIR: /data
+    volumes: ["typesense:/data"]
+    restart: unless-stopped
+volumes:
+  postgres:
+  typesense:
+  artifacts:

@@ -127,8 +127,8 @@ assert failure.code == "unsafe_download"
 - [ ] **Step 1:** Write synthetic, documentation-derived fixtures for PUBLIC list/download readiness, PRIVATE baseline/detail/stock, navigator, commodity partitions, relationships and supplier error envelopes. Write tests asserting:
 ```python
 assert merged_price == Decimal("125.50")  # PUBLIC valid price survives PRIVATE baseline zero
-assert unavailable_date is None          # PRIVATE 1900-01-01
-assert source_ids == {"123", "124"}      # includes out-of-stock baseline item
+assert unavailable_date is None  # PRIVATE 1900-01-01
+assert source_ids == {"123", "124"}  # includes out-of-stock baseline item
 assert repeated_artifact.freshness_evidence_at == original.freshness_evidence_at
 assert partition_failure.coverage == "partial"
 ```
@@ -250,7 +250,15 @@ Define 24 synthetic evaluation cases (six per category family from the design), 
 
 - [ ] **Step 1:** Through a real HTTP client write tests for discovery, every tool schema, auth, resource access, partial batches, empty catalogs, PostgreSQL/Typesense outages and asynchronous refresh responses:
 ```python
-assert tool_names == {"lookup_products", "search_products", "list_products", "get_product", "get_catalog_schema", "compare_offers", "get_catalog_status"}
+assert tool_names == {
+    "lookup_products",
+    "search_products",
+    "list_products",
+    "get_product",
+    "get_catalog_schema",
+    "compare_offers",
+    "get_catalog_status",
+}
 assert unauthenticated.status_code == 401
 assert expired_token.status_code == 401
 assert wrong_audience.status_code == 401

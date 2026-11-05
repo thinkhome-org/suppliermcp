@@ -1,32 +1,33 @@
 """Validated data at supplier, persistence and MCP boundaries."""
-from datetime import datetime, timezone
+
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-Interface = Literal['ed_public', 'ed_private', 'mega']
-Domain = Literal['catalog', 'price', 'stock', 'schema']
-RunMode = Literal['full', 'delta', 'targeted']
+Interface = Literal["ed_public", "ed_private", "mega"]
+Domain = Literal["catalog", "price", "stock", "schema"]
+RunMode = Literal["full", "delta", "targeted"]
 Money = Annotated[Decimal, Field(ge=0, allow_inf_nan=False)]
 Positive = Annotated[Decimal, Field(gt=0, allow_inf_nan=False)]
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Model(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra="forbid")
 
 
 class CatalogError(Exception):
-    def __init__(self, code: str, message: str = '', retryable: bool = False):
+    def __init__(self, code: str, message: str = "", retryable: bool = False):
         self.code, self.message, self.retryable = code, message or code, retryable
         super().__init__(self.message)
 
     def as_dict(self):
-        return {'code': self.code, 'message': self.message, 'retryable': self.retryable}
+        return {"code": self.code, "message": self.message, "retryable": self.retryable}
 
 
 class Observation(Model):
@@ -35,15 +36,15 @@ class Observation(Model):
     field: str
     value: Any = None
     unit: str | None = None
-    state: Literal['known', 'missing', 'placeholder', 'conflict', 'not_applicable'] = 'known'
+    state: Literal["known", "missing", "placeholder", "conflict", "not_applicable"] = "known"
     fetched_at: datetime = Field(default_factory=utcnow)
     source_updated_at: datetime | None = None
-    artifact_sha256: str = ''
-    derivation: Literal['direct', 'mapped'] = 'direct'
+    artifact_sha256: str = ""
+    derivation: Literal["direct", "mapped"] = "direct"
 
 
 class SourceItem(Model):
-    supplier: Literal['ed', 'mega']
+    supplier: Literal["ed", "mega"]
     source_id: str
     sku: str
     name: str
@@ -54,7 +55,7 @@ class SourceItem(Model):
 
     @property
     def item_id(self):
-        return f'{self.supplier}:{self.source_id}'
+        return f"{self.supplier}:{self.source_id}"
 
 
 class Offer(Model):
@@ -64,11 +65,11 @@ class Offer(Model):
     fees_net: Money | None = None
     vat_percent: Money | None = None
     order_multiple: Positive | None = None
-    price_rule: Literal['plain', 'valuepack', 'unknown'] = 'plain'
+    price_rule: Literal["plain", "valuepack", "unknown"] = "plain"
     discount: Money | None = None
     discount_min_qty: Positive | None = None
     stock_qty: Money | None = None
-    stock_state: Literal['in_stock', 'out_of_stock', 'unknown'] = 'unknown'
+    stock_state: Literal["in_stock", "out_of_stock", "unknown"] = "unknown"
     observations: list[Observation] = Field(default_factory=list)
     fetched_at: datetime = Field(default_factory=utcnow)
     source_updated_at: datetime | None = None
@@ -81,17 +82,17 @@ class Capabilities(Model):
     domains: list[Domain] = Field(default_factory=list)
     endpoints: dict[str, list[RunMode]] = Field(default_factory=dict)
     windows: dict[str, Any] = Field(default_factory=dict)
-    coverage: Literal['complete', 'partial', 'unknown'] = 'unknown'
+    coverage: Literal["complete", "partial", "unknown"] = "unknown"
     freshness_seconds: dict[str, int] = Field(default_factory=dict)
 
 
 class BatchManifest(Model):
     interface: Interface
     domain: Domain
-    mode: RunMode = 'full'
-    endpoint: str = ''
-    path: str = ''
-    artifact_sha256: str = ''
+    mode: RunMode = "full"
+    endpoint: str = ""
+    path: str = ""
+    artifact_sha256: str = ""
     source_updated_at: datetime | None = None
     started_at: datetime = Field(default_factory=utcnow)
     capabilities: Capabilities = Field(default_factory=Capabilities)
@@ -116,27 +117,27 @@ class ImportBatch(BatchManifest):
 
 
 class Identifier(Model):
-    kind: Literal['sku', 'ean', 'mpn']
+    kind: Literal["sku", "ean", "mpn"]
     value: str = Field(min_length=1)
-    supplier: Literal['ed', 'mega'] | None = None
+    supplier: Literal["ed", "mega"] | None = None
     manufacturer: str | None = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def context(self):
-        if self.kind == 'sku' and not self.supplier:
-            raise ValueError('SKU requires supplier')
-        if self.kind == 'mpn' and not self.manufacturer:
-            raise ValueError('MPN requires manufacturer')
+        if self.kind == "sku" and not self.supplier:
+            raise ValueError("SKU requires supplier")
+        if self.kind == "mpn" and not self.manufacturer:
+            raise ValueError("MPN requires manufacturer")
         return self
 
 
 class QuantityRequest(Model):
-    quantity: Positive = Decimal('1')
+    quantity: Positive = Decimal(1)
 
 
 class Filter(Model):
     field: str
-    operator: Literal['eq', 'in', 'gte', 'lte']
+    operator: Literal["eq", "in", "gte", "lte"]
     value: Any
 
 
@@ -144,15 +145,15 @@ class CatalogQuery(Model):
     source_id_from: str | None = None
     source_id_to: str | None = None
     filters: list[Filter] = Field(default_factory=list)
-    classification: Literal['confirmed', 'unknown'] = 'confirmed'
-    sort: Literal['id', 'price_asc', 'price_desc'] = 'id'
+    classification: Literal["confirmed", "unknown"] = "confirmed"
+    sort: Literal["id", "price_asc", "price_desc"] = "id"
     currency: str | None = None
-    supplier: Literal['ed', 'mega'] | None = None
+    supplier: Literal["ed", "mega"] | None = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def price_currency(self):
-        if self.sort != 'id' and not self.currency:
-            raise ValueError('Price sorting requires a currency')
+        if self.sort != "id" and not self.currency:
+            raise ValueError("Price sorting requires a currency")
         return self
 
 
