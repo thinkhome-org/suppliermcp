@@ -141,6 +141,8 @@ class Filter(Model):
 
 
 class CatalogQuery(Model):
+    source_id_from: str | None = None
+    source_id_to: str | None = None
     filters: list[Filter] = Field(default_factory=list)
     classification: Literal['confirmed', 'unknown'] = 'confirmed'
     sort: Literal['id', 'price_asc', 'price_desc'] = 'id'

@@ -100,6 +100,8 @@ def publish(conn, run_id, *, accept_reason=None):
                         old_offer.update(stock_qty='0',stock_state='out_of_stock')
                         conn.execute('UPDATE current_offers SET data=%s WHERE item_id=%s',(Jsonb(old_offer),item_id))
                         changed.add(item_id)
+            from suppliermcp.search.schema import refresh_values
+            refresh_values(conn, changed)
             for item_id in changed:
                 conn.execute('INSERT INTO index_outbox(item_id,revision) VALUES (%s,%s)',(item_id,revision))
             conn.execute('INSERT INTO domain_checkpoints VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,domain_checkpoints.delta_to)',
