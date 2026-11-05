@@ -1,6 +1,6 @@
 # Live supplier data activation
 
-Status: proposed; approach selected by the user, document approval pending. Independent builder check completed: no material unanswered questions.
+Status: approved by the user on 2026-11-05 (“vse schvaluji”). Independent builder check completed: no material unanswered questions.
 
 ## Intent and scope
 
