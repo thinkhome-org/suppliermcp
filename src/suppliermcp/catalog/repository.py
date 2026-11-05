@@ -47,9 +47,15 @@ def get_product(conn, product_id):
 
     item.observations.extend(mapped_observations(item.observations))
     rows = conn.execute(
-        "SELECT data FROM current_offers WHERE item_id=%s", (product_id,)
+        "SELECT data,interface,endpoint FROM current_offers WHERE item_id=%s", (product_id,)
     ).fetchall()
-    offers = [Offer.model_validate(r[0]) for r in rows]
+    offers = []
+    for data, interface, endpoint in rows:
+        offer = Offer.model_validate(data)
+        offer.observations = [
+            o for o in item.observations if o.interface == interface and o.endpoint == endpoint
+        ] or offer.observations
+        offers.append(offer)
     # Keep source/interface-specific evidence; never select a conflicting price silently.
     conflicts = []
     combined = None

@@ -64,6 +64,8 @@ class MegaAdapter:
             mode=mode,
             endpoint=endpoint,
             capabilities=self.discover(),
+            authoritative_identity=domain == "catalog",
+            replace_scope="items" if codes else "endpoint",
         )
         self.store.save([data], manifest)
         return manifest

@@ -21,11 +21,11 @@ def stage(conn, manifest, rows):
             "INSERT INTO import_runs VALUES (%s,%s,%s,NULL,NULL)",
             (run_id, Jsonb(manifest.model_dump(mode="json")), "staging"),
         )
-        for ordinal, row in enumerate(rows):
-            conn.execute(
-                "INSERT INTO staging VALUES (%s,%s,%s,%s)",
-                (run_id, ordinal, type(row).__name__, Jsonb(row.model_dump(mode="json"))),
-            )
+        with conn.cursor().copy("COPY staging (run_id,ordinal,kind,data) FROM STDIN") as copy:
+            for ordinal, row in enumerate(rows):
+                copy.write_row(
+                    (run_id, ordinal, type(row).__name__, Jsonb(row.model_dump(mode="json")))
+                )
         # Parsers establish completeness only after the stream has ended successfully.
         conn.execute(
             "UPDATE import_runs SET manifest=%s,status=%s WHERE id=%s",
@@ -47,8 +47,8 @@ def publish(conn, run_id, *, accept_reason=None):
         if record[1] == "published":
             return record[2]
         checkpoint = conn.execute(
-            "SELECT started_at,artifact_sha256,revision FROM domain_checkpoints WHERE interface=%s AND domain=%s",
-            (manifest.interface, manifest.domain),
+            "SELECT started_at,artifact_sha256,revision FROM endpoint_checkpoints WHERE interface=%s AND domain=%s AND endpoint=%s",
+            (manifest.interface, manifest.domain, manifest.endpoint),
         ).fetchone()
         if checkpoint and manifest.started_at <= checkpoint[0]:
             conn.execute(
@@ -59,23 +59,40 @@ def publish(conn, run_id, *, accept_reason=None):
             return checkpoint[2]
         if checkpoint and manifest.artifact_sha256 and manifest.artifact_sha256 == checkpoint[1]:
             conn.execute(
-                "UPDATE domain_checkpoints SET started_at=%s WHERE interface=%s AND domain=%s",
-                (manifest.started_at, manifest.interface, manifest.domain),
+                "UPDATE endpoint_checkpoints SET started_at=%s WHERE interface=%s AND domain=%s AND endpoint=%s",
+                (manifest.started_at, manifest.interface, manifest.domain, manifest.endpoint),
             )
             conn.execute(
                 "UPDATE import_runs SET status='unchanged',revision=%s WHERE id=%s",
                 (checkpoint[2], run_id),
             )
             conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
+            conn.execute(
+                "UPDATE domain_checkpoints SET started_at=GREATEST(started_at,%s) WHERE interface=%s AND domain=%s",
+                (manifest.started_at, manifest.interface, manifest.domain),
+            )
             return checkpoint[2]
-        rows = conn.execute(
-            "SELECT kind,data FROM staging WHERE run_id=%s ORDER BY ordinal", (run_id,)
-        ).fetchall()
-        identities = [SourceItem.model_validate(d).item_id for k, d in rows if k == "SourceItem"]
+        identities = [
+            r[0]
+            for r in conn.execute(
+                "SELECT DISTINCT (data->>'supplier') || ':' || (data->>'source_id') FROM staging WHERE run_id=%s AND kind='SourceItem'",
+                (run_id,),
+            )
+        ]
+        authoritative = (
+            manifest.authoritative_identity
+            if manifest.authoritative_identity is not None
+            else manifest.domain == "catalog"
+        )
         previous = conn.execute(
             "SELECT count(*) FROM source_presence WHERE interface=%s", (manifest.interface,)
         ).fetchone()[0]
-        if manifest.domain == "catalog" and manifest.mode == "full" and manifest.complete:
+        if (
+            authoritative
+            and manifest.domain == "catalog"
+            and manifest.mode == "full"
+            and manifest.complete
+        ):
             if not identities or previous and len(set(identities)) < previous * 0.75:
                 if not accept_reason:
                     conn.execute(
@@ -85,27 +102,80 @@ def publish(conn, run_id, *, accept_reason=None):
         if not quarantine:
             revision = conn.execute("SELECT nextval('catalog_revision')").fetchone()[0]
             changed = set()
+            if manifest.replace_scope != "none":
+                scoped = "" if manifest.replace_scope == "endpoint" else " AND item_id=ANY(%s)"
+                args = (manifest.interface, manifest.endpoint) + (
+                    () if not scoped else (identities,)
+                )
+                for table in ["observations", "relationships"]:
+                    removed = conn.execute(
+                        f"DELETE FROM {table} WHERE interface=%s AND endpoint=%s"
+                        + scoped
+                        + " RETURNING item_id",
+                        args,
+                    )
+                    changed.update(r[0] for r in removed)
+                if manifest.replace_scope == "endpoint":
+                    conn.execute(
+                        "DELETE FROM source_schema WHERE interface=%s AND endpoint=%s",
+                        (manifest.interface, manifest.endpoint),
+                    )
+            conn.execute(
+                """
+                INSERT INTO observations (item_id,interface,endpoint,field,data,value_key)
+                SELECT DISTINCT ON (item_id,interface,endpoint,field,value_key)
+                    item_id,interface,endpoint,field,observation,value_key
+                FROM (
+                    SELECT COALESCE(s.data->>'item_id',(s.data->>'supplier') || ':' || (s.data->>'source_id')) item_id,
+                        o->>'interface' interface,o->>'endpoint' endpoint,o->>'field' field,
+                        COALESCE(o->>'value_key','') value_key,o observation,s.ordinal
+                    FROM staging s CROSS JOIN LATERAL jsonb_array_elements(s.data->'observations') o
+                    WHERE s.run_id=%s AND s.kind IN ('SourceItem','Offer')
+                        AND o->>'state' NOT IN ('missing','placeholder')
+                ) facts ORDER BY item_id,interface,endpoint,field,value_key,ordinal DESC
+                ON CONFLICT(item_id,interface,endpoint,field,value_key) DO UPDATE SET data=EXCLUDED.data
+                """,
+                (run_id,),
+            )
             seen = {}
-            for kind, data in rows:
+            cursor = conn.cursor(name="publish_rows")
+            cursor.execute(
+                "SELECT kind,data FROM staging WHERE run_id=%s ORDER BY ordinal", (run_id,)
+            )
+            for kind, data in cursor:
                 if kind == "SchemaRecord":
                     schema = SchemaRecord.model_validate(data)
                     if schema.kind == "relationship":
                         rel = schema.values
                         conn.execute(
-                            "INSERT INTO relationships VALUES (%s,%s,%s,%s) ON CONFLICT(item_id,target_id,kind) DO UPDATE SET data=EXCLUDED.data",
-                            (rel["item_id"], rel["target_id"], rel["kind"], Jsonb(rel)),
+                            "INSERT INTO relationships VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT(item_id,target_id,kind,interface,endpoint) DO UPDATE SET data=EXCLUDED.data",
+                            (
+                                rel["item_id"],
+                                rel["target_id"],
+                                rel["kind"],
+                                Jsonb(rel),
+                                manifest.interface,
+                                manifest.endpoint,
+                            ),
                         )
                     key = hashlib.sha256(str(sorted(schema.values.items())).encode()).hexdigest()
                     conn.execute(
-                        "INSERT INTO source_schema VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
-                        (schema.interface, schema.kind, key, Jsonb(schema.values)),
+                        "INSERT INTO source_schema VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                        (
+                            schema.interface,
+                            schema.kind,
+                            key,
+                            Jsonb(schema.values),
+                            manifest.endpoint,
+                        ),
                     )
                     continue
                 if kind == "SourceItem":
                     item = SourceItem.model_validate(data)
-                    if item.item_id in seen and seen[item.item_id] != data:
+                    signature = hashlib.sha256(str(data).encode()).digest()
+                    if item.item_id in seen and seen[item.item_id] != signature:
                         raise CatalogError("conflicting_duplicate")
-                    seen[item.item_id] = data
+                    seen[item.item_id] = signature
                     old = conn.execute(
                         "SELECT data FROM source_items WHERE id=%s", (item.item_id,)
                     ).fetchone()
@@ -115,6 +185,7 @@ def publish(conn, run_id, *, accept_reason=None):
                         for key in ["name", "manufacturer", "mpn", "ean"]:
                             if not data.get(key):
                                 data[key] = old[0].get(key)
+                    data["observations"] = []
                     conn.execute(
                         "INSERT INTO source_items VALUES (%s,%s,true,%s) ON CONFLICT(id) DO UPDATE SET data=EXCLUDED.data,active=true,revision=EXCLUDED.revision",
                         (item.item_id, Jsonb(data), revision),
@@ -123,19 +194,6 @@ def publish(conn, run_id, *, accept_reason=None):
                         "INSERT INTO source_presence VALUES (%s,%s) ON CONFLICT DO NOTHING",
                         (item.item_id, manifest.interface),
                     )
-                    for o in item.observations:
-                        if o.state in {"missing", "placeholder"}:
-                            continue
-                        conn.execute(
-                            "INSERT INTO observations VALUES (%s,%s,%s,%s,%s) ON CONFLICT(item_id,interface,endpoint,field) DO UPDATE SET data=EXCLUDED.data",
-                            (
-                                item.item_id,
-                                o.interface,
-                                o.endpoint,
-                                o.field,
-                                Jsonb(o.model_dump(mode="json")),
-                            ),
-                        )
                     changed.add(item.item_id)
                 elif kind == "Offer":
                     offer = Offer.model_validate(data)
@@ -144,8 +202,8 @@ def publish(conn, run_id, *, accept_reason=None):
                             offer.stock_evidence_at or offer.evidence_at
                         ).isoformat()
                     prior = conn.execute(
-                        "SELECT data FROM current_offers WHERE item_id=%s AND interface=%s AND domain=%s",
-                        (offer.item_id, manifest.interface, manifest.domain),
+                        "SELECT data FROM current_offers WHERE item_id=%s AND interface=%s AND domain=%s AND endpoint=%s",
+                        (offer.item_id, manifest.interface, manifest.domain, manifest.endpoint),
                     ).fetchone()
                     if prior:
                         if offer.stock_state == "unknown":
@@ -164,13 +222,20 @@ def publish(conn, run_id, *, accept_reason=None):
                         for key, value in data.items():
                             if value is None:
                                 data[key] = prior[0].get(key)
+                    data["observations"] = []
                     conn.execute(
-                        "INSERT INTO current_offers VALUES (%s,%s,%s,%s) ON CONFLICT(item_id,interface,domain) DO UPDATE SET data=EXCLUDED.data",
-                        (offer.item_id, manifest.interface, manifest.domain, Jsonb(data)),
+                        "INSERT INTO current_offers VALUES (%s,%s,%s,%s,%s) ON CONFLICT(item_id,interface,domain,endpoint) DO UPDATE SET data=EXCLUDED.data",
+                        (
+                            offer.item_id,
+                            manifest.interface,
+                            manifest.domain,
+                            Jsonb(data),
+                            manifest.endpoint,
+                        ),
                     )
                     changed.add(offer.item_id)
             if manifest.complete and manifest.mode == "full":
-                if manifest.domain == "catalog":
+                if manifest.domain == "catalog" and authoritative:
                     conn.execute(
                         "DELETE FROM source_presence WHERE interface=%s AND NOT(item_id=ANY(%s))",
                         (manifest.interface, identities),
@@ -193,11 +258,12 @@ def publish(conn, run_id, *, accept_reason=None):
                             stock_evidence_at=manifest.started_at,
                         )
                         conn.execute(
-                            "INSERT INTO current_offers VALUES (%s,%s,'stock',%s) ON CONFLICT(item_id,interface,domain) DO UPDATE SET data=current_offers.data || jsonb_build_object('stock_qty','0','stock_state','out_of_stock','stock_evidence_at',%s::text)",
+                            "INSERT INTO current_offers VALUES (%s,%s,'stock',%s,%s) ON CONFLICT(item_id,interface,domain,endpoint) DO UPDATE SET data=current_offers.data || jsonb_build_object('stock_qty','0','stock_state','out_of_stock','stock_evidence_at',%s::text)",
                             (
                                 item_id,
                                 manifest.interface,
                                 Jsonb(stock.model_dump(mode="json")),
+                                manifest.endpoint,
                                 manifest.started_at.isoformat(),
                             ),
                         )
@@ -209,6 +275,19 @@ def publish(conn, run_id, *, accept_reason=None):
                 conn.execute(
                     "INSERT INTO index_outbox(item_id,revision) VALUES (%s,%s)", (item_id, revision)
                 )
+            cursor.close()
+            conn.execute(
+                "INSERT INTO endpoint_checkpoints VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain,endpoint) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,endpoint_checkpoints.delta_to)",
+                (
+                    manifest.interface,
+                    manifest.domain,
+                    manifest.endpoint,
+                    manifest.started_at,
+                    manifest.artifact_sha256,
+                    revision,
+                    manifest.delta_to,
+                ),
+            )
             conn.execute(
                 "INSERT INTO domain_checkpoints VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,domain_checkpoints.delta_to)",
                 (

@@ -31,6 +31,8 @@ class CatalogError(Exception):
 
 
 class Observation(Model):
+    value_key: str = ""
+    cardinality: Literal["one", "many"] = "one"
     interface: Interface
     endpoint: str
     field: str
@@ -88,6 +90,8 @@ class Capabilities(Model):
 
 
 class BatchManifest(Model):
+    authoritative_identity: bool | None = None
+    replace_scope: Literal["none", "items", "endpoint"] = "none"
     interface: Interface
     domain: Domain
     mode: RunMode = "full"

@@ -91,6 +91,9 @@ class EdPublicAdapter:
                 endpoint=endpoint,
                 mode="targeted" if codes else "full",
                 capabilities=self.discover(),
+                authoritative_identity=self.interface == "ed_public"
+                or endpoint in BASELINE_METHODS,
+                replace_scope="items" if codes else "endpoint",
             )
             if not self.store:
                 raise CatalogError("artifact_store_not_configured")

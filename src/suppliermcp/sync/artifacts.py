@@ -67,6 +67,7 @@ class ArtifactStore:
             "time": (now or utcnow()).isoformat(),
             "interface": manifest.interface,
             "domain": manifest.domain,
+            "endpoint": manifest.endpoint,
         }
         fd, name = tempfile.mkstemp(dir=self.root)
         with os.fdopen(fd, "w") as handle:
@@ -84,7 +85,7 @@ class ArtifactStore:
         newest = {}
         for p, meta in records:
             if meta["state"] == "success":
-                key = (meta["interface"], meta["domain"])
+                key = (meta["interface"], meta["domain"], meta.get("endpoint", ""))
                 if key not in newest or meta["time"] > newest[key][1]["time"]:
                     newest[key] = (p, meta)
         pinned = {p for p, _ in newest.values()}
