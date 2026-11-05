@@ -1,5 +1,5 @@
 from suppliermcp.catalog.contracts import CatalogError, LookupResult
-from suppliermcp.catalog.repository import get_product, read_status
+from suppliermcp.catalog.repository import get_products, read_status
 
 
 def lookup(conn, identifiers):
@@ -36,7 +36,10 @@ def lookup(conn, identifiers):
             {
                 "identifier": identifier.model_dump(),
                 "status": "found" if len(ids) == 1 else "ambiguous" if ids else "missing",
-                "products": [get_product(conn, i).model_dump(mode="json") for i in ids],
+                "products": [
+                    p.model_dump(mode="json")
+                    for p in get_products(conn, ids, include_evidence=False)
+                ],
             }
         )
     return LookupResult(entries=entries, coverage=read_status(conn))

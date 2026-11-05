@@ -61,13 +61,24 @@ def get_products(conn, product_ids, *, include_evidence=True):
         (list(items),),
     ):
         offers[item_id].append((data, interface, endpoint))
-    return [
+    result = [
         _assemble(
             item_id, items[item_id], observations[item_id], offers[item_id], relationships[item_id]
         )
         for item_id in product_ids
         if item_id in items
     ]
+    if not include_evidence:
+        for view in result:
+            view.item.observations = []
+            for offer in view.offers:
+                offer.observations = []
+            view.detail_continuation = {
+                "product_id": view.product_id,
+                "tool": "get_product",
+                "sections": ["overview", "observations", "attachments", "relationships"],
+            }
+    return result
 
 
 def _assemble(product_id, data, obs, rows, relationships):

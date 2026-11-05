@@ -172,6 +172,7 @@ class Coverage(Model):
 
 
 class ProductView(Model):
+    detail_continuation: dict | None = None
     product_id: str
     item: SourceItem
     offers: list[Offer] = Field(default_factory=list)

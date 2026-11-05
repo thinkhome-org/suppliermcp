@@ -6,8 +6,8 @@ from decimal import Decimal
 
 from psycopg.types.json import Jsonb
 
-from suppliermcp.catalog.contracts import CatalogError, Page, ProductView, utcnow
-from suppliermcp.catalog.repository import get_product, read_status
+from suppliermcp.catalog.contracts import CatalogError, Page, utcnow
+from suppliermcp.catalog.repository import get_products, read_status
 from suppliermcp.config import Settings
 
 from .schema import catalog_schema, validate_filter
@@ -54,8 +54,8 @@ def materialize(
     data = {
         "page_size": settings.page_size,
         "max_response_bytes": settings.max_response_bytes,
-        "results": [p.model_dump(mode="json") for p in products],
-        "total": len(products) if total is None else total,
+        "kind": "listing",
+        "total": total,
         "unknown_total": unknown_total,
         "coverage": coverage.model_dump(mode="json"),
     }
@@ -64,6 +64,20 @@ def materialize(
         "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
         (result_id, principal, query_hash, expires, Jsonb(data)),
     )
+    from itertools import islice
+
+    count = 0
+    products = iter(products)
+    while batch := list(islice(products, 200)):
+        with conn.cursor().copy(
+            "COPY query_result_rows (result_id,ordinal,data) FROM STDIN"
+        ) as copy:
+            for product in batch:
+                copy.write_row((result_id, count, Jsonb(product.model_dump(mode="json"))))
+                count += 1
+    data["count"] = count
+    data["total"] = count if total is None else total
+    conn.execute("UPDATE query_results SET data=%s WHERE id=%s", (Jsonb(data), result_id))
     cursor = secrets.token_urlsafe(24)
     conn.execute("INSERT INTO query_cursors VALUES (%s,%s,0)", (cursor, result_id))
     return next_page(conn, cursor, principal)
@@ -104,7 +118,12 @@ def start_listing(conn, query, principal, settings=None):
                     }
                 ),
             )
-        products = [get_product(conn, i) for i in ids]
+
+        def compact_products():
+            for start in range(0, len(ids), 200):
+                yield from get_products(conn, ids[start : start + 200], include_evidence=False)
+
+        products = compact_products()
         if query.sort != "id":
 
             def price(p):
@@ -115,6 +134,7 @@ def start_listing(conn, query, principal, settings=None):
                 ]
                 return min(eligible) if eligible else None
 
+            products = list(products)
             present = [p for p in products if price(p) is not None]
             missing = [p for p in products if price(p) is None]
             products = sorted(present, key=price, reverse=query.sort == "price_desc") + missing
@@ -143,29 +163,46 @@ def next_page(conn, cursor, principal, query_hash=None):
         raise CatalogError("result_query_mismatch")
     if expires <= utcnow():
         raise CatalogError("result_expired")
+    if data.get("kind", "listing") != "listing":
+        raise CatalogError("result_query_mismatch")
+    candidates = (
+        data["results"][offset : offset + data.get("page_size", 20)]
+        if "results" in data
+        else [
+            r[0]
+            for r in conn.execute(
+                "SELECT data FROM query_result_rows WHERE result_id=%s AND ordinal>=%s ORDER BY ordinal LIMIT %s",
+                (result_id, offset, data.get("page_size", 20)),
+            )
+        ]
+    )
+    count = len(data["results"]) if "results" in data else data["count"]
     selected = []
-    for item in data["results"][offset : offset + data.get("page_size", 20)]:
-        if (
-            len(json.dumps(selected + [item]).encode())
-            > data.get("max_response_bytes", 256 * 1024) * 0.9
+    continuation = secrets.token_urlsafe(24)
+
+    def page(items):
+        return Page(
+            results=items,
+            total=data["total"],
+            unknown_total=data["unknown_total"],
+            coverage=data["coverage"],
+            next_cursor=continuation if offset + len(items) < count else None,
+            snapshot_id=result_id,
+            expires_at=expires,
+        )
+
+    for item in candidates:
+        if len(json.dumps(page(selected + [item]).model_dump(mode="json")).encode()) > data.get(
+            "max_response_bytes", 256 * 1024
         ):
             if not selected:
                 raise CatalogError("item_too_large", "Use get_product for the item details")
             break
         selected.append(item)
-    continuation = None
-    if offset + len(selected) < len(data["results"]):
-        continuation = secrets.token_urlsafe(24)
+    result = page(selected)
+    if result.next_cursor:
         conn.execute(
             "INSERT INTO query_cursors VALUES (%s,%s,%s)",
             (continuation, result_id, offset + len(selected)),
         )
-    return Page(
-        results=[ProductView.model_validate(p) for p in selected],
-        total=data["total"],
-        unknown_total=data["unknown_total"],
-        coverage=data["coverage"],
-        next_cursor=continuation,
-        snapshot_id=result_id,
-        expires_at=expires,
-    )
+    return result

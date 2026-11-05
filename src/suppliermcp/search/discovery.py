@@ -2,7 +2,7 @@ import hashlib
 import json
 
 from suppliermcp.catalog.contracts import CatalogError, CatalogQuery, SearchResult
-from suppliermcp.catalog.repository import get_product, read_status
+from suppliermcp.catalog.repository import get_products, read_status
 
 from .index import ALIAS, normalize
 from .listing import matching_ids, materialize
@@ -36,7 +36,7 @@ def search(conn, client, text, filters, principal, settings=None):
         confirmed, unknown = matching_ids(conn, CatalogQuery(filters=filters))
         allowed = set(confirmed)
         ids = list(dict.fromkeys(i for i in candidates if i in allowed))
-        products = [get_product(conn, i) for i in ids]
+        products = get_products(conn, ids, include_evidence=False)
         coverage = read_status(conn, settings.enabled_interfaces if settings else None)
         coverage.complete = False
         coverage.warnings.append("text_discovery_is_not_exhaustive")

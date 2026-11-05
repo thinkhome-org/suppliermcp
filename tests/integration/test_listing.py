@@ -148,7 +148,7 @@ def test_page_payload_budget(conn):
     page = start_listing(conn, CatalogQuery(), "alice")
     assert len(page.results) == 1 and page.next_cursor
     conn.execute(
-        "UPDATE source_items SET data=jsonb_set(data,'{name}',to_jsonb(repeat('x',260000)))"
+        "UPDATE source_items SET data=jsonb_set(data,'{name}',to_jsonb(repeat('x',270000)))"
     )
     with pytest.raises(CatalogError) as error:
         start_listing(conn, CatalogQuery(), "alice")
