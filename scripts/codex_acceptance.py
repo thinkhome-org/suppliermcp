@@ -105,5 +105,67 @@ def main():
                 break
 
 
+def live_main():
+    """Use the existing live catalog without seeding or modifying it."""
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--live", action="store_true")
+    parser.add_argument("--url", default="http://127.0.0.1:8000/mcp")
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    args.output.mkdir(parents=True, exist_ok=True, mode=0o700)
+    env = os.environ.copy()
+    if not env.get("SUPPLIERMCP_TOKEN"):
+        parser.error("SUPPLIERMCP_TOKEN must be loaded in the environment")
+    with tempfile.TemporaryDirectory(prefix="suppliermcp-live-codex-") as directory:
+        for skills in [False, True]:
+            if skills:
+                shutil.copytree(ROOT / "skills", Path(directory) / ".agents/skills")
+            prompt = (
+                "Verify the suppliermcp MCP using actual read-only calls. "
+                + (
+                    "First read .agents/skills/product-discovery/SKILL.md and .agents/skills/offer-comparison/SKILL.md. "
+                    if skills
+                    else ""
+                )
+                + "Get catalog status and schema. List ed products, continue one page, look up the first product's exact supplier SKU preserving zeros, read its observations with get_product, and compare it for quantity 2. Search Czech paměť and English memory. Report whether each operation succeeded and all coverage/freshness limits. Do not report prices, raw descriptions, credentials or identifiers in your final answer. Do not buy or modify anything. Use only suppliermcp tools and reading those optional skill files; no other connectors or shell commands."
+            )
+            result = subprocess.run(
+                [
+                    "codex",
+                    "exec",
+                    "--ignore-user-config",
+                    "--ephemeral",
+                    "--skip-git-repo-check",
+                    "--sandbox",
+                    "read-only",
+                    "--json",
+                    "-C",
+                    directory,
+                    "-c",
+                    'approval_policy="never"',
+                    "-c",
+                    f'mcp_servers.suppliermcp={{url="{args.url}",bearer_token_env_var="SUPPLIERMCP_TOKEN",tool_timeout_sec=120}}',
+                    prompt,
+                ],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=300,
+                check=False,
+            )
+            name = "live-codex-skills" if skills else "live-codex-tools"
+            for suffix, text in [("jsonl", result.stdout), ("stderr", result.stderr)]:
+                path = args.output / (name + "." + suffix)
+                path.write_text(text)
+                path.chmod(0o600)
+            print(name, "exit", result.returncode, "trace bytes", len(result.stdout))
+            if result.returncode:
+                raise SystemExit(result.returncode)
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+
+    live_main() if "--live" in sys.argv else main()

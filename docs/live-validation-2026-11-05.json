@@ -1,0 +1,227 @@
+{
+  "checked_at": "2026-11-05T18:13:10.762617+00:00",
+  "checks": {
+    "unauthenticated_rejected": true,
+    "tool_count": 7,
+    "resource_count": 2,
+    "schema_available": true
+  },
+  "coverage": {
+    "interfaces": {
+      "mega": {
+        "domains": {
+          "price": {
+            "outcome": "ok",
+            "complete": false,
+            "attempted_at": "2026-11-05T18:09:29.668228+00:00",
+            "last_verified_complete_revision": null
+          },
+          "stock": {
+            "outcome": "ok",
+            "complete": false,
+            "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+            "last_verified_complete_revision": null
+          },
+          "schema": {
+            "outcome": "ok",
+            "complete": false,
+            "attempted_at": "2026-11-05T18:10:52.752106+00:00",
+            "last_verified_complete_revision": null
+          }
+        },
+        "outcome": "partial",
+        "endpoints": {
+          "AttSti": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 9,
+            "attempted_at": "2026-11-05T18:10:52.752106+00:00",
+            "last_success_at": "2026-11-05T18:10:52.752106+00:00",
+            "next_allowed_at": null
+          },
+          "Config": {
+            "outcome": "outside_supplier_window",
+            "next_allowed_at": "2026-11-05T20:00:00+00:00"
+          },
+          "CpsSti": {
+            "outcome": "outside_supplier_window",
+            "next_allowed_at": "2026-11-05T20:00:00+00:00"
+          },
+          "CpsStiVal": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 5,
+            "attempted_at": "2026-11-05T18:10:44.336240+00:00",
+            "last_success_at": "2026-11-05T18:10:44.336240+00:00",
+            "next_allowed_at": null
+          },
+          "StiPacking": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 7,
+            "attempted_at": "2026-11-05T18:10:49.016499+00:00",
+            "last_success_at": "2026-11-05T18:10:49.016499+00:00",
+            "next_allowed_at": null
+          },
+          "StoItemEAN": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 6,
+            "attempted_at": "2026-11-05T18:10:47.054366+00:00",
+            "last_success_at": "2026-11-05T18:10:47.054366+00:00",
+            "next_allowed_at": null
+          },
+          "StoItemSiv": {
+            "outcome": "outside_supplier_window",
+            "next_allowed_at": "2026-11-05T20:00:00+00:00"
+          },
+          "StiRelation": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 8,
+            "attempted_at": "2026-11-05T18:10:50.935182+00:00",
+            "last_success_at": "2026-11-05T18:10:50.935182+00:00",
+            "next_allowed_at": null
+          },
+          "StoItemBase": {
+            "outcome": "outside_supplier_window",
+            "next_allowed_at": "2026-11-05T20:00:00+00:00"
+          },
+          "StoItemQtyFree": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 2,
+            "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+            "last_success_at": "2026-11-05T17:52:35.616284+00:00",
+            "next_allowed_at": null
+          },
+          "StoItemPriceOrdCur": {
+            "outcome": "ok",
+            "complete": false,
+            "revision": 4,
+            "attempted_at": "2026-11-05T18:09:29.668228+00:00",
+            "last_success_at": "2026-11-05T18:09:29.668228+00:00",
+            "next_allowed_at": null
+          }
+        },
+        "configured": true,
+        "attempted_at": "2026-11-05T18:10:52.752106+00:00"
+      },
+      "ed_public": {
+        "domains": {
+          "catalog": {
+            "outcome": "ok",
+            "complete": true,
+            "attempted_at": "2026-11-05T17:45:02.068243+00:00",
+            "last_verified_complete_revision": 3
+          }
+        },
+        "outcome": "ok",
+        "endpoints": {
+          "getProductListDownloadZIP": {
+            "outcome": "ok",
+            "complete": true,
+            "revision": 3,
+            "attempted_at": "2026-11-05T17:45:02.068243+00:00",
+            "last_success_at": "2026-11-05T17:45:02.068243+00:00",
+            "next_allowed_at": null
+          }
+        },
+        "configured": true,
+        "attempted_at": "2026-11-05T17:45:02.068243+00:00"
+      },
+      "ed_private": {
+        "outcome": "disabled",
+        "domains": {},
+        "configured": false
+      }
+    },
+    "revision": 9,
+    "index_revision": 9,
+    "complete": false,
+    "warnings": [
+      "coverage_is_account_and_field_scoped"
+    ]
+  },
+  "ed": {
+    "catalog_total": 124532,
+    "list_seconds": 11.592,
+    "total": 100000,
+    "list_available": true,
+    "exact_sku_found": true,
+    "details_available": true,
+    "detail_chunks": 27,
+    "detail_continuation_available": true,
+    "list_continuation_disjoint": true,
+    "search_available": true,
+    "search_matches": 1,
+    "comparison_available": true
+  },
+  "mega": {
+    "catalog_total": 33432,
+    "list_seconds": 3.724,
+    "total": 33432,
+    "list_available": true,
+    "exact_sku_found": true,
+    "details_available": true,
+    "detail_chunks": 727,
+    "detail_continuation_available": true,
+    "list_continuation_disjoint": true,
+    "search_available": true,
+    "search_matches": 1,
+    "comparison_available": true
+  },
+  "exact_and_filters": {
+    "leading_zero_ean_preserved": true,
+    "zero_stripped_not_conflated": true,
+    "manufacturer_mpn_found": true,
+    "native_text_filter_matched": true,
+    "native_text_unknown_count": 157963,
+    "native_number_filter_matched": true,
+    "native_number_unknown_count": 157963
+  },
+  "import_measurement": {
+    "retained_public_publication_seconds": 595.01,
+    "import_peak_rss_kib": 130828,
+    "index_rebuild_seconds": 190.73,
+    "index_peak_rss_kib": 144728,
+    "indexed_products": 157964,
+    "restart_retained_products": 157964
+  },
+  "codex": {
+    "live-codex-tools": {
+      "completed_tool_calls": 11,
+      "tools": [
+        "get_catalog_status",
+        "get_catalog_schema",
+        "list_products",
+        "search_products",
+        "search_products",
+        "list_products",
+        "list_products",
+        "lookup_products",
+        "compare_offers",
+        "get_product",
+        "get_product"
+      ],
+      "turn_completed": true
+    },
+    "live-codex-skills": {
+      "completed_tool_calls": 11,
+      "tools": [
+        "get_catalog_status",
+        "get_catalog_schema",
+        "list_products",
+        "list_products",
+        "lookup_products",
+        "compare_offers",
+        "list_products",
+        "get_product",
+        "search_products",
+        "search_products",
+        "get_product"
+      ],
+      "turn_completed": true
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "observed_at": "2026-11-05",
   "source": "https://i6ws.100mega.cz/ResultTypeInfo.ashx",
-  "note": "Account-specific discovery. Advertised windows are not evidence of successful data reads. Day numbering retained exactly as supplied. Schema failures remain explicit.",
+  "note": "Account-specific advertised windows parsed with enabled/disabled cells; days are 1=Monday through 7=Sunday. Runtime uses Europe/Prague as approved; boundary behavior remains unverified. Probe success is distinct from parser replay, database publication and MCP acceptance.",
   "exports": [
     {
       "names": [
@@ -128,7 +128,21 @@
       "description": "Export Attachments of StoItem's parameters.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "AttCpsSti": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "AttCpsSti_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -229,7 +243,21 @@
       "description": "Export Attachments of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "AttSti": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "published_targeted_one_sku"
+        },
+        "AttSti_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -290,7 +318,21 @@
       "description": "List of client's bank accounts.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "ComBank": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "ComBank_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -351,7 +393,21 @@
       "description": "List of ShipTo address.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "ComShipTo": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "ComShipTo_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -432,7 +488,21 @@
       "description": "Configurator data.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "Config": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "pending_allowed_window"
+        },
+        "Config_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -478,7 +548,15 @@
       "description": "Export parameters of StoItems include parameter's definition.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "CpsSti": {
+          "probe_outcome": "capability_not_verified",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "pending_allowed_window"
+        }
+      }
     },
     {
       "names": [
@@ -592,7 +670,21 @@
       "description": "Export parameters of StoItems - Name x Value only (filtered by Code of StoItem).",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "CpsStiVal": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "published_and_mcp_sample_verified"
+        },
+        "CpsStiVal_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -717,7 +809,15 @@
       "description": "Document Transfer - Delivery.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "DocTrDel": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -844,7 +944,21 @@
       "description": "Document Transfer - Expedition (Format for import into I6).",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "DocTrExp": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "DocTrExp_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -969,7 +1083,15 @@
       "description": "Document Transfer - Invoice (Format for import into I6).",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "DocTrInv": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1094,7 +1216,15 @@
       "description": "Document Transfer - Loan.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "DocTrLoa": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1219,7 +1349,15 @@
       "description": "Export of Orders with Items include ShipTo and B2C informations. If is use method without parameters, are returned all open orders.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "Order": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1313,7 +1451,21 @@
       "description": "List of Delivery Mode for Order.asmx/Create method. Search ByCode: XX - find OrderDelivMode.Code = XX; {DemToPlace.CouCode}XX find OrderDelivMode with DemToPlace.CouCode = XXX; {DemToPlace_Disable} export only OrderDelivMode (without DemToPlace)",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "OrderDelivMode": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "OrderDelivMode_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1374,7 +1526,21 @@
       "description": "List of Payment Mode for Order.asmx/Create method.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "OrderPaymentMode": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "OrderPaymentMode_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1435,7 +1601,21 @@
       "description": "List of Queue for Order.asmx/Create/Order/@QudId method.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "OrderQueue": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "OrderQueue_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1562,7 +1742,21 @@
       "description": "List of info about Order Token(s).",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "OrderToken": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "OrderToken_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1623,7 +1817,21 @@
       "description": "Delivery term.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "Queue": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "Queue_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1746,7 +1954,15 @@
       "description": "Export of Reclaim details. Default.asmx/GetResult?resultType=Reclaim | Default.asmx/GetResultByCode?resultType=Reclaim&Code=",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "Reclaim": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1840,7 +2056,21 @@
       "description": "Catalog of system categories.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "SCategorySys": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "SCategorySys_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -1963,7 +2193,15 @@
       "description": "Export of Service details. Default.asmx/GetResult?resultType=Service | Default.asmx/GetResultByCode?resultType=Service&Code=",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "Service": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2057,7 +2295,21 @@
       "description": "Hiearchical presentation tree structure of stoitems. IdP... relation to parent tree (empty - top level); Sort... each level has reseved 3chars - Eg. AAA = first level, AAABBB = second level. ByCode method filter data by IdP.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "SPresentTree": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "SPresentTree_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2118,7 +2370,21 @@
       "description": "Type of SPresentTree (export complet tree type: resultType=SPresentTree&code=Id).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "SPresentTreeType": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "SPresentTreeType_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2212,7 +2478,21 @@
       "description": "Export StoItem's Packing.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StiPacking": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "published_targeted_one_sku"
+        },
+        "StiPacking_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2339,7 +2619,21 @@
       "description": "Export Relations of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StiRelation": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "published_targeted_one_sku"
+        },
+        "StiRelation_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2466,7 +2760,21 @@
       "description": "Export Relations-ConditionalOffer of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StiRelationCO": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StiRelationCO_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2560,7 +2868,21 @@
       "description": "List of active products.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemActive": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemActive_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2647,7 +2969,21 @@
       "description": "Base informations about products.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemBase": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "pending_allowed_window"
+        },
+        "StoItemBase_El": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2741,7 +3077,21 @@
       "description": "Export of StoItem EAN.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemEAN": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "published_targeted_one_sku"
+        },
+        "StoItemEAN_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2835,7 +3185,21 @@
       "description": "Export of StoItem EPREL Info.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemEPREL": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemEPREL_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -2925,7 +3289,15 @@
       "description": "Product's GPRS informations.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemGPSR": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3039,7 +3411,21 @@
       "description": "Hooked products.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemHook": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemHook_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3133,7 +3519,21 @@
       "description": "List of StoItems specified by Conditions in Code - Code can be: '{StrId}XXX' or '{ScaId}XXX or '{CpaId}XXX''",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemList": {
+          "probe_outcome": "requires_verified_tree_identifier",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemList_El": {
+          "probe_outcome": "requires_verified_tree_identifier",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3227,7 +3627,21 @@
       "description": "Export references: StoItem - TreeNode.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemNode": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemNode_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3354,7 +3768,21 @@
       "description": "Export of End User's prices.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemPriceEU": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemPriceEU_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3455,7 +3883,21 @@
       "description": "Order prices. (Fix prices: PriceList, Price0-6 only on special permission.)",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemPriceOrd": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemPriceOrd_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3556,7 +3998,21 @@
       "description": "Order prices in user's currency.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemPriceOrdCur": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "published_and_mcp_sample_verified"
+        },
+        "StoItemPriceOrdCur_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3635,7 +4091,21 @@
       "description": "Products on store.",
       "classification": "product_read_candidate",
       "data_validation": "full_read_33431_rows",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemQtyFree": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "published_and_mcp_sample_verified"
+        },
+        "StoItemQtyFree_El": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3729,7 +4199,21 @@
       "description": "Products on store + blocked.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemQtyFreeBO": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemQtyFreeBO_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3823,7 +4307,21 @@
       "description": "Products on store with availability and next ship.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemQtyFreeEx": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemQtyFreeEx_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -3917,7 +4415,21 @@
       "description": "Products on store with availability and next ship (itemized by QudId).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemQtyFreeExQud": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemQtyFreeExQud_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4011,7 +4523,21 @@
       "description": "Products on store with availability and next ship (sum of all user's stores).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemQtyFreeExQudT": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "StoItemQtyFreeExQudT_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4123,7 +4649,15 @@
       "description": "Base informations about products - shop feed.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemShop_El": {
+          "probe_outcome": "unexpected_export_root",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4233,7 +4767,15 @@
       "description": "Base informations about products - Shoptet feed.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemShoptet_El": {
+          "probe_outcome": "unexpected_export_root",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4314,7 +4856,21 @@
       "description": "Export for I6 module StoItemCom.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StoItemSiv": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "pending_allowed_window"
+        },
+        "StoItemSiv_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4362,7 +4918,21 @@
       "description": "Export for synchronisation of SPresentTree + StoItem. As code must be send id of SPresentTree.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "StrStiSync": {
+          "probe_outcome": "requires_verified_tree_identifier",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "StrStiSync_El": {
+          "probe_outcome": "requires_verified_tree_identifier",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4463,7 +5033,21 @@
       "description": "Special export for 100M",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-100M": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "X-100M_El": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4590,7 +5174,21 @@
       "description": "Export parameters of StoItems - Name x Value only (filtered by Code of StoItem).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-ASM-CpsStiVal": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-ASM-CpsStiVal_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4714,10 +5312,24 @@
           ]
         }
       },
-      "description": "Export souvisejících produktů pro ASM zboží",
+      "description": "Export souvisej\u00edc\u00edch produkt\u016f pro ASM zbo\u017e\u00ed",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-ASM-StiRelation": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-ASM-StiRelation_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4798,7 +5410,21 @@
       "description": "Export for I6 module StoItemCom.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-ASM-StoItemSiv": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-ASM-StoItemSiv_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -4925,7 +5551,21 @@
       "description": "Export parameters of StoItems - Name x Value only (filtered by Code of StoItem).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-CpsStiVal": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-CpsStiVal_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5026,7 +5666,21 @@
       "description": "Special export for Cybex.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-Cybex": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "X-Cybex_El": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5153,7 +5807,21 @@
       "description": "Export EAN produktu",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-EAN": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-EAN_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5277,10 +5945,24 @@
           ]
         }
       },
-      "description": "Export Enterprice produktÄ‚â€žĂ˘â‚¬ĹˇÄ‚ËĂ˘â€šÂ¬ÄąÄľĂ„â€šĂ˘â‚¬ĹľÄ‚ËĂ˘â€šÂ¬Ă‚Â¦Ă„â€šĂ˘â‚¬ĹľÄ‚â€žĂ˘â‚¬Â¦Ă„â€šĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â» do B2C",
+      "description": "Export Enterprice produkt\u00c4\u201a\u00e2\u20ac\u017e\u0102\u02d8\u00e2\u201a\u00ac\u0139\u02c7\u00c4\u201a\u00cb\u0098\u0102\u02d8\u00e2\u20ac\u0161\u00c2\u00ac\u00c4\u0105\u00c4\u013e\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u013e\u00c4\u201a\u00cb\u0098\u0102\u02d8\u00e2\u20ac\u0161\u00c2\u00ac\u0102\u201a\u00c2\u00a6\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u013e\u00c4\u201a\u00e2\u20ac\u017e\u0102\u02d8\u00e2\u201a\u00ac\u00c2\u00a6\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u02c7\u00c4\u201a\u00e2\u20ac\u0161\u0102\u201a\u00c2\u00bb do B2C",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-EnterpriceB2C": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-EnterpriceB2C_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5407,7 +6089,21 @@
       "description": "Export nabidky dne",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-HalshopDayOffer": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-HalshopDayOffer_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "empty_response",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5508,7 +6204,21 @@
       "description": "Special export for HoG",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-HOG": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "X-HOG_El": {
+          "probe_outcome": "outside_supplier_window",
+          "data_validation": "see_outcome",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5635,7 +6345,21 @@
       "description": "Export of length, width, height, weight of items.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-LMStiPacking": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-LMStiPacking_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5736,7 +6460,21 @@
       "description": "Order prices in user's currency, included EAN code.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-Retail": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-Retail_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5863,7 +6601,21 @@
       "description": "Export Tridy produktu",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemClass": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemClass_El": {
+          "probe_outcome": "missing_product_identity",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -5990,7 +6742,21 @@
       "description": "Export tabulky StoItemPack",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemPack": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemPack_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6117,7 +6883,21 @@
       "description": "Export of End User's prices.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemPriceEU": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemPriceEU_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6231,7 +7011,21 @@
       "description": "Order prices in user's currency, included EAN code.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemPriceOrdCur": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemPriceOrdCur_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6358,7 +7152,21 @@
       "description": "Export variant produktu",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemVariant": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemVariant_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6459,7 +7267,21 @@
       "description": "Base informations about products without Note.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "X-StoItemWoutNote": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        },
+        "X-StoItemWoutNote_El": {
+          "probe_outcome": "parsed",
+          "data_validation": "see_outcome",
+          "parser_replayed": true,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6586,7 +7408,21 @@
       "description": "Export of B2C users.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "ZCompany": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "ZCompany_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     },
     {
       "names": [
@@ -6647,7 +7483,21 @@
       "description": "ZShop settings.",
       "classification": "excluded_by_v1",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated"
+      "integration_validation": "not_live_validated",
+      "endpoint_validation": {
+        "ZShop": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        },
+        "ZShop_El": {
+          "probe_outcome": "not_tested",
+          "data_validation": "not_tested",
+          "parser_replayed": false,
+          "integration_validation": "not_live_validated"
+        }
+      }
     }
   ],
   "schemas": {

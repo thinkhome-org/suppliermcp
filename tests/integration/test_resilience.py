@@ -178,3 +178,44 @@ def test_private_baseline_runs_enrichment(conn):
         ).fetchone()[0]
         == "partial"
     )
+
+
+@pytest.mark.parametrize("code", ["supplier_unauthorized", "supplier_timeout"])
+def test_auth_and_timeout_leave_other_source_and_retained_data_queryable(conn, code):
+    from suppliermcp.catalog.contracts import CatalogQuery, Identifier
+    from suppliermcp.catalog.repository import read_status
+    from suppliermcp.search.exact import lookup
+    from suppliermcp.search.listing import start_listing
+
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog"),
+            [item(), Offer(item_id="mega:1", unit_net="10")],
+        ),
+    )
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="ed_public", domain="catalog"),
+            [SourceItem(supplier="ed", source_id="2", sku="002", name="Other")],
+        ),
+    )
+
+    class Failing:
+        interface = "mega"
+
+        def fetch(self, *args):
+            raise CatalogError(code)
+
+    with pytest.raises(CatalogError, match=code):
+        run_refresh(conn, Failing(), "price")
+    assert (
+        lookup(conn, [Identifier(kind="sku", supplier="mega", value="001")]).entries[0]["status"]
+        == "found"
+    )
+    assert start_listing(conn, CatalogQuery(supplier="ed"), "alice").total == 1
+    assert get_product(conn, "mega:1").offers[0].unit_net == Decimal(10)
+    assert read_status(conn, ["ed_public"]).interfaces["mega"]["outcome"] == "disabled"

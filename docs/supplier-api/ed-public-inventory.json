@@ -76,7 +76,7 @@
     {
       "name": "getProductListDownloadXML",
       "classification": "product_read",
-      "live_validation": "export_status_success"
+      "live_validation": "downloaded_and_parsed_124532_products"
     },
     {
       "name": "getProductListDownloadXMLWithTransform",
@@ -86,7 +86,7 @@
     {
       "name": "getProductListDownloadZIP",
       "classification": "product_read",
-      "live_validation": "not_tested"
+      "live_validation": "downloaded_parsed_published_indexed_124532_products; authenticated_MCP_and_Codex_verified"
     },
     {
       "name": "getProductListDownloadZIPWithTransform",

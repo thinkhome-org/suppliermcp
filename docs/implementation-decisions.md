@@ -28,3 +28,12 @@ These rulings supplement the approved design, in execution order. Each includes 
 ## Deferred minors
 
 - Empty-catalog text search with an existing empty index returns empty candidates rather than catalog_not_populated; exact/list already report the explicit state.
+
+## Live-data implementation decisions (2026-11-05)
+
+- Endpoint-scoped checkpoints and replacement keep optional enrichment independent from baseline identity authority. Legacy caller-created manifests preserve old catalog authority through a `None` default; live adapters explicitly choose authority. New integrations must not rely on that compatibility default.
+- Native observations carry cardinality and value keys. Verified 100MEGA `Measure` values are numeric without an invented unit; common physical mappings remain absent until definitions/units are established. SKU-only joins reject ambiguous identities.
+- Long descriptions remain intact. PostgreSQL indexes a fixed-width value digest, with original equality still checked; compact result snapshots use rows, and large detail values use ordered, lossless JSON chunks. Large schema responses reserve `_continuation` and require clients to follow it before concluding a field is absent.
+- One canonical export representation per scheduled family avoids fetching equivalent attribute/element variants repeatedly. Account windows are mode-specific and fail closed; night-only methods are queued for their next permitted window. Equivalent variants are separately represented in the API inventory.
+- A retained staged import can be resumed without changing original fetch/source evidence time. Publication uses current table statistics for its batched projections and a 64 MiB per-sort work-memory limit inside the serialized publication transaction. These are measured local-account settings, not universal throughput guarantees.
+- Docker runtime and client/signing credentials live outside Git; the signing key stays on the host. The live and synthetic test databases use separate projects/volumes. No eD PRIVATE account or public tunnel is activated.

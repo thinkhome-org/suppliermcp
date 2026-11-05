@@ -1,41 +1,49 @@
 # Validation evidence
 
-Implementation tested locally on 2026-11-05. This is synthetic/local acceptance, not production supplier certification.
+## Live acceptance on 2026-11-05
 
-## Executed checks
+The protected local project is `suppliermcp-live`, with authenticated MCP at `http://127.0.0.1:8000/mcp`. Machine-readable, payload-free evidence is in [live-validation-2026-11-05.json](live-validation-2026-11-05.json). Counts below are the verification snapshot, not a promise that a changing supplier catalog is constant.
 
-- Unit and real PostgreSQL/Typesense integration tests, including three-valued filtering, immutable pagination, 100,001-row rejection/partitions, output budgets, quarantine, interrupted imports, cached-price outages, stock/price isolation, tied timestamp conflicts, exact identifiers and authenticated HTTP.
-- 24 synthetic discovery queries across memory/storage, networking, cables/connectors and laptops, with 12 Czech/English pairs, must-find IDs and near-match exclusions. Every curated code resolves exactly. This establishes fixture behavior, not real-catalog recall.
-- Docker build from pinned multi-platform digests; non-root application. Disposable Compose smoke verifies migration, seven tools, authenticated skill resources, all eight optional-interface startup combinations, and catalog persistence after database/server restart. Only the random smoke project's volumes are removed.
-- Installed Codex CLI, `--ignore-user-config --ephemeral --sandbox read-only`, temporary working directory and environment bearer token. Both tool-only and canonical project-skill-assisted sessions exited 0. Actual tool traces were inspected: SKU `0007` retained zeros and resolved; `paměť DDR5` returned the seeded memory; `capacity_tib` was rejected as unsupported; seven units returned 700 CZK net as last-known, no fresh winner; all three disabled sources were identified correctly. No purchase or account write occurred.
-- Skill behavioral baseline missed switching from discovery to listing for “all”; after reading the skill, the fresh-context test selected schema discovery plus exhaustive listing and separate unknowns. Both versions correctly rejected unsupported purchases and incomparable quotes.
-- Plugin/MCP JSON validated against vendored Agent Plugins 1.0 upstream schemas. Plugin and resource skills use identical source bytes. Portable plugin installation/authentication in the user's Codex configuration was deliberately not performed.
+- **eD PUBLIC:** the documented ZIP was downloaded and all **124,532 products** were parsed, published, indexed and enumerated through MCP. The previously measured ZIP was 47,069,717 bytes, expanded XML 619,833,546 bytes. PUBLIC exposes 28 product fields; PRIVATE-only data is not invented.
+- **100MEGA:** the full permitted stock export published **33,432 products**. A permitted targeted read of one real SKU additionally published `StoItemPriceOrdCur`, `CpsStiVal`, `StoItemEAN`, `StiPacking`, `StiRelation` and `AttSti`; that product had a price/currency, 727 observations and 16 directed relationships. These checks do **not** establish full baseline/price/parameter coverage. The baseline and other night-only full exports remain scheduled for their verified window, starting **21:00 Europe/Prague**.
+- **Reconciliation:** 157,964 active database products and 157,964 index documents; database/index revisions both 9 after the targeted updates were drained. Restarting PostgreSQL, Typesense and MCP retained all 157,964 products and authentication. Typesense needed time to reopen its index after restart; exact/list/detail calls remained independent of it and the queued index update succeeded on retry.
+- **Live data checks:** sampled source artifact identifiers, eD price/currency and stock agreed with the published records without exposing commercial values. Actual MCP calls preserved a leading-zero EAN, did not conflate its zero-stripped spelling, resolved manufacturer+MPN, and matched both native text and numeric parameters. The latter reported the other 157,963 products as unknown, not as known nonmatches.
+- **MCP checks:** unauthenticated requests returned 401; authenticated clients saw seven tools and two canonical skill resources. Schema discovery, exact lookup, list continuation, detail continuation, text search and quantity comparisons succeeded for both available sources. An unrestricted eD listing exceeded the deliberate 100,000-row snapshot limit and returned usable non-overlapping partitions. Following the first partition produced an immutable 100,000-row snapshot; the first-page materialization took 11.592 seconds, versus 3.724 seconds for the 33,432-product 100MEGA snapshot. These are local measurements, not a latency guarantee.
+- **Actual Codex:** both installed-CLI sessions exited 0, using an isolated configuration without editing the existing edshop server. One used tools only; the other read the canonical project skills. Traces verified real tool calls, partition following, exact lookup, observation continuation, quantity 2 comparisons, and Czech `paměť` / English `memory` searches. Both described partial coverage and last-known prices rather than claiming a fresh winner. Protected traces remain outside Git.
 
-Repeat automated validation:
+## Performance and live fixes
+
+The first PUBLIC publication exposed PostgreSQL's B-tree key-size limit on long descriptions. An incompressible-text regression reproduced it; migration 008 indexes a fixed-width digest while preserving the full value and checking original equality. The retained staged export was then published successfully without another supplier download or a fabricated fresh timestamp.
+
+That publication took **595.01 seconds**, with importer peak RSS **130,828 KiB**. The complete index rebuild took **190.73 seconds**, peak RSS **144,728 KiB**. Publication and index rebuild intentionally serialize; rebuild delays new publications, while retained catalog queries remain available. This is a measured local account run, not broad capacity certification. Long-running jobs can delay the single worker's queue; monitor endpoint status and revisions.
+
+Compact immutable snapshots avoid storing full descriptions in listings. Product evidence is paginated by section; oversized records use lossless ordered JSON chunks. Large schema responses use `_continuation`. Regression tests cover exact Unicode reconstruction, expiry/principal checks, import changes between pages, duplicate-free relationships and a 100,000-row compact listing.
+
+## Automated verification
+
+The current pre-review suite passes **138 tests**, no skips; `ruff check` passes. It includes real PostgreSQL and Typesense, all eight optional-interface configuration combinations, corrupt/interrupted imports, endpoint-scoped replacement, native multi-value filters, ambiguous identity rejection, stale prices after credential/timeouts, source isolation, index outage/rebuild, response budgets and authenticated HTTP.
 
 ```sh
-uv run ruff check .
 uv run pytest -q
-docker build -t suppliermcp:local .
-uv run python scripts/smoke.py
+uv run ruff check .
+docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env build
 ```
 
-`uv run python scripts/codex_acceptance.py` additionally requires an installed/logged-in Codex CLI and writes temporary traces under the ignored execution workspace. It uses only synthetic catalog data and does not alter user config. Traces are not committed because client/session metadata is unnecessary for the repository.
+With the protected client token loaded into `SUPPLIERMCP_TOKEN`:
 
-## Remaining acceptance gates
+```sh
+uv run python scripts/live_verify.py --report /protected/path/live-report.json
+uv run python scripts/codex_acceptance.py --live --output /protected/path/codex-traces
+```
 
-Real account credentials and live supplier acceptance are pending: exact schemas, permitted windows and export types, redirect download hosts, commodity completeness, native attribute/packaging mappings, ValuePack formula, and source freshness semantics. Fixture-derived code must be checked against actual accounts before enabling scheduled imports. Unknown mappings remain unknown instead of invented facts.
+`live_verify.py` does not call suppliers unless `--probe-suppliers` is explicitly supplied. Such probes use the existing product-only adapters and obey verified windows. Reports omit exception messages, credentials, identifiers and prices. Raw Codex traces can contain commercial product data and must remain protected.
 
-No tunnel, public deployment, plugin installation, production load/capacity test, backup restore drill or real-catalog relevance measurement was performed. Index rebuild currently delays import publication; large catalogs require measuring that duration. Exact lookup/filtering continue without Typesense, but database failure makes catalog tools unavailable. A cached offer cannot be read when the authoritative database itself is down.
+## Explicitly incomplete acceptance
 
-Known operational limits: API errors are structured under `result.error` (MCP transport `isError` is currently false); clients must inspect the error object. Oversized individual product details fail visibly at the response budget. Unmapped native fields are text, not invented typed common attributes. Old Typesense collections require administrative cleanup after successful rebuilds.
+Full night-only 100MEGA baseline/price/enrichment runs, all export variants' database acceptance and boundary-hour behavior are still unverified. The inventory separately records 94 schema requests, 96 attempted product probes and 81 successful captured-response parser replays; a parser replay is not an integration pass. Only canonical representations are automatically scheduled. PUBLIC alternate transforms/direct-list encodings are mapped but not all exercised. No authenticated eD PRIVATE request was made.
 
-Pre-review baseline: `uv run ruff check .` passed; `uv run pytest -q` passed 80 tests with no skips in 5.25 seconds. Final review fixes and final counts, if any, are recorded below.
+Supplier price-update timestamps/freshness, every physical unit/packaging mapping, and ValuePack semantics are not universally established. Unknown data stays unknown; comparisons do not invent order multiples, fresh winners or comparable variants. Text search is discovery, capped at 1,000 candidates; use partitioned exhaustive listing for all retained matches. Cross-supplier equivalence/recall is not certified by the sampled tests.
 
-## Whole-branch review and fix evidence
+No public tunnel, backup restore drill or native GUI plugin installation was performed. The local connection profile is prepared; actual Codex CLI access was verified. Database failure makes authoritative catalog tools unavailable. Old Typesense collections still require administrative cleanup after successful rebuilds.
 
-A fresh-context gpt-6-astra review found nine Important issues, no Critical issues. All nine entered one implementation fix pass, with failing regression tests observed before fixes; no second review was requested. Fixes cover monotonic unchanged-run fences, independent stock evidence, per-domain/catalog completeness, accumulated descriptions in indexing, mapped packaging for matching, verified offer configuration, terminal staging cleanup, continuous bulk indexing, and per-product comparison failures. The final expanded suite passes 92 tests (6.88 seconds, no skips); `ruff check` passes. A related regression additionally prevents newer stock-only evidence from replacing ValuePack rules or price freshness.
-
-One Minor finding is deferred: text discovery against an existing empty index returns an empty non-exhaustive result instead of `catalog_not_populated`. Exact lookup/listing already return that explicit state.
-
-After the fix pass, the image was rebuilt and the authenticated disposable Compose smoke passed again, including restart persistence. Both actual Codex sessions were rerun successfully (exit 0): six completed tool calls without skills and eight with canonical project skills. Their outputs preserved SKU zeros, rejected the unsupported filter, and correctly labeled stale prices and disabled sources. No second code review was performed; regression tests and the full green suite are the fix verification.
+The original v1 independent review had one deferred Minor: discovery against an existing empty index returns an empty non-exhaustive result rather than `catalog_not_populated`. Exact lookup/listing already expose that state. This live-data branch receives a separate final independent review; its findings and verification will be recorded here before integration.

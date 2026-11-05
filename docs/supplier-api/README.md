@@ -4,7 +4,7 @@ Observed 2026-11-05. These are discovery results, not a declaration of working i
 
 The JSON inventories contain all advertised operation names and product schema definitions. Business-document data was not requested. No account credentials or account-bearing download URLs are included.
 
-## 100MEGA
+## Initial 100MEGA reconnaissance
 
 | Export family / variants | Scope | Data evidence |
 |---|---|---|
@@ -76,9 +76,9 @@ The JSON inventories contain all advertised operation names and product schema d
 
 94 product-related schema requests: 89 actual schemas; SPresentTree and X-HOG variants returned HTTP 500; StoItemShop_El_Schema returned an empty Result. An empty targeted relationship result does not prove nonempty relationship semantics.
 
-## eD
+## Initial eD reconnaissance (before adapter fixes)
 
-PUBLIC export status succeeded through the existing Codex connector and directly through the repository gateway. The response uses lowercase `url`, `fileName`, `isReady`; current adapter parsing fails to follow that URL. The XML file was downloaded separately for read-only diagnosis (619,833,546 bytes). The current record parser read all 124,532 products and offers in 26.26 seconds; database publication and MCP queries remain untested. Current 100MEGA parsing read 33,431 stock records, but both tested price variants produced no normalized price/currency. PRIVATE WSDL is reachable, but PRIVATE account calls were not made.
+PUBLIC export status succeeded through the existing Codex connector and directly through the repository gateway. The response uses lowercase `url`, `fileName`, `isReady`; initial adapter parsing failed to follow that URL. The XML file was downloaded separately for read-only diagnosis (619,833,546 bytes). The initial record parser read all 124,532 products and offers in 26.26 seconds; database publication and MCP queries remain untested. Initial 100MEGA parsing read 33,431 stock records, but both tested price variants produced no normalized price/currency. PRIVATE WSDL is reachable, but PRIVATE account calls were not made.
 
 Sources: [100MEGA capability page](https://i6ws.100mega.cz/ResultTypeInfo.ashx), [100MEGA documentation](https://i6ws.100mega.cz/WebServiceInfoMail.txt), [eD PUBLIC WSDL](https://public-ws-cz.elinkx.biz/service.asmx?WSDL), [eD PRIVATE WSDL](https://private-ws-cz.elinkx.biz/service.asmx?WSDL).
 
@@ -87,3 +87,7 @@ See the live activation design in `../superpowers/specs/2026-11-05-live-supplier
 ## Live adapter follow-up
 
 The repaired eD adapter downloaded the documented ZIP (47,069,717 bytes), parsed all 124,532 products/offers, and used 61,374,464 bytes peak RSS in the measured run. An XML replay used 36,077,568 bytes peak RSS. The 100MEGA product-only probe obeyed each advertised mode window; 81 captured responses replay successfully through the revised parser. Empty responses, restricted windows and methods requiring tree IDs are listed separately in the JSON inventory. Some special exports ignore the supplied SKU and return many rows; no targeted completeness is inferred. None of this yet proves live database publication or MCP query coverage.
+
+## Current evidence format
+
+Use each JSON inventory for current endpoint-level results. The initial family table above is historical; `endpoint_validation`, `live_probes`, and `capture_parser_replay` distinguish actual calls, empty responses, parser validation, and database acceptance. Equivalent representations are not all polled on a schedule. Advertised windows now use the corrected enabled-cell parser; a disabled method does not inherit the hours printed in its disabled table cell.

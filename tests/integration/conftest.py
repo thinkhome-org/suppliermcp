@@ -14,6 +14,6 @@ def conn():
     ) as c:
         migrate(c)
         c.execute(
-            "TRUNCATE endpoint_checkpoints, source_items, current_offers, import_runs, staging, domain_checkpoints, source_state, index_outbox, source_schema, observations, relationships RESTART IDENTITY CASCADE"
+            "TRUNCATE query_results, endpoint_checkpoints, source_items, current_offers, import_runs, staging, domain_checkpoints, source_state, index_outbox, source_schema, observations, relationships RESTART IDENTITY CASCADE"
         )
         yield c
