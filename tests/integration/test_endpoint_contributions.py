@@ -164,3 +164,27 @@ def test_parameter_rows_publish_without_replacing_identity(conn):
     view = get_product(conn, "mega:1")
     assert view.item.name == "Product"
     assert [(o.field, o.value) for o in view.item.observations] == [("parameter:42", "red")]
+
+
+def test_shop_facts_join_only_existing_supplier_sku(conn):
+    from suppliermcp.catalog.contracts import SchemaRecord
+
+    put(conn, "base", [product("base", [])])
+    record = SchemaRecord(
+        interface="mega",
+        kind="product_facts",
+        values={
+            "supplier": "mega",
+            "sku": "001",
+            "observations": [
+                Observation(
+                    interface="mega", endpoint="shop", field="NAME", value="Description"
+                ).model_dump(mode="json")
+            ],
+        },
+    )
+    put(conn, "shop", [record], replace_scope="items")
+    assert get_product(conn, "mega:1").item.observations[0].value == "Description"
+    record.values["sku"] = "unknown"
+    with pytest.raises(CatalogError, match="unresolved_product_reference"):
+        put(conn, "shop", [record])

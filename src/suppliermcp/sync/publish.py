@@ -33,6 +33,19 @@ def stage(conn, manifest, rows):
                 copy.write_row(
                     (run_id, ordinal, type(row).__name__, Jsonb(row.model_dump(mode="json")))
                 )
+        conn.execute(
+            """UPDATE staging t SET data=jsonb_set(t.data,'{values,item_id}',to_jsonb(s.id))
+            FROM source_items s WHERE t.run_id=%s AND t.kind='SchemaRecord'
+            AND t.data->>'kind'='product_facts' AND t.data->'values'->>'item_id' IS NULL
+            AND s.data->>'supplier'=t.data->'values'->>'supplier'
+            AND s.data->>'sku'=t.data->'values'->>'sku'""",
+            (run_id,),
+        )
+        if conn.execute(
+            "SELECT 1 FROM staging WHERE run_id=%s AND kind='SchemaRecord' AND data->>'kind'='product_facts' AND data->'values'->>'item_id' IS NULL LIMIT 1",
+            (run_id,),
+        ).fetchone():
+            raise CatalogError("unresolved_product_reference")
         # Parsers establish completeness only after the stream has ended successfully.
         conn.execute(
             "UPDATE import_runs SET manifest=%s,status=%s WHERE id=%s",

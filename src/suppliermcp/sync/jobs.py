@@ -60,12 +60,26 @@ def build_adapters(settings):
     return adapters
 
 
-def run_refresh(conn, adapter, domain, codes=None):
+def run_export_refresh(conn, adapter, endpoint, codes=None):
+    domain = next((d for d, e in adapter.endpoints.items() if e == endpoint), "schema")
+    return run_refresh(conn, adapter, domain, codes, endpoint=endpoint)
+
+
+def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
     now, manifest = utcnow(), None
     revision = None
+    source_endpoint = endpoint or getattr(
+        adapter, "endpoints", getattr(adapter, "methods", {})
+    ).get(domain, domain)
     outcome = "refresh_failed"
     try:
-        manifest = adapter.fetch(domain, codes)
+        manifest = (
+            adapter.fetch_export(endpoint, codes=codes)
+            if endpoint
+            else adapter.fetch(domain, codes)
+        )
+        source_endpoint = manifest.endpoint or source_endpoint
+        domain = manifest.domain
         manifest.started_at = now
         run_id = stage(conn, manifest, adapter.parse(manifest))
         revision = publish(conn, run_id)
@@ -96,8 +110,8 @@ def run_refresh(conn, adapter, domain, codes=None):
             adapter.store.mark(Path(manifest.path), "failed", manifest)
         # Mark every price observation for this interface unavailable without replacing its value.
         conn.execute(
-            "UPDATE current_offers SET data=jsonb_set(data,'{refresh_failed}','true') WHERE interface=%s",
-            (adapter.interface,),
+            "UPDATE current_offers SET data=jsonb_set(data,'{refresh_failed}','true') WHERE interface=%s AND (endpoint=%s OR (endpoint='' AND %s))",
+            (adapter.interface, source_endpoint, domain != "schema"),
         )
         raise CatalogError(outcome, retryable=True) from None
     finally:
@@ -118,10 +132,29 @@ def run_refresh(conn, adapter, domain, codes=None):
             if complete
             else previous_domain.get("last_verified_complete_revision"),
         }
+        endpoints = state.setdefault("endpoints", {})
+        prior_endpoint = endpoints.get(source_endpoint, {})
+        next_allowed = None
+        if outcome == "outside_supplier_window":
+            from suppliermcp.suppliers.mega.capabilities import next_window
+
+            next_allowed = next_window(
+                adapter.contracts.get(source_endpoint, {}), "targeted" if codes else "full"
+            )
+        endpoints[source_endpoint] = {
+            "outcome": outcome,
+            "attempted_at": now.isoformat(),
+            "last_success_at": now.isoformat()
+            if outcome == "ok"
+            else prior_endpoint.get("last_success_at"),
+            "next_allowed_at": next_allowed.isoformat() if next_allowed else None,
+            "complete": complete,
+            "revision": revision if outcome == "ok" else prior_endpoint.get("revision"),
+        }
         state.update(
             configured=True,
             attempted_at=now.isoformat(),
-            outcome="ok" if all(d["outcome"] == "ok" for d in domains.values()) else "partial",
+            outcome="ok" if all(d["outcome"] == "ok" for d in endpoints.values()) else "partial",
         )
         if outcome not in {"ok", "partial"}:
             state["outcome"] = outcome
@@ -140,12 +173,12 @@ def create_app(settings):
     @app.task(
         name="suppliermcp.refresh", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60)
     )
-    def refresh(interface, domain, codes=None):
+    def refresh(interface, domain, codes=None, endpoint=None):
         adapters = build_adapters(settings)
         if interface not in adapters:
             raise CatalogError("source_not_configured")
         with connect(settings) as conn:
-            return run_refresh(conn, adapters[interface], domain, codes)
+            return run_refresh(conn, adapters[interface], domain, codes, endpoint=endpoint)
 
     @app.task(name="suppliermcp.index", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60))
     def index():
@@ -172,24 +205,68 @@ def create_app(settings):
         with connect(settings) as conn:
             conn.execute("DELETE FROM query_results WHERE expires_at < now()")
             ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
+            adapters = build_adapters(settings)
             for interface in settings.enabled_interfaces:
-                for domain, interval in (
-                    contracts.get(interface, {}).get("intervals_seconds", {}).items()
-                ):
+                options = contracts.get(interface, {})
+                schedules = [
+                    (domain, None, interval)
+                    for domain, interval in options.get("intervals_seconds", {}).items()
+                ]
+                schedules += [
+                    ("schema", endpoint, interval)
+                    for endpoint, interval in options.get("export_intervals_seconds", {}).items()
+                ]
+                for domain, endpoint, interval in schedules:
                     if domain not in {"catalog", "price", "stock", "schema"} or interval < 60:
                         continue
-                    row = conn.execute(
-                        "SELECT started_at FROM domain_checkpoints WHERE interface=%s AND domain=%s",
-                        (interface, domain),
+                    adapter = adapters[interface]
+                    source_endpoint = endpoint or getattr(
+                        adapter, "endpoints", getattr(adapter, "methods", {})
+                    ).get(domain, domain)
+                    state_row = conn.execute(
+                        "SELECT data FROM source_state WHERE interface=%s", (interface,)
                     ).fetchone()
-                    if not row or (utcnow() - row[0]).total_seconds() >= interval:
+                    state = state_row[0] if state_row else {}
+                    last = state.get("endpoints", {}).get(source_endpoint, {}).get("attempted_at")
+                    if last:
+                        from datetime import datetime
+
+                        if (utcnow() - datetime.fromisoformat(last)).total_seconds() < interval:
+                            continue
+                    if interface == "mega":
+                        from suppliermcp.suppliers.mega.capabilities import (
+                            next_window,
+                            require_window,
+                        )
+
+                        contract = options.get("exports", {}).get(source_endpoint, {})
                         try:
-                            refresh.configure(
-                                lock=("supplier:mega" if interface == "mega" else "supplier:ed"),
-                                queueing_lock=f"{interface}:{domain}",
-                            ).defer(interface=interface, domain=domain)
-                        except procrastinate.AlreadyEnqueued:
-                            pass
+                            require_window(contract, "full")
+                        except CatalogError as error:
+                            upcoming = next_window(contract, "full")
+                            entry = state.setdefault("endpoints", {}).setdefault(
+                                source_endpoint, {}
+                            )
+                            entry.update(
+                                outcome=error.code,
+                                next_allowed_at=upcoming.isoformat() if upcoming else None,
+                            )
+                            state["configured"] = True
+                            conn.execute(
+                                "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
+                                (interface, Jsonb(state)),
+                            )
+                            continue
+                    try:
+                        refresh.configure(
+                            lock=("supplier:mega" if interface == "mega" else "supplier:ed"),
+                            queueing_lock=f"{interface}:{source_endpoint}",
+                        ).defer(interface=interface, domain=domain, endpoint=endpoint)
+                    except procrastinate.AlreadyEnqueued:
+                        pass
+
+            for adapter in adapters.values():
+                adapter.transport.client.close()
 
     return app
 
@@ -198,6 +275,16 @@ def schedule_refresh(interface, domain, codes=None, settings=None):
     settings = settings or Settings.from_env()
     if interface not in settings.enabled_interfaces:
         raise CatalogError("source_not_configured")
+    if interface == "ed_public" and codes:
+        raise CatalogError("unsupported_targeted_read")
+    if interface == "mega":
+        adapter = build_adapters(settings)[interface]
+        from suppliermcp.suppliers.mega.capabilities import require_window
+
+        require_window(
+            adapter.contracts.get(adapter.endpoints.get(domain), {}),
+            "targeted" if codes else "full",
+        )
     app = create_app(settings)
     with app.open():
         return (

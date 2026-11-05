@@ -63,3 +63,22 @@ def require_window(contract, mode, now=None):
     window = contract.get("windows", {}).get(mode, contract)
     if when.weekday() not in window.get("days", []) or when.hour not in window.get("hours", []):
         raise CatalogError("outside_supplier_window", retryable=True)
+
+
+def next_window(contract, mode, now=None):
+    from datetime import timedelta
+
+    start = now or utcnow()
+    for hour in range(8 * 24):
+        candidate = (
+            start
+            if hour == 0
+            else (start + timedelta(hours=hour)).replace(minute=0, second=0, microsecond=0)
+        )
+        try:
+            require_window(contract, mode, candidate)
+            return candidate
+        except CatalogError as error:
+            if error.code != "outside_supplier_window":
+                return None
+    return None
