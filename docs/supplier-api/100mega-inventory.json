@@ -128,13 +128,15 @@
       "description": "Export Attachments of StoItem's parameters.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "AttCpsSti": {
           "probe_outcome": "parsed",
           "data_validation": "empty_response",
           "parser_replayed": true,
-          "integration_validation": "not_live_validated"
+          "integration_validation": "published_full_export",
+          "publication_revision": 13,
+          "verified_complete": false
         },
         "AttCpsSti_El": {
           "probe_outcome": "parsed",
@@ -243,13 +245,15 @@
       "description": "Export Attachments of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "AttSti": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "published_targeted_one_sku"
+          "integration_validation": "published_targeted_export",
+          "publication_revision": 9,
+          "verified_complete": false
         },
         "AttSti_El": {
           "probe_outcome": "parsed",
@@ -670,13 +674,15 @@
       "description": "Export parameters of StoItems - Name x Value only (filtered by Code of StoItem).",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "CpsStiVal": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "published_and_mcp_sample_verified"
+          "integration_validation": "published_full_export",
+          "publication_revision": 19,
+          "verified_complete": false
         },
         "CpsStiVal_El": {
           "probe_outcome": "parsed",
@@ -2056,13 +2062,15 @@
       "description": "Catalog of system categories.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "SCategorySys": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "not_live_validated"
+          "integration_validation": "published_full_export",
+          "publication_revision": 10,
+          "verified_complete": false
         },
         "SCategorySys_El": {
           "probe_outcome": "parsed",
@@ -2295,13 +2303,15 @@
       "description": "Hiearchical presentation tree structure of stoitems. IdP... relation to parent tree (empty - top level); Sort... each level has reseved 3chars - Eg. AAA = first level, AAABBB = second level. ByCode method filter data by IdP.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "SPresentTree": {
           "probe_outcome": "missing_product_identity",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "not_live_validated"
+          "integration_validation": "published_full_export",
+          "publication_revision": 11,
+          "verified_complete": false
         },
         "SPresentTree_El": {
           "probe_outcome": "missing_product_identity",
@@ -2370,13 +2380,15 @@
       "description": "Type of SPresentTree (export complet tree type: resultType=SPresentTree&code=Id).",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "SPresentTreeType": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "not_live_validated"
+          "integration_validation": "published_full_export",
+          "publication_revision": 12,
+          "verified_complete": false
         },
         "SPresentTreeType_El": {
           "probe_outcome": "parsed",
@@ -2478,13 +2490,15 @@
       "description": "Export StoItem's Packing.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StiPacking": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "published_targeted_one_sku"
+          "integration_validation": "published_full_export",
+          "publication_revision": 16,
+          "verified_complete": false
         },
         "StiPacking_El": {
           "probe_outcome": "parsed",
@@ -2619,13 +2633,15 @@
       "description": "Export Relations of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StiRelation": {
           "probe_outcome": "parsed",
           "data_validation": "empty_response",
           "parser_replayed": true,
-          "integration_validation": "published_targeted_one_sku"
+          "integration_validation": "published_full_export",
+          "publication_revision": 14,
+          "verified_complete": false
         },
         "StiRelation_El": {
           "probe_outcome": "parsed",
@@ -2760,13 +2776,15 @@
       "description": "Export Relations-ConditionalOffer of StoItems.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StiRelationCO": {
           "probe_outcome": "parsed",
           "data_validation": "empty_response",
           "parser_replayed": true,
-          "integration_validation": "not_live_validated"
+          "integration_validation": "published_full_export",
+          "publication_revision": 15,
+          "verified_complete": false
         },
         "StiRelationCO_El": {
           "probe_outcome": "parsed",
@@ -2969,13 +2987,15 @@
       "description": "Base informations about products.",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StoItemBase": {
           "probe_outcome": "outside_supplier_window",
           "data_validation": "see_outcome",
           "parser_replayed": false,
-          "integration_validation": "pending_allowed_window"
+          "integration_validation": "published_full_export",
+          "publication_revision": 18,
+          "verified_complete": true
         },
         "StoItemBase_El": {
           "probe_outcome": "outside_supplier_window",
@@ -3077,13 +3097,15 @@
       "description": "Export of StoItem EAN.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StoItemEAN": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "published_targeted_one_sku"
+          "integration_validation": "published_targeted_export",
+          "publication_revision": 6,
+          "verified_complete": false
         },
         "StoItemEAN_El": {
           "probe_outcome": "parsed",
@@ -3998,13 +4020,15 @@
       "description": "Order prices in user's currency.",
       "classification": "product_read_candidate",
       "data_validation": "targeted_read_one_sku",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StoItemPriceOrdCur": {
           "probe_outcome": "parsed",
           "data_validation": "see_outcome",
           "parser_replayed": true,
-          "integration_validation": "published_and_mcp_sample_verified"
+          "integration_validation": "published_full_export",
+          "publication_revision": 17,
+          "verified_complete": false
         },
         "StoItemPriceOrdCur_El": {
           "probe_outcome": "parsed",
@@ -4091,13 +4115,15 @@
       "description": "Products on store.",
       "classification": "product_read_candidate",
       "data_validation": "full_read_33431_rows",
-      "integration_validation": "not_live_validated",
+      "integration_validation": "see_endpoint_validation",
       "endpoint_validation": {
         "StoItemQtyFree": {
           "probe_outcome": "outside_supplier_window",
           "data_validation": "see_outcome",
           "parser_replayed": false,
-          "integration_validation": "published_and_mcp_sample_verified"
+          "integration_validation": "published_full_export",
+          "publication_revision": 2,
+          "verified_complete": false
         },
         "StoItemQtyFree_El": {
           "probe_outcome": "outside_supplier_window",
@@ -5312,7 +5338,7 @@
           ]
         }
       },
-      "description": "Export souvisej\u00edc\u00edch produkt\u016f pro ASM zbo\u017e\u00ed",
+      "description": "Export souvisejících produktů pro ASM zboží",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
       "integration_validation": "not_live_validated",
@@ -5945,7 +5971,7 @@
           ]
         }
       },
-      "description": "Export Enterprice produkt\u00c4\u201a\u00e2\u20ac\u017e\u0102\u02d8\u00e2\u201a\u00ac\u0139\u02c7\u00c4\u201a\u00cb\u0098\u0102\u02d8\u00e2\u20ac\u0161\u00c2\u00ac\u00c4\u0105\u00c4\u013e\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u013e\u00c4\u201a\u00cb\u0098\u0102\u02d8\u00e2\u20ac\u0161\u00c2\u00ac\u0102\u201a\u00c2\u00a6\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u013e\u00c4\u201a\u00e2\u20ac\u017e\u0102\u02d8\u00e2\u201a\u00ac\u00c2\u00a6\u0102\u201e\u00e2\u20ac\u0161\u0102\u02d8\u00e2\u201a\u00ac\u0139\u02c7\u00c4\u201a\u00e2\u20ac\u0161\u0102\u201a\u00c2\u00bb do B2C",
+      "description": "Export Enterprice produktÄ‚â€žĂ˘â‚¬ĹˇÄ‚ËĂ˘â€šÂ¬ÄąÄľĂ„â€šĂ˘â‚¬ĹľÄ‚ËĂ˘â€šÂ¬Ă‚Â¦Ă„â€šĂ˘â‚¬ĹľÄ‚â€žĂ˘â‚¬Â¦Ă„â€šĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â» do B2C",
       "classification": "product_read_candidate",
       "data_validation": "not_tested",
       "integration_validation": "not_live_validated",
@@ -42571,5 +42597,127 @@
       "records": {},
       "parsed": true
     }
-  ]
+  ],
+  "runtime_acceptance": {
+    "checked_at": "2026-11-05T21:48:06.167233+00:00",
+    "active_products": 33427,
+    "database_revision": 19,
+    "index_revision": 19,
+    "pending_product_refreshes": [
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "AttSti",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "CpsSti",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "Queue",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemActive",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemEPREL",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemGPSR",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemHook",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemList",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemNode",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "StoItemQtyFreeExQudT",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "X-LMStiPacking",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "X-StoItemClass",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "X-StoItemPack",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": "X-StoItemVariant",
+        "domain": "schema",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "todo",
+        "endpoint": null,
+        "domain": "stock",
+        "count": 1
+      },
+      {
+        "task": "suppliermcp.refresh",
+        "status": "doing",
+        "endpoint": "StoItemEAN",
+        "domain": "schema",
+        "count": 1
+      }
+    ],
+    "evidence": "../live-validation-2026-11-05.json",
+    "note": "A full-mode export is not automatically certified globally complete. Targeted publications and queued jobs are not full catalog acceptance."
+  }
 }

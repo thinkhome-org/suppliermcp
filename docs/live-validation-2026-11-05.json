@@ -223,5 +223,714 @@
       ],
       "turn_completed": true
     }
+  },
+  "night_window": {
+    "baseline": {
+      "download_bytes": 178135560,
+      "parsed_products": 33427,
+      "download_parse_seconds": 281.02,
+      "parser_peak_rss_bytes": 62799872,
+      "publication_seconds": 731.45,
+      "publication_peak_rss_kib": 301904,
+      "revision": 18,
+      "complete": true
+    },
+    "parameters": {
+      "download_bytes": 151305572,
+      "normalized_schema_records": 1397248,
+      "download_parse_seconds": 99.19,
+      "staging_seconds": 183.75,
+      "publication_including_lock_wait_seconds": 1751.65,
+      "publication_peak_rss_kib": 646252,
+      "revision": 19,
+      "observations": 9501202,
+      "source_product_ids": 33432
+    },
+    "price": {
+      "full_export_published_revision": 17
+    },
+    "native_dictionaries": {
+      "SCategorySys": {
+        "available": true,
+        "returned_chunks": 20,
+        "total_chunks": 231,
+        "continuation_present": true,
+        "continuation_available": true
+      },
+      "SPresentTree": {
+        "available": true,
+        "returned_chunks": 20,
+        "total_chunks": 5117,
+        "continuation_present": true,
+        "continuation_available": true
+      }
+    },
+    "parameter_filter_checks": {
+      "text_native_filter_matches_source": true,
+      "number_native_filter_matches_source": true,
+      "both_types_found": true
+    },
+    "final_mcp_verification": {
+      "checked_at": "2026-11-05T21:48:06.167233+00:00",
+      "checks": {
+        "unauthenticated_rejected": true,
+        "tool_count": 7,
+        "resource_count": 2,
+        "schema_available": true
+      },
+      "coverage": {
+        "interfaces": {
+          "ed_public": {
+            "domains": {
+              "catalog": {
+                "outcome": "ok",
+                "complete": true,
+                "attempted_at": "2026-11-05T20:46:59.555227+00:00",
+                "last_verified_complete_revision": 3
+              }
+            },
+            "outcome": "ok",
+            "endpoints": {
+              "getProductListDownloadZIP": {
+                "outcome": "ok",
+                "complete": true,
+                "revision": 3,
+                "attempted_at": "2026-11-05T20:46:59.555227+00:00",
+                "last_success_at": "2026-11-05T20:46:59.555227+00:00",
+                "next_allowed_at": null
+              }
+            },
+            "configured": true,
+            "attempted_at": "2026-11-05T20:46:59.555227+00:00"
+          },
+          "mega": {
+            "domains": {
+              "price": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T20:55:15.780971+00:00",
+                "last_verified_complete_revision": null
+              },
+              "stock": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+                "last_verified_complete_revision": null
+              },
+              "schema": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T21:03:40.741475+00:00",
+                "last_verified_complete_revision": null
+              },
+              "catalog": {
+                "outcome": "ok",
+                "complete": true,
+                "attempted_at": "2026-11-05T20:57:29.468838+00:00",
+                "last_verified_complete_revision": 18
+              }
+            },
+            "outcome": "partial",
+            "endpoints": {
+              "AttSti": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 9,
+                "attempted_at": "2026-11-05T18:10:52.752106+00:00",
+                "last_success_at": "2026-11-05T18:10:52.752106+00:00",
+                "next_allowed_at": null
+              },
+              "Config": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "CpsSti": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "AttCpsSti": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 13,
+                "attempted_at": "2026-11-05T18:16:34.803024+00:00",
+                "last_success_at": "2026-11-05T18:16:34.803024+00:00",
+                "next_allowed_at": null
+              },
+              "CpsStiVal": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 19,
+                "attempted_at": "2026-11-05T21:03:40.741475+00:00",
+                "last_success_at": "2026-11-05T21:03:40.741475+00:00",
+                "next_allowed_at": null
+              },
+              "StiPacking": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 16,
+                "attempted_at": "2026-11-05T20:36:55.407455+00:00",
+                "last_success_at": "2026-11-05T20:36:55.407455+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemEAN": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 6,
+                "attempted_at": "2026-11-05T18:10:47.054366+00:00",
+                "last_success_at": "2026-11-05T18:10:47.054366+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemSiv": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "StiRelation": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 14,
+                "attempted_at": "2026-11-05T18:16:38.500153+00:00",
+                "last_success_at": "2026-11-05T18:16:38.500153+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemBase": {
+                "outcome": "ok",
+                "complete": true,
+                "revision": 18,
+                "attempted_at": "2026-11-05T20:57:29.468838+00:00",
+                "last_success_at": "2026-11-05T20:57:29.468838+00:00",
+                "next_allowed_at": null
+              },
+              "SCategorySys": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 10,
+                "attempted_at": "2026-11-05T18:16:02.670109+00:00",
+                "last_success_at": "2026-11-05T18:16:02.670109+00:00",
+                "next_allowed_at": null
+              },
+              "SPresentTree": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 11,
+                "attempted_at": "2026-11-05T18:16:08.484258+00:00",
+                "last_success_at": "2026-11-05T18:16:08.484258+00:00",
+                "next_allowed_at": null
+              },
+              "StiRelationCO": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 15,
+                "attempted_at": "2026-11-05T20:36:43.230913+00:00",
+                "last_success_at": "2026-11-05T20:36:43.230913+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemQtyFree": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 2,
+                "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+                "last_success_at": "2026-11-05T17:52:35.616284+00:00",
+                "next_allowed_at": null
+              },
+              "SPresentTreeType": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 12,
+                "attempted_at": "2026-11-05T18:16:31.316575+00:00",
+                "last_success_at": "2026-11-05T18:16:31.316575+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemPriceOrdCur": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 17,
+                "attempted_at": "2026-11-05T20:55:15.780971+00:00",
+                "last_success_at": "2026-11-05T20:55:15.780971+00:00",
+                "next_allowed_at": null
+              }
+            },
+            "configured": true,
+            "attempted_at": "2026-11-05T21:03:40.741475+00:00"
+          },
+          "ed_private": {
+            "outcome": "disabled",
+            "domains": {},
+            "configured": false
+          }
+        },
+        "revision": 19,
+        "index_revision": 19,
+        "complete": false,
+        "warnings": [
+          "coverage_is_account_and_field_scoped"
+        ]
+      },
+      "ed": {
+        "catalog_total": 124532,
+        "list_seconds": 17.138,
+        "total": 100000,
+        "list_available": true,
+        "exact_sku_found": true,
+        "details_available": true,
+        "detail_chunks": 27,
+        "detail_continuation_available": true,
+        "list_continuation_disjoint": true,
+        "search_available": true,
+        "search_matches": 1,
+        "comparison_available": true
+      },
+      "mega": {
+        "catalog_total": 33427,
+        "list_seconds": 7.071,
+        "total": 33427,
+        "list_available": true,
+        "exact_sku_found": true,
+        "details_available": true,
+        "detail_chunks": 801,
+        "detail_continuation_available": true,
+        "list_continuation_disjoint": true,
+        "search_available": true,
+        "search_matches": 1,
+        "comparison_available": true
+      }
+    },
+    "runtime_snapshot": {
+      "active_products": {
+        "ed": 124532,
+        "mega": 33427
+      },
+      "indexed_products": 157959,
+      "coverage": {
+        "interfaces": {
+          "ed_public": {
+            "domains": {
+              "catalog": {
+                "outcome": "ok",
+                "complete": true,
+                "attempted_at": "2026-11-05T20:46:59.555227+00:00",
+                "last_verified_complete_revision": 3
+              }
+            },
+            "outcome": "ok",
+            "endpoints": {
+              "getProductListDownloadZIP": {
+                "outcome": "ok",
+                "complete": true,
+                "revision": 3,
+                "attempted_at": "2026-11-05T20:46:59.555227+00:00",
+                "last_success_at": "2026-11-05T20:46:59.555227+00:00",
+                "next_allowed_at": null
+              }
+            },
+            "configured": true,
+            "attempted_at": "2026-11-05T20:46:59.555227+00:00"
+          },
+          "mega": {
+            "domains": {
+              "price": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T20:55:15.780971+00:00",
+                "last_verified_complete_revision": null
+              },
+              "stock": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+                "last_verified_complete_revision": null
+              },
+              "schema": {
+                "outcome": "ok",
+                "complete": false,
+                "attempted_at": "2026-11-05T21:03:40.741475+00:00",
+                "last_verified_complete_revision": null
+              },
+              "catalog": {
+                "outcome": "ok",
+                "complete": true,
+                "attempted_at": "2026-11-05T20:57:29.468838+00:00",
+                "last_verified_complete_revision": 18
+              }
+            },
+            "outcome": "partial",
+            "endpoints": {
+              "AttSti": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 9,
+                "attempted_at": "2026-11-05T18:10:52.752106+00:00",
+                "last_success_at": "2026-11-05T18:10:52.752106+00:00",
+                "next_allowed_at": null
+              },
+              "Config": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "CpsSti": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "AttCpsSti": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 13,
+                "attempted_at": "2026-11-05T18:16:34.803024+00:00",
+                "last_success_at": "2026-11-05T18:16:34.803024+00:00",
+                "next_allowed_at": null
+              },
+              "CpsStiVal": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 19,
+                "attempted_at": "2026-11-05T21:03:40.741475+00:00",
+                "last_success_at": "2026-11-05T21:03:40.741475+00:00",
+                "next_allowed_at": null
+              },
+              "StiPacking": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 16,
+                "attempted_at": "2026-11-05T20:36:55.407455+00:00",
+                "last_success_at": "2026-11-05T20:36:55.407455+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemEAN": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 6,
+                "attempted_at": "2026-11-05T18:10:47.054366+00:00",
+                "last_success_at": "2026-11-05T18:10:47.054366+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemSiv": {
+                "outcome": "outside_supplier_window",
+                "next_allowed_at": "2026-11-05T20:00:00+00:00"
+              },
+              "StiRelation": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 14,
+                "attempted_at": "2026-11-05T18:16:38.500153+00:00",
+                "last_success_at": "2026-11-05T18:16:38.500153+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemBase": {
+                "outcome": "ok",
+                "complete": true,
+                "revision": 18,
+                "attempted_at": "2026-11-05T20:57:29.468838+00:00",
+                "last_success_at": "2026-11-05T20:57:29.468838+00:00",
+                "next_allowed_at": null
+              },
+              "SCategorySys": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 10,
+                "attempted_at": "2026-11-05T18:16:02.670109+00:00",
+                "last_success_at": "2026-11-05T18:16:02.670109+00:00",
+                "next_allowed_at": null
+              },
+              "SPresentTree": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 11,
+                "attempted_at": "2026-11-05T18:16:08.484258+00:00",
+                "last_success_at": "2026-11-05T18:16:08.484258+00:00",
+                "next_allowed_at": null
+              },
+              "StiRelationCO": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 15,
+                "attempted_at": "2026-11-05T20:36:43.230913+00:00",
+                "last_success_at": "2026-11-05T20:36:43.230913+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemQtyFree": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 2,
+                "attempted_at": "2026-11-05T17:52:35.616284+00:00",
+                "last_success_at": "2026-11-05T17:52:35.616284+00:00",
+                "next_allowed_at": null
+              },
+              "SPresentTreeType": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 12,
+                "attempted_at": "2026-11-05T18:16:31.316575+00:00",
+                "last_success_at": "2026-11-05T18:16:31.316575+00:00",
+                "next_allowed_at": null
+              },
+              "StoItemPriceOrdCur": {
+                "outcome": "ok",
+                "complete": false,
+                "revision": 17,
+                "attempted_at": "2026-11-05T20:55:15.780971+00:00",
+                "last_success_at": "2026-11-05T20:55:15.780971+00:00",
+                "next_allowed_at": null
+              }
+            },
+            "configured": true,
+            "attempted_at": "2026-11-05T21:03:40.741475+00:00"
+          },
+          "ed_private": {
+            "outcome": "disabled",
+            "domains": {},
+            "configured": false
+          }
+        },
+        "revision": 19,
+        "index_revision": 19,
+        "complete": false,
+        "warnings": [
+          "coverage_is_account_and_field_scoped"
+        ]
+      },
+      "published": [
+        {
+          "endpoint": "StoItemQtyFree",
+          "mode": "full",
+          "complete": "false",
+          "revision": 2
+        },
+        {
+          "endpoint": "getProductListDownloadZIP",
+          "mode": "full",
+          "complete": "true",
+          "revision": 3
+        },
+        {
+          "endpoint": "StoItemPriceOrdCur",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 4
+        },
+        {
+          "endpoint": "CpsStiVal",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 5
+        },
+        {
+          "endpoint": "StoItemEAN",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 6
+        },
+        {
+          "endpoint": "StiPacking",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 7
+        },
+        {
+          "endpoint": "StiRelation",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 8
+        },
+        {
+          "endpoint": "AttSti",
+          "mode": "targeted",
+          "complete": "false",
+          "revision": 9
+        },
+        {
+          "endpoint": "SCategorySys",
+          "mode": "full",
+          "complete": "false",
+          "revision": 10
+        },
+        {
+          "endpoint": "SPresentTree",
+          "mode": "full",
+          "complete": "false",
+          "revision": 11
+        },
+        {
+          "endpoint": "SPresentTreeType",
+          "mode": "full",
+          "complete": "false",
+          "revision": 12
+        },
+        {
+          "endpoint": "AttCpsSti",
+          "mode": "full",
+          "complete": "false",
+          "revision": 13
+        },
+        {
+          "endpoint": "StiRelation",
+          "mode": "full",
+          "complete": "false",
+          "revision": 14
+        },
+        {
+          "endpoint": "StiRelationCO",
+          "mode": "full",
+          "complete": "false",
+          "revision": 15
+        },
+        {
+          "endpoint": "StiPacking",
+          "mode": "full",
+          "complete": "false",
+          "revision": 16
+        },
+        {
+          "endpoint": "StoItemPriceOrdCur",
+          "mode": "full",
+          "complete": "false",
+          "revision": 17
+        },
+        {
+          "endpoint": "StoItemBase",
+          "mode": "full",
+          "complete": "true",
+          "revision": 18
+        },
+        {
+          "endpoint": "CpsStiVal",
+          "mode": "full",
+          "complete": "false",
+          "revision": 19
+        }
+      ],
+      "pending_jobs": [
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "AttSti",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "CpsSti",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "Queue",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemActive",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemEPREL",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemGPSR",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemHook",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemList",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemNode",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "StoItemQtyFreeExQudT",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "X-LMStiPacking",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "X-StoItemClass",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "X-StoItemPack",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": "X-StoItemVariant",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "todo",
+          "endpoint": null,
+          "domain": "stock",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.refresh",
+          "status": "doing",
+          "endpoint": "StoItemEAN",
+          "domain": "schema",
+          "count": 1
+        },
+        {
+          "task": "suppliermcp.tick",
+          "status": "todo",
+          "endpoint": null,
+          "domain": null,
+          "count": 32
+        }
+      ]
+    }
+  },
+  "automated_verification": {
+    "tests_passed": 145,
+    "skipped": 0,
+    "worktree_seconds": 17.55,
+    "merged_main_seconds": 17.6,
+    "ruff": "passed",
+    "independent_review": {
+      "critical": 0,
+      "important": 6,
+      "important_fixed_with_red_green_regressions": 6,
+      "new_minor": 0
+    }
   }
 }

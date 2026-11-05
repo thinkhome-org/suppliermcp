@@ -86,8 +86,12 @@ See the live activation design in `../superpowers/specs/2026-11-05-live-supplier
 
 ## Live adapter follow-up
 
-The repaired eD adapter downloaded the documented ZIP (47,069,717 bytes), parsed all 124,532 products/offers, and used 61,374,464 bytes peak RSS in the measured run. An XML replay used 36,077,568 bytes peak RSS. The 100MEGA product-only probe obeyed each advertised mode window; 81 captured responses replay successfully through the revised parser. Empty responses, restricted windows and methods requiring tree IDs are listed separately in the JSON inventory. Some special exports ignore the supplied SKU and return many rows; no targeted completeness is inferred. None of this yet proves live database publication or MCP query coverage.
+The repaired eD adapter downloaded the documented ZIP (47,069,717 bytes), parsed all 124,532 products/offers, and used 61,374,464 bytes peak RSS in the measured run. An XML replay used 36,077,568 bytes peak RSS. The 100MEGA product-only probe obeyed each advertised mode window; 81 captured responses replay successfully through the revised parser. Empty responses, restricted windows and methods requiring tree IDs are listed separately in the JSON inventory. Some special exports ignore the supplied SKU and return many rows; no targeted completeness is inferred. Subsequent database publication and MCP acceptance are recorded in [validation evidence](../validation.md); parser replay alone is not database acceptance.
 
 ## Current evidence format
 
 Use each JSON inventory for current endpoint-level results. The initial family table above is historical; `endpoint_validation`, `live_probes`, and `capture_parser_replay` distinguish actual calls, empty responses, parser validation, and database acceptance. Equivalent representations are not all polled on a schedule. Advertised windows now use the corrected enabled-cell parser; a disabled method does not inherit the hours printed in its disabled table cell.
+
+## Night-window acceptance
+
+Full baseline, price and parameter exports were published; the final checked catalog/index both contained 157,959 active products at revision 19. See [live validation](../validation.md) for measured timings, actual MCP/Codex checks and remaining queued enrichments. `published_full_export` records a full-mode import; only `verified_complete: true` asserts the separately verified completeness contract. A queued or parser-replayed export is not a completed integration test.
