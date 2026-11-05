@@ -83,3 +83,7 @@ PUBLIC export status succeeded through the existing Codex connector and directly
 Sources: [100MEGA capability page](https://i6ws.100mega.cz/ResultTypeInfo.ashx), [100MEGA documentation](https://i6ws.100mega.cz/WebServiceInfoMail.txt), [eD PUBLIC WSDL](https://public-ws-cz.elinkx.biz/service.asmx?WSDL), [eD PRIVATE WSDL](https://private-ws-cz.elinkx.biz/service.asmx?WSDL).
 
 See the live activation design in `../superpowers/specs/2026-11-05-live-supplier-data-design.md` for the proposed implementation and acceptance criteria.
+
+## Live adapter follow-up
+
+The repaired eD adapter downloaded the documented ZIP (47,069,717 bytes), parsed all 124,532 products/offers, and used 61,374,464 bytes peak RSS in the measured run. An XML replay used 36,077,568 bytes peak RSS. The 100MEGA product-only probe obeyed each advertised mode window; 81 captured responses replay successfully through the revised parser. Empty responses, restricted windows and methods requiring tree IDs are listed separately in the JSON inventory. Some special exports ignore the supplied SKU and return many rows; no targeted completeness is inferred. None of this yet proves live database publication or MCP query coverage.

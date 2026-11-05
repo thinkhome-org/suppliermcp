@@ -103,10 +103,12 @@ class ArtifactStore:
         return removed
 
 
-def _elements(source):
+def _elements(source, on_root=None):
     stack = []
     for event, element in iterparse(source, events=("start", "end"), forbid_dtd=True):
         if event == "start":
+            if not stack and on_root:
+                on_root(element)
             stack.append(element)
             continue
         had_content = bool(len(element) or element.attrib or element.text)
@@ -117,7 +119,7 @@ def _elements(source):
             stack[-1].remove(element)
 
 
-def parse_xml(path: Path, max_expanded=1024**3):
+def parse_xml(path: Path, max_expanded=1024**3, on_root=None):
     """Yield complete end elements; callers may clear processed record elements."""
     try:
         if zipfile.is_zipfile(path):
@@ -132,10 +134,10 @@ def parse_xml(path: Path, max_expanded=1024**3):
                     if entry.is_dir():
                         continue
                     with archive.open(entry) as source:
-                        yield from _elements(source)
+                        yield from _elements(source, on_root)
         else:
             if path.stat().st_size > max_expanded:
                 raise CatalogError("payload_too_large")
-            yield from _elements(path)
+            yield from _elements(path, on_root)
     except (DefusedXmlException, ParseError, zipfile.BadZipFile, OSError):
         raise CatalogError("invalid_export") from None

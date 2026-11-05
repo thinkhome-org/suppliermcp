@@ -135,3 +135,32 @@ def test_migration_preserves_legacy_evidence(conn):
         )
         conn.execute("SET LOCAL search_path TO public")
         conn.execute("DROP SCHEMA legacy_upgrade CASCADE")
+
+
+def test_parameter_rows_publish_without_replacing_identity(conn):
+    from suppliermcp.catalog.contracts import SchemaRecord
+
+    put(conn, "base", [product("base", [])])
+    fact = Observation(
+        interface="mega",
+        endpoint="params",
+        field="parameter:42",
+        value="red",
+        value_key="a",
+        cardinality="many",
+    )
+    put(
+        conn,
+        "params",
+        [
+            SchemaRecord(
+                interface="mega",
+                kind="product_facts",
+                values={"item_id": "mega:1", "observations": [fact.model_dump(mode="json")]},
+            )
+        ],
+        replace_scope="endpoint",
+    )
+    view = get_product(conn, "mega:1")
+    assert view.item.name == "Product"
+    assert [(o.field, o.value) for o in view.item.observations] == [("parameter:42", "red")]

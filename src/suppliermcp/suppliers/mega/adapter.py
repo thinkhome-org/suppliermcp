@@ -14,6 +14,8 @@ from suppliermcp.suppliers.offer_contract import apply_contract
 from suppliermcp.sync.artifacts import parse_xml
 
 from .capabilities import require_window
+from .exports import PRODUCT_EXPORTS, nested_facts, normalize_record
+from .exports import values as record_values
 
 
 class MegaAdapter:
@@ -40,34 +42,52 @@ class MegaAdapter:
         )
 
     def fetch(self, domain, codes=None):
-        from suppliermcp.catalog.contracts import utcnow
-
-        started_at = utcnow()
         endpoint = self.endpoints.get(domain)
         if not endpoint:
             raise CatalogError("unsupported_domain")
-        mode = "targeted" if codes else "full"
-        require_window(self.contracts.get(endpoint, {}), mode)
+        return self.fetch_export(endpoint, codes=codes)
+
+    def fetch_export(self, endpoint, *, codes=None, from_time=None, to_time=None):
+        from suppliermcp.catalog.contracts import utcnow
+
+        if endpoint not in PRODUCT_EXPORTS:
+            raise CatalogError("operation_not_allowed")
+        if bool(from_time) != bool(to_time) or codes and from_time:
+            raise CatalogError("invalid_export_range")
+        mode = "targeted" if codes else "delta" if from_time else "full"
+        contract = self.contracts.get(endpoint, {})
+        require_window(contract, mode)
         if codes and len(codes) != 1:
             raise CatalogError("unsupported_targeted_read")
         params = {"resultType": endpoint}
+        method = {"full": "GetResult", "targeted": "GetResultByCode", "delta": "GetResultByFromTo"}[
+            mode
+        ]
         if codes:
             params["code"] = codes[0]
-        method = "GetResultByCode" if codes else "GetResult"
-        data = self.transport.read(
-            "GET", f"{self.base_url}/Default.asmx/{method}?{urlencode(params)}", endpoint=method
-        )
+        if from_time:
+            if from_time.tzinfo is None or to_time.tzinfo is None or from_time >= to_time:
+                raise CatalogError("invalid_export_range")
+            params.update({"from": from_time.isoformat(), "to": to_time.isoformat()})
+        domain = next((d for d, e in self.endpoints.items() if e == endpoint), "schema")
         manifest = BatchManifest(
             interface="mega",
-            started_at=started_at,
+            started_at=utcnow(),
             domain=domain,
             mode=mode,
             endpoint=endpoint,
             capabilities=self.discover(),
-            authoritative_identity=domain == "catalog",
-            replace_scope="items" if codes else "endpoint",
+            authoritative_identity=endpoint in {"StoItemBase", "StoItemBase_El"},
+            replace_scope="none" if mode == "delta" else "items" if codes else "endpoint",
+            delta_from=from_time,
+            delta_to=to_time,
         )
-        self.store.save([data], manifest)
+        self.transport.download(
+            f"{self.base_url}/Default.asmx/{method}?{urlencode(params)}",
+            self.store,
+            manifest,
+            endpoint=method,
+        )
         return manifest
 
     def parse(self, manifest):
@@ -75,15 +95,47 @@ class MegaAdapter:
         contract = self.contracts.get(manifest.endpoint, {})
         offer_contract = contract.get("offer", {})
         root_seen = False
-        for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
+        root_values = {}
+        root_container = []
+
+        def remember_root(root):
+            root_values.update(root.attrib)
+            root_container.append(root)
+
+        for element in parse_xml(
+            Path(manifest.path),
+            max_expanded=self.max_expanded_bytes,
+            on_root=remember_root,
+        ):
             tag = element.tag.rsplit("}", 1)[-1]
             if tag == offer_contract.get("export_timestamp_field"):
                 export_values[tag] = element.text
-            if tag == "Result":
+            if (
+                tag == "Result"
+                or tag == "SHOP"
+                and manifest.endpoint in {"StoItemShop_El", "StoItemShoptet_El"}
+            ):
                 root_seen = True
-            if tag != "StoItem":
+            if tag == "StoItem" and root_container and element not in root_container[0]:
                 continue
-            values = dict(element.attrib)
+            if tag != "StoItem":
+                if tag not in {"Result", "SHOP"} and (
+                    tag == "Row" or root_container and element in root_container[0]
+                ):
+                    if not element.attrib and not len(element):
+                        root_values[tag] = element.text or ""
+                    else:
+                        yield from normalize_record(manifest, element, root_values)
+                        element.clear()
+                continue
+            values = record_values(element)
+            if not values:
+                element.clear()
+                continue
+            if manifest.domain == "schema":
+                yield from normalize_record(manifest, element, root_values)
+                element.clear()
+                continue
             if not values.get("Id") or not values.get("Code"):
                 raise CatalogError("missing_product_identity")
             if manifest.endpoint == "StoItemBase":
@@ -115,6 +167,18 @@ class MegaAdapter:
                 except (InvalidOperation, ValueError):
                     raise CatalogError("invalid_numeric_field") from None
 
+            observations.extend(nested_facts(manifest, element))
+            observations.extend(
+                Observation(
+                    interface="mega",
+                    endpoint=manifest.endpoint,
+                    field="root:" + k,
+                    value=v,
+                    fetched_at=manifest.started_at,
+                    artifact_sha256=manifest.artifact_sha256,
+                )
+                for k, v in root_values.items()
+            )
             yield SourceItem(
                 supplier="mega",
                 source_id=values["Id"],
@@ -122,7 +186,7 @@ class MegaAdapter:
                 name=values.get("Name", ""),
                 manufacturer=values.get("ManName"),
                 mpn=values.get("PartNo"),
-                ean=values.get(contract.get("ean_field", "EAN_NOT_VERIFIED")),
+                ean=values.get(contract.get("ean_field", "EAN")),
                 observations=observations,
             )
             qty = num("QtyFree")
@@ -140,10 +204,11 @@ class MegaAdapter:
                 fees = num("PriceRef") + num("PriceRef2")
             offer = Offer(
                 item_id="mega:" + values["Id"],
-                unit_net=num("PriceDea"),
+                unit_net=num("PriceOrd") if "PriceOrd" in values else num("PriceDea"),
                 fees_net=fees,
                 currency=values.get(
-                    contract.get("currency_field", "Currency"), contract.get("currency")
+                    contract.get("currency_field", "Currency"),
+                    root_values.get("CurCode", contract.get("currency")),
                 ),
                 vat_percent=num("TaxRate"),
                 stock_qty=qty,

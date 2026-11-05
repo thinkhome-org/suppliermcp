@@ -23,6 +23,13 @@ def stage(conn, manifest, rows):
         )
         with conn.cursor().copy("COPY staging (run_id,ordinal,kind,data) FROM STDIN") as copy:
             for ordinal, row in enumerate(rows):
+                if isinstance(row, SchemaRecord) and row.kind == "product_facts":
+                    from suppliermcp.catalog.contracts import Observation
+
+                    row.values["observations"] = [
+                        Observation.model_validate(o).model_dump(mode="json")
+                        for o in row.values["observations"]
+                    ]
                 copy.write_row(
                     (run_id, ordinal, type(row).__name__, Jsonb(row.model_dump(mode="json")))
                 )
@@ -75,7 +82,7 @@ def publish(conn, run_id, *, accept_reason=None):
         identities = [
             r[0]
             for r in conn.execute(
-                "SELECT DISTINCT (data->>'supplier') || ':' || (data->>'source_id') FROM staging WHERE run_id=%s AND kind='SourceItem'",
+                "SELECT DISTINCT COALESCE(data->>'item_id',data->'values'->>'item_id',(data->>'supplier') || ':' || (data->>'source_id')) FROM staging WHERE run_id=%s AND (kind IN ('SourceItem','Offer') OR (kind='SchemaRecord' AND data->>'kind'='product_facts'))",
                 (run_id,),
             )
         ]
@@ -126,11 +133,11 @@ def publish(conn, run_id, *, accept_reason=None):
                 SELECT DISTINCT ON (item_id,interface,endpoint,field,value_key)
                     item_id,interface,endpoint,field,observation,value_key
                 FROM (
-                    SELECT COALESCE(s.data->>'item_id',(s.data->>'supplier') || ':' || (s.data->>'source_id')) item_id,
+                    SELECT COALESCE(s.data->>'item_id',s.data->'values'->>'item_id',(s.data->>'supplier') || ':' || (s.data->>'source_id')) item_id,
                         o->>'interface' interface,o->>'endpoint' endpoint,o->>'field' field,
                         COALESCE(o->>'value_key','') value_key,o observation,s.ordinal
-                    FROM staging s CROSS JOIN LATERAL jsonb_array_elements(s.data->'observations') o
-                    WHERE s.run_id=%s AND s.kind IN ('SourceItem','Offer')
+                    FROM staging s CROSS JOIN LATERAL jsonb_array_elements(COALESCE(s.data->'observations',s.data->'values'->'observations')) o
+                    WHERE s.run_id=%s AND (s.kind IN ('SourceItem','Offer') OR (s.kind='SchemaRecord' AND s.data->>'kind'='product_facts'))
                         AND o->>'state' NOT IN ('missing','placeholder')
                 ) facts ORDER BY item_id,interface,endpoint,field,value_key,ordinal DESC
                 ON CONFLICT(item_id,interface,endpoint,field,value_key) DO UPDATE SET data=EXCLUDED.data
@@ -145,6 +152,9 @@ def publish(conn, run_id, *, accept_reason=None):
             for kind, data in cursor:
                 if kind == "SchemaRecord":
                     schema = SchemaRecord.model_validate(data)
+                    if schema.kind == "product_facts":
+                        changed.add(schema.values["item_id"])
+                        continue
                     if schema.kind == "relationship":
                         rel = schema.values
                         conn.execute(

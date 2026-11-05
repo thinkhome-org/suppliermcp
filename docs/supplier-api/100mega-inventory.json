@@ -40219,5 +40219,1507 @@
         }
       ]
     }
-  }
+  },
+  "live_probes": [
+    {
+      "endpoint": "AttCpsSti",
+      "mode": "targeted",
+      "bytes": 73,
+      "sha256": "8cb4fc3a96db694896873fce1340fa49ed8f56aeced6252be51638292b192e1b",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "AttCpsSti_El",
+      "mode": "targeted",
+      "bytes": 73,
+      "sha256": "8cb4fc3a96db694896873fce1340fa49ed8f56aeced6252be51638292b192e1b",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "AttSti",
+      "mode": "targeted",
+      "bytes": 770,
+      "sha256": "960b72a4aa088c1e66db738aec6293e4ea35bcc55fff653f35c6bfc2ed165b44",
+      "counts": {
+        "SchemaRecord": 3
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "AttSti_El",
+      "mode": "targeted",
+      "bytes": 1214,
+      "sha256": "2f0d2921efb727e33c8063c88f027aaec45d7e1539a23ae5d8c40e0cdf182d29",
+      "counts": {
+        "SchemaRecord": 3
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "Config",
+      "mode": "targeted",
+      "bytes": 73,
+      "sha256": "5b8a63a2f16067d5921907f1abbe60280dc6a64e9b6991d58c9e98d5dc98a8f5",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "Config_El",
+      "mode": "targeted",
+      "bytes": 73,
+      "sha256": "5b8a63a2f16067d5921907f1abbe60280dc6a64e9b6991d58c9e98d5dc98a8f5",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "CpsSti",
+      "mode": "targeted",
+      "outcome": "capability_not_verified",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "CpsStiVal",
+      "mode": "targeted",
+      "bytes": 2300,
+      "sha256": "eec30683df1b00235d2be35f07e17e8c82558a3bfc131d4d255ff99dd4f46a9b",
+      "counts": {
+        "SchemaRecord": 11
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "CpsStiVal_El",
+      "mode": "targeted",
+      "bytes": 4033,
+      "sha256": "2f35690244bacad154178c738b9f1982f8279a5f656f4284b4f7b69ed4dc8a38",
+      "counts": {
+        "SchemaRecord": 11
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "Queue",
+      "mode": "full",
+      "bytes": 72,
+      "sha256": "8ecb4a7570bb3447c16af395fdeb485da23f248c233effffe81dc7beafbf6b97",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "Queue_El",
+      "mode": "full",
+      "bytes": 72,
+      "sha256": "8ecb4a7570bb3447c16af395fdeb485da23f248c233effffe81dc7beafbf6b97",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "SCategorySys",
+      "mode": "full",
+      "bytes": 13717,
+      "sha256": "a1e9722b316446f248a862f35af6d9d0076fa8c5777c4eeeea99b0914e82e524",
+      "counts": {
+        "SchemaRecord": 231
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "SCategorySys_El",
+      "mode": "full",
+      "bytes": 24096,
+      "sha256": "571be21ae8f6253287dad85ac5e5aa5628a4ffc766a3fcea2a806a7b3bb55f54",
+      "counts": {
+        "SchemaRecord": 231
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "SPresentTree",
+      "mode": "full",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "SPresentTreeType",
+      "mode": "full",
+      "bytes": 283,
+      "sha256": "67a18349ad079a91cf7c528f15b7dc18c7f677b73e8e805484d5046b257695df",
+      "counts": {
+        "SchemaRecord": 3
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "SPresentTreeType_El",
+      "mode": "full",
+      "bytes": 439,
+      "sha256": "a46f3f8d1c04eb3f0221a2a72f4d1aa0cad63ac405296a6f02873deac3f4cda0",
+      "counts": {
+        "SchemaRecord": 3
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "SPresentTree_El",
+      "mode": "full",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StiPacking",
+      "mode": "targeted",
+      "bytes": 445,
+      "sha256": "c8846c4ad3efcd6c3fa84a49fa59b86ef32efc7b700812980e5ae1e3f7224634",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StiPacking_El",
+      "mode": "targeted",
+      "bytes": 742,
+      "sha256": "ee61be3a2f056f42833969e98ccfb9b90b768d0431418f09afe94da7d5725b94",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StiRelation",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StiRelationCO",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StiRelationCO_El",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StiRelation_El",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StoItemActive",
+      "mode": "targeted",
+      "bytes": 150,
+      "sha256": "19e78f6840152676be33b883fe1fe963a7a90593c8ccd87b130ceab372ab6968",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemActive_El",
+      "mode": "targeted",
+      "bytes": 222,
+      "sha256": "4735fefa54f46660be44109ba23fea7d217cea54d67819138ffb843d194690ee",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemBase",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemBase_El",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemEAN",
+      "mode": "targeted",
+      "bytes": 142,
+      "sha256": "831f3012267403e453250468a1a94dfdf6a483b9b846fcfb53e4342b2cbed02d",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemEAN_El",
+      "mode": "targeted",
+      "bytes": 197,
+      "sha256": "fecd593229d324509c87048bf3c64d6499e42523c8c8b58535664a34a7ed5c3d",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemEPREL",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemEPREL_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemGPSR",
+      "mode": "targeted",
+      "bytes": 411,
+      "sha256": "31c8f37f750c9ce4588c3f296ea01e4a8289aa5a534c90d45c0f7dc1362e136c",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemHook",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "501dbfa079e7164104fda65c9a60e2e056a16e75e2a07b1947f0f8c9e7cb471b",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StoItemHook_El",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "501dbfa079e7164104fda65c9a60e2e056a16e75e2a07b1947f0f8c9e7cb471b",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "StoItemList",
+      "mode": "targeted",
+      "outcome": "requires_verified_tree_identifier",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemList_El",
+      "mode": "targeted",
+      "outcome": "requires_verified_tree_identifier",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemNode",
+      "mode": "targeted",
+      "bytes": 1091,
+      "sha256": "7ccf1afbc82374ea4503653866560442161f6a3559124d81daa130da53b46363",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemNode_El",
+      "mode": "targeted",
+      "bytes": 1840,
+      "sha256": "d4cf11cc60d4f5dfb3bf15f46f04c77224216011b254706025ca2a14f92b2389",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceEU",
+      "mode": "targeted",
+      "bytes": 169,
+      "sha256": "37a02767592cc31028f7e9ec5f1549c4d6b9d479f74b530344d7c89992a4a634",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceEU_El",
+      "mode": "targeted",
+      "bytes": 255,
+      "sha256": "bb790ea489e00492f0451e88355f98d160ef53822b4fbfbd5542973265b0c50b",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceOrd",
+      "mode": "targeted",
+      "bytes": 259,
+      "sha256": "ac784c9d3d08681f8536d69e13c9638fe5aa24560bf6696900470b48fc49600c",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceOrdCur",
+      "mode": "targeted",
+      "bytes": 213,
+      "sha256": "4033ce1e7bae7ec2b1a8a52b8c7334f9cdd49880c8e3719e49369fa8df7cd0ab",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceOrdCur_El",
+      "mode": "targeted",
+      "bytes": 326,
+      "sha256": "0206fda918394ca5f4ca5cd34a6c4e9a6016aca51782f9b2947f6bcc4734e03e",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemPriceOrd_El",
+      "mode": "targeted",
+      "bytes": 406,
+      "sha256": "63790ca3f880d0dba7162e29fcebcf2ec2c83d80ec6cc0052872639d17c01921",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFree",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeBO",
+      "mode": "targeted",
+      "bytes": 162,
+      "sha256": "78c818e9dc03e8bd0b26c486ab23d50da3eb650ab9f363d7667a751a3ba48311",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeBO_El",
+      "mode": "targeted",
+      "bytes": 248,
+      "sha256": "6d370b2be4f6a3ea3db6d564f5965dcaed3862ab4c565471f28b0702be5ec311",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeEx",
+      "mode": "targeted",
+      "bytes": 172,
+      "sha256": "5508824eb492933beda04e2c44e871f5890ce58eab0b32eeec2218212e441bfd",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQud",
+      "mode": "targeted",
+      "bytes": 815,
+      "sha256": "a099f403b70ffecb2cd54669eb041798b5037e4abcaec9e8835946eccb59ada9",
+      "counts": {
+        "SourceItem": 5,
+        "Offer": 5
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQudT",
+      "mode": "targeted",
+      "bytes": 192,
+      "sha256": "8dad5749ca85ee78dc75e46ba59140d651baffcb2b0bf16497f19ea69d79af35",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQudT_El",
+      "mode": "targeted",
+      "bytes": 328,
+      "sha256": "8ac7baad8511ede24dbf335a444bebf4b25639e7ed93bb8c15efe3d01a9d8ec4",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQud_El",
+      "mode": "targeted",
+      "bytes": 1577,
+      "sha256": "9c127c0735ac9b2bcb7a1e7ecc2627b524501baea710bc66c116c5badd1da051",
+      "counts": {
+        "SourceItem": 5,
+        "Offer": 5
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFreeEx_El",
+      "mode": "targeted",
+      "bytes": 270,
+      "sha256": "189558498654f180e10694cb605555c857512e3ded3d542d99be65366eb56ae9",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemQtyFree_El",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemShop_El",
+      "mode": "targeted",
+      "outcome": "unexpected_export_root",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemShoptet_El",
+      "mode": "targeted",
+      "outcome": "unexpected_export_root",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemSiv",
+      "mode": "targeted",
+      "bytes": 583,
+      "sha256": "23161c6882280295758e0555718e00a1191dcc402974fe07a6489676f86fc603",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StoItemSiv_El",
+      "mode": "targeted",
+      "bytes": 848,
+      "sha256": "d56b85b57fc29c4f40442f4345def01e975c318af862145088a0435db555ee01",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StrStiSync",
+      "mode": "targeted",
+      "outcome": "requires_verified_tree_identifier",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "StrStiSync_El",
+      "mode": "targeted",
+      "outcome": "requires_verified_tree_identifier",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-100M",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-100M_El",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-ASM-CpsStiVal",
+      "mode": "targeted",
+      "bytes": 70,
+      "sha256": "e8a52832bc8d05e6024986b811885af8636226dc05330d4a127776ae8145915c",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-ASM-CpsStiVal_El",
+      "mode": "targeted",
+      "bytes": 70,
+      "sha256": "e8a52832bc8d05e6024986b811885af8636226dc05330d4a127776ae8145915c",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-ASM-StiRelation",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-ASM-StiRelation_El",
+      "mode": "targeted",
+      "bytes": 78,
+      "sha256": "3e0b73022aaa0a4f3d0c437951d934878e2b04f99966261e0127751ebddc5c65",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-ASM-StoItemSiv",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-ASM-StoItemSiv_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-CpsStiVal",
+      "mode": "targeted",
+      "bytes": 1912,
+      "sha256": "b89433dea11058d43420723dc4beb73c7e278e9493c7b578a6866d5a8de5b6d5",
+      "counts": {
+        "SchemaRecord": 11
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-CpsStiVal_El",
+      "mode": "targeted",
+      "bytes": 3215,
+      "sha256": "43659e1d4d4519e6deb9092354c2dd64b81061d0695e2fc412206893dbd346d2",
+      "counts": {
+        "SchemaRecord": 11
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-Cybex",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-Cybex_El",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-EAN",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-EAN_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-EnterpriceB2C",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-EnterpriceB2C_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-HOG",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-HOG_El",
+      "mode": "targeted",
+      "outcome": "outside_supplier_window",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-HalshopDayOffer",
+      "mode": "targeted",
+      "bytes": 76,
+      "sha256": "bafba972476018ff01642150f23020e14376e39139c15103fb3d52653148d455",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-HalshopDayOffer_El",
+      "mode": "targeted",
+      "bytes": 76,
+      "sha256": "bafba972476018ff01642150f23020e14376e39139c15103fb3d52653148d455",
+      "counts": {},
+      "outcome": "parsed",
+      "data_validation": "empty_response"
+    },
+    {
+      "endpoint": "X-LMStiPacking",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-LMStiPacking_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-Retail",
+      "mode": "targeted",
+      "bytes": 851,
+      "sha256": "223777ed5740efbbed8c5d2cc4228be81b1f9de44c34e7b0fb757781f3955ff4",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-Retail_El",
+      "mode": "targeted",
+      "bytes": 1311,
+      "sha256": "3452a267ff3008132ed5f696a2b0e5bc3efea98cc9798a63c987007dbbc7ae1e",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemClass",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemClass_El",
+      "mode": "targeted",
+      "outcome": "missing_product_identity",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPack",
+      "mode": "targeted",
+      "bytes": 31988925,
+      "sha256": "b43687b9b614b83920d9ef9a37ea4fe5b07390dfa34db0a95d5fddbf363f2cb4",
+      "counts": {
+        "SchemaRecord": 160217
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPack_El",
+      "mode": "targeted",
+      "bytes": 57976895,
+      "sha256": "5270ace42e300da7fbe0c96c77ba167af113defdba8a36d50ce85137177f0313",
+      "counts": {
+        "SchemaRecord": 160217
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPriceEU",
+      "mode": "targeted",
+      "bytes": 172,
+      "sha256": "ab5135611d690f70142ffc4b3944a4f1bf80b64011111f43d7259cc8ee63c326",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPriceEU_El",
+      "mode": "targeted",
+      "bytes": 259,
+      "sha256": "cfe4ea6b6cad7e34f14cd8d13b7a2b073f0fae7dcb50ba99a56cdc72c1cc5910",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPriceOrdCur",
+      "mode": "targeted",
+      "bytes": 271,
+      "sha256": "9a2e2f5799b62fd6fc5cd207bf001c53e611de3f237d2b17f8460c3e53418173",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemPriceOrdCur_El",
+      "mode": "targeted",
+      "bytes": 366,
+      "sha256": "e7c4f6ae1973f827e02f4858feb84288fd3554a3fc31dac43905dc8da257f197",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemVariant",
+      "mode": "targeted",
+      "bytes": 2155,
+      "sha256": "c94d4a03e91cdc5258911536fca033ccdcc4cfd7074f0c6cb94b02b258237c50",
+      "counts": {
+        "SchemaRecord": 14
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemVariant_El",
+      "mode": "targeted",
+      "bytes": 3261,
+      "sha256": "59d7c0e0cb2a1db05a9de23c58e1234999307d7bd434e1af9062e65afea02fda",
+      "counts": {
+        "SchemaRecord": 14
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemWoutNote",
+      "mode": "targeted",
+      "bytes": 1120,
+      "sha256": "4de69e9e89cb879d3896ebe87d60238f2d081af2b898eb3a218fbcd0ffef8fdb",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    },
+    {
+      "endpoint": "X-StoItemWoutNote_El",
+      "mode": "targeted",
+      "bytes": 1551,
+      "sha256": "301c131cdde03dc2e5c14c4897bad36028636fd8fb7fce84ca834ce1c573fbf2",
+      "counts": {
+        "SourceItem": 1,
+        "Offer": 1
+      },
+      "outcome": "parsed",
+      "data_validation": "see_outcome"
+    }
+  ],
+  "capture_parser_replay": [
+    {
+      "endpoint": "X-EAN_El",
+      "bytes": 3776256,
+      "records": {
+        "SchemaRecord": 27437
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemClass",
+      "bytes": 18382,
+      "records": {
+        "SchemaRecord": 230
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQudT",
+      "bytes": 192,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemShop_El",
+      "bytes": 3950,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StiRelation_El",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StiRelationCO_El",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemWoutNote",
+      "bytes": 1120,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-Retail",
+      "bytes": 851,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceEU",
+      "bytes": 169,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemActive_El",
+      "bytes": 222,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemEAN",
+      "bytes": 142,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SCategorySys",
+      "bytes": 13717,
+      "records": {
+        "SchemaRecord": 231
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-EnterpriceB2C_El",
+      "bytes": 74,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemEAN_El",
+      "bytes": 197,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemWoutNote_El",
+      "bytes": 1551,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SCategorySys_El",
+      "bytes": 24096,
+      "records": {
+        "SchemaRecord": 231
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "AttCpsSti",
+      "bytes": 73,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemActive",
+      "bytes": 150,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemHook_El",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPack",
+      "bytes": 31988925,
+      "records": {
+        "SchemaRecord": 160217
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemShoptet_El",
+      "bytes": 3582,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceOrdCur_El",
+      "bytes": 326,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SPresentTreeType_El",
+      "bytes": 439,
+      "records": {
+        "SchemaRecord": 3
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemSiv_El",
+      "bytes": 848,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-HalshopDayOffer",
+      "bytes": 76,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceEU_El",
+      "bytes": 255,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StiRelationCO",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-StoItemSiv",
+      "bytes": 160,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPriceOrdCur",
+      "bytes": 271,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-HalshopDayOffer_El",
+      "bytes": 76,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceOrd_El",
+      "bytes": 406,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "CpsStiVal",
+      "bytes": 2300,
+      "records": {
+        "SchemaRecord": 11
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "Queue",
+      "bytes": 72,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemSiv",
+      "bytes": 583,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemVariant_El",
+      "bytes": 3261,
+      "records": {
+        "SchemaRecord": 14
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SPresentTree_El",
+      "bytes": 11838870,
+      "records": {
+        "SchemaRecord": 5117
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-LMStiPacking",
+      "bytes": 7040478,
+      "records": {
+        "SchemaRecord": 45897
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeEx",
+      "bytes": 172,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-StiRelation_El",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StiRelation",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-CpsStiVal",
+      "bytes": 70,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-EAN",
+      "bytes": 2294652,
+      "records": {
+        "SchemaRecord": 27437
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SPresentTree",
+      "bytes": 6644377,
+      "records": {
+        "SchemaRecord": 5117
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemVariant",
+      "bytes": 2155,
+      "records": {
+        "SchemaRecord": 14
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-StiRelation",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-EnterpriceB2C",
+      "bytes": 74,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "AttCpsSti_El",
+      "bytes": 73,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPriceOrdCur_El",
+      "bytes": 366,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemNode",
+      "bytes": 1091,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPriceEU_El",
+      "bytes": 259,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQud_El",
+      "bytes": 1577,
+      "records": {
+        "SchemaRecord": 5
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "AttSti",
+      "bytes": 770,
+      "records": {
+        "SchemaRecord": 3
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-CpsStiVal_El",
+      "bytes": 70,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "Config",
+      "bytes": 73,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "X-ASM-StoItemSiv_El",
+      "bytes": 187,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceOrdCur",
+      "bytes": 213,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQudT_El",
+      "bytes": 328,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemClass_El",
+      "bytes": 31032,
+      "records": {
+        "SchemaRecord": 230
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeExQud",
+      "bytes": 815,
+      "records": {
+        "SchemaRecord": 5
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemGPSR",
+      "bytes": 411,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "Config_El",
+      "bytes": 73,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemHook",
+      "bytes": 78,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StiPacking",
+      "bytes": 445,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-CpsStiVal",
+      "bytes": 1912,
+      "records": {
+        "SchemaRecord": 11
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemEPREL_El",
+      "bytes": 127,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "AttSti_El",
+      "bytes": 1214,
+      "records": {
+        "SchemaRecord": 3
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "Queue_El",
+      "bytes": 72,
+      "records": {},
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemPriceOrd",
+      "bytes": 259,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeEx_El",
+      "bytes": 270,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPack_El",
+      "bytes": 57976895,
+      "records": {
+        "SchemaRecord": 160217
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeBO",
+      "bytes": 162,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-LMStiPacking_El",
+      "bytes": 12869397,
+      "records": {
+        "SchemaRecord": 45897
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemNode_El",
+      "bytes": 1840,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "CpsStiVal_El",
+      "bytes": 4033,
+      "records": {
+        "SchemaRecord": 11
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemQtyFreeBO_El",
+      "bytes": 248,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-StoItemPriceEU",
+      "bytes": 172,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StiPacking_El",
+      "bytes": 742,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-CpsStiVal_El",
+      "bytes": 3215,
+      "records": {
+        "SchemaRecord": 11
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "X-Retail_El",
+      "bytes": 1311,
+      "records": {
+        "SchemaRecord": 1
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "SPresentTreeType",
+      "bytes": 283,
+      "records": {
+        "SchemaRecord": 3
+      },
+      "parsed": true
+    },
+    {
+      "endpoint": "StoItemEPREL",
+      "bytes": 115,
+      "records": {},
+      "parsed": true
+    }
+  ]
 }

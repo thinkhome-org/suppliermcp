@@ -42,9 +42,9 @@ class SupplierTransport:
             consume=lambda chunks: b"".join(chunks),
         )
 
-    def download(self, url, store, manifest):
+    def download(self, url, store, manifest, *, endpoint="download"):
         return self._request(
-            "GET", url, endpoint="download", consume=lambda chunks: store.save(chunks, manifest)
+            "GET", url, endpoint=endpoint, consume=lambda chunks: store.save(chunks, manifest)
         )
 
     def _request(
