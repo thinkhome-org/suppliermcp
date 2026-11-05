@@ -14,3 +14,12 @@ quantity must be verified before deriving a price. Preserve raw discount terms.
 PRIVATE schema/commodity enrichment must be verified against baseline ProIds; a
 partial enrichment cannot remove a baseline item. Original supplier codes remain
 available even before common attribute mapping exists.
+
+100MEGA contracts are account-specific. Configure supported modes, verified timezone,
+allowed weekday/hour lists, coverage and stock representation for each result type.
+Unknown schedules fail closed. QtyPack defaults to one in StoItemBase but is not
+an order multiple. Missing fee/currency fields stay unknown. Full stocked-only feeds
+may reconcile absence only with explicitly verified complete coverage. Delta and
+targeted records never imply deletion. ResultTypeInfo and export schemas must be
+reviewed before enabling a contract; this application does not guess capability
+semantics from an undocumented HTML layout.
