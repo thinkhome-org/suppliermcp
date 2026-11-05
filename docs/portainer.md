@@ -8,11 +8,17 @@ The `validate` workflow runs tests, builds the Dockerfile and boots disposable l
 
 In Portainer, add a Git source named `suppliermcp` pointing to `https://github.com/thinkhome-org/suppliermcp.git`. The repository is public, so Git authentication is unnecessary; keep TLS verification enabled. Create the `suppliermcp` stack from that source, reference `refs/heads/main`, Compose path `compose.portainer.yaml`. Select the existing authenticated GHCR registry. Do not enable automatic GitOps redeployment for the initial rollout.
 
-The target needs Compose support for config `content` (Docker Compose 2.23.1 or later). Config JSON is delivered as `/config/source-contracts.json`; no Mac paths or Git-relative bind mounts are needed. Verify the mounted JSON before declaring ingestion ready.
+The target needs Compose support for config `content` (Docker Compose 2.23.1 or later). Nonsecret contract JSON is included in an application service label so changing it recreates MCP/worker and mounts the new configuration during a normal update. Never put credentials in that contract. Config JSON is delivered as `/config/source-contracts.json`; no Mac paths or Git-relative bind mounts are needed. Verify the mounted JSON before declaring ingestion ready.
 
 ## Deployment variables
 
-Set these in Portainer's stack environment, or load a protected environment file. Do not commit the populated file or include its values in screenshots or logs.
+Prepare a protected JSON object of the values below, then encode it for **Load variables from .env file**:
+
+```sh
+uv run python scripts/portainer_env.py /protected/deployment.json /protected/portainer.env
+```
+
+Portainer 2.45.1 imports physical lines and later writes their values directly into a dotenv file. The helper writes one physical line per value, keeps multiline PEM encoded with escaped newlines, and protects dollar signs, quotes and backslashes from interpolation. **Retain the surrounding quotes and escapes displayed in Portainer's fields.** Do not upload a conventional multiline PEM `.env` file or paste a raw PEM into a field. The helper output is mode 0600. Do not commit either populated file or include its values in screenshots or logs.
 
 | Variable | Value |
 |---|---|
@@ -56,6 +62,6 @@ uv run pytest tests/test_portainer.py -q
 uv run python scripts/portainer_smoke.py
 ```
 
-The smoke creates its own randomly named project/network, generates ephemeral test credentials, makes no supplier requests, verifies mounted configuration and authenticated access, and removes only its own disposable volumes.
+The smoke creates its own randomly named project/network, generates ephemeral test credentials, makes no supplier requests, reproduces the Portainer UI/backend environment path, verifies mounted configuration, literal special characters and authenticated access, and removes only its own disposable volumes.
 
 Sources: [Portainer Git stacks and variables](https://docs.portainer.io/user/docker/stacks/add), [Docker Compose configs](https://docs.docker.com/reference/compose-file/configs/), [Cloudflare application routes](https://developers.cloudflare.com/tunnel/get-started/).

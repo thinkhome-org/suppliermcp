@@ -86,3 +86,100 @@ def test_portainer_rejects_missing_required_configuration(missing):
     result, _ = render(missing)
     assert result.returncode != 0
     assert missing in result.stderr
+
+
+def test_portainer_ui_env_file_roundtrip_preserves_special_values(tmp_path):
+    _, values = render()
+    values["SUPPLIERMCP_MEGA_LOGIN"] = "test'login"
+    values["SUPPLIERMCP_MEGA_PASSWORD"] = (
+        " dollars $ABSENT ${ABSENT} $$ apostrophe' slash\\ quote\" "
+    )
+    values["SUPPLIERMCP_SOURCE_CONTRACTS_JSON"] = json.dumps(
+        {"note": "žluťoučký $ABSENT ${ABSENT} apostrophe'"}
+    )
+    source, output = tmp_path / "input.json", tmp_path / "portainer.env"
+    source.write_text(json.dumps(values))
+    prepared = subprocess.run(
+        ["python", str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
+        capture_output=True,
+        text=True,
+    )
+    assert prepared.returncode == 0, prepared.stderr
+    lines = output.read_text().splitlines()
+    assert len(lines) == len(values)
+    assert output.stat().st_mode & 0o777 == 0o600
+    # Portainer's UI trims each physical line/value, then its backend writes raw NAME=value.
+    parsed = [tuple(part.strip() for part in line.split("=", 1)) for line in lines]
+    stack_env = tmp_path / "stack.env"
+    stack_env.write_text("".join(f"{key}={value}\n" for key, value in parsed))
+    env = {k: v for k, v in os.environ.items() if k not in values}
+    env["ABSENT"] = "MUST_NOT_EXPAND"
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            str(stack_env),
+            "-f",
+            str(ROOT / "compose.portainer.yaml"),
+            "config",
+            "--format",
+            "json",
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    config = json.loads(result.stdout)
+    actual = config["services"]["mcp"]["environment"]
+    for key in (
+        "SUPPLIERMCP_AUTH_PUBLIC_KEY",
+        "SUPPLIERMCP_MEGA_LOGIN",
+        "SUPPLIERMCP_MEGA_PASSWORD",
+    ):
+        # Compose escapes literal dollars for re-reading its rendered output.
+        assert actual[key].replace("$$", "$") == values[key]
+    assert (
+        config["configs"]["source_contracts"]["content"].replace("$$", "$")
+        == values["SUPPLIERMCP_SOURCE_CONTRACTS_JSON"]
+    )
+
+
+def test_contract_updates_change_both_service_hashes():
+    _, values = render()
+    env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
+    env.update(values)
+    command = [
+        "docker",
+        "compose",
+        "--env-file",
+        "/dev/null",
+        "-f",
+        str(ROOT / "compose.portainer.yaml"),
+        "config",
+        "--hash",
+        "mcp,worker",
+    ]
+    first = subprocess.check_output(command, env=env, text=True)
+    env["SUPPLIERMCP_SOURCE_CONTRACTS_JSON"] = '{"mega":{"intervals_seconds":{"catalog":86400}}}'
+    second = subprocess.check_output(command, env=env, text=True)
+    first, second = (
+        dict(line.split() for line in first.splitlines()),
+        dict(line.split() for line in second.splitlines()),
+    )
+    assert first["mcp"] != second["mcp"]
+    assert first["worker"] != second["worker"]
+
+
+def test_portainer_env_rejects_variable_name_injection(tmp_path):
+    source, output = tmp_path / "input.json", tmp_path / "portainer.env"
+    source.write_text(json.dumps({"SAFE\nINJECTED": "sensitive-test-value"}))
+    result = subprocess.run(
+        ["python", str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert not output.exists()
+    assert "sensitive-test-value" not in result.stderr

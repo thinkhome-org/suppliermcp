@@ -1,6 +1,8 @@
 x-app: &app
   image: ${SUPPLIERMCP_IMAGE:?Set an immutable SupplierMCP image reference}
   restart: unless-stopped
+  labels:
+    org.thinkhome.suppliermcp.contracts: ${SUPPLIERMCP_SOURCE_CONTRACTS_JSON:?Set verified source contracts as JSON}
   environment: &app-env
     SUPPLIERMCP_DATABASE_URL: postgresql://suppliermcp:${POSTGRES_PASSWORD:?Set a URL-safe database password}@postgres/suppliermcp
     SUPPLIERMCP_TYPESENSE_URL: http://typesense:8108

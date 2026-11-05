@@ -23,7 +23,7 @@
 - Image publication and target pull must be independently verified, not inferred from CI YAML.
 
 ### Task 1: Package and validate the target deployment
-**Files:** Create compose.portainer.yaml, .github/workflows/publish.yml, tests/test_portainer.py, docs/portainer.md; update Dockerfile/.dockerignore only if necessary.
+**Files:** Create compose.portainer.yaml, .github/workflows/publish.yml, tests/test_portainer.py, scripts/portainer_smoke.py, scripts/portainer_env.py, docs/portainer.md; update Dockerfile/.dockerignore only if necessary.
 **Interfaces:** Consume existing Settings, worker migrate/run commands and Dockerfile. Produce immutable GHCR digest, deployment variables and network alias suppliermcp-origin.
 - [ ] Write rendered-Compose tests using synthetic credentials/contracts. Assert absence of host ports, isolated database/index, completed-migration dependencies, exact JSON config preservation, and failure with missing required image/key/secrets.
 - [ ] Run `uv run pytest tests/test_portainer.py -q`; expect failures because the deployment file does not exist.

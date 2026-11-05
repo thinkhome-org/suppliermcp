@@ -14,6 +14,7 @@ import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastmcp import Client
+from portainer_env import write_portainer_env
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -29,27 +30,41 @@ def main():
     )
     contracts = json.dumps({"test_note": "Unicode žluťoučký $literal"})
     env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
-    env.update(
-        {
-            "SUPPLIERMCP_IMAGE": os.environ.get(
-                "SUPPLIERMCP_SMOKE_IMAGE", "suppliermcp:portainer-test"
-            ),
-            "POSTGRES_PASSWORD": secrets.token_urlsafe(24),
-            "SUPPLIERMCP_TYPESENSE_KEY": secrets.token_urlsafe(24),
-            "SUPPLIERMCP_AUTH_PUBLIC_KEY": public,
-            "SUPPLIERMCP_SOURCE_CONTRACTS_JSON": contracts,
-        }
-    )
+    values = {
+        "SUPPLIERMCP_IMAGE": os.environ.get(
+            "SUPPLIERMCP_SMOKE_IMAGE", "suppliermcp:portainer-test"
+        ),
+        "POSTGRES_PASSWORD": secrets.token_urlsafe(24),
+        "SUPPLIERMCP_TYPESENSE_KEY": secrets.token_urlsafe(24),
+        "SUPPLIERMCP_AUTH_PUBLIC_KEY": public,
+        "SUPPLIERMCP_SOURCE_CONTRACTS_JSON": contracts,
+    }
+    values["PORTAINER_ROUNDTRIP"] = ' $ABSENT ${ABSENT} apostrophe\' back\\slash "quote" '
+    env.pop("POSTGRES_PASSWORD", None)
+    env.pop("PORTAINER_ROUNDTRIP", None)
 
     def run(args):
         return subprocess.run(args, env=env, text=True, capture_output=True, check=True).stdout
 
     with tempfile.TemporaryDirectory(prefix=project) as directory:
+        upload = Path(directory) / "upload.env"
+        write_portainer_env(upload, values)
+        stack_env = Path(directory) / "stack.env"
+        parsed = [
+            tuple(p.strip() for p in line.split("=", 1)) for line in upload.read_text().splitlines()
+        ]
+        stack_env.write_text("".join(f"{k}={v}\n" for k, v in parsed))
+        stack_env.chmod(0o600)
         override = Path(directory) / "override.yaml"
         override.write_text(
             json.dumps(
                 {
-                    "services": {"mcp": {"ports": ["127.0.0.1::8000"]}},
+                    "services": {
+                        "mcp": {
+                            "ports": ["127.0.0.1::8000"],
+                            "environment": {"PORTAINER_ROUNDTRIP": "${PORTAINER_ROUNDTRIP}"},
+                        }
+                    },
                     "networks": {"cloudflare": {"name": network}},
                 }
             )
@@ -60,7 +75,7 @@ def main():
             "--project-name",
             project,
             "--env-file",
-            "/dev/null",
+            str(stack_env),
             "-f",
             str(ROOT / "compose.portainer.yaml"),
             "-f",
@@ -85,6 +100,18 @@ def main():
                 ]
             )
             assert mounted == contracts
+            transported = run(
+                compose
+                + [
+                    "exec",
+                    "-T",
+                    "mcp",
+                    "python",
+                    "-c",
+                    'import os; print(os.environ["PORTAINER_ROUNDTRIP"], end="")',
+                ]
+            )
+            assert transported == values["PORTAINER_ROUNDTRIP"]
             token = jwt.encode(
                 {
                     "sub": "smoke",
