@@ -13,6 +13,8 @@ class Settings(Model):
     typesense_key: SecretStr = Field(default=SecretStr(''), repr=False, exclude=True)
     artifact_dir: Path = Path('artifacts')
     source_contracts_path: Path | None = None
+    allowed_hosts: list[str] = Field(default_factory=lambda:['127.0.0.1:*','localhost:*'])
+    allowed_origins: list[str] = Field(default_factory=list)
     auth_public_key: str = ''
     auth_issuer: str = 'suppliermcp'
     auth_audience: str = 'suppliermcp'
@@ -45,5 +47,8 @@ class Settings(Model):
                 continue
             value = os.getenv('SUPPLIERMCP_' + name.upper())
             if value is not None:
+                if name in {'allowed_hosts','allowed_origins'}:
+                    import json
+                    value=json.loads(value)
                 values[name] = value
         return cls(**values)

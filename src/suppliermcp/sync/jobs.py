@@ -106,8 +106,8 @@ def create_app(settings):
     return app
 
 
-def schedule_refresh(interface,domain,codes=None):
-    settings = Settings.from_env()
+def schedule_refresh(interface,domain,codes=None,settings=None):
+    settings = settings or Settings.from_env()
     if interface not in settings.enabled_interfaces:
         raise CatalogError('source_not_configured')
     app = create_app(settings)
