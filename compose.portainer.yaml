@@ -1,0 +1,100 @@
+x-app: &app
+  image: ${SUPPLIERMCP_IMAGE:?Set an immutable SupplierMCP image reference}
+  restart: unless-stopped
+  environment: &app-env
+    SUPPLIERMCP_DATABASE_URL: postgresql://suppliermcp:${POSTGRES_PASSWORD:?Set a URL-safe database password}@postgres/suppliermcp
+    SUPPLIERMCP_TYPESENSE_URL: http://typesense:8108
+    SUPPLIERMCP_TYPESENSE_KEY: ${SUPPLIERMCP_TYPESENSE_KEY:?Set an index API key}
+    SUPPLIERMCP_AUTH_PUBLIC_KEY: ${SUPPLIERMCP_AUTH_PUBLIC_KEY:?Set the PEM verification public key}
+    SUPPLIERMCP_AUTH_ISSUER: suppliermcp
+    SUPPLIERMCP_AUTH_AUDIENCE: suppliermcp
+    SUPPLIERMCP_ALLOWED_HOSTS: '["suppliermcp.thinkhome.org","suppliermcp-origin:8000","127.0.0.1:*","localhost:*"]'
+    SUPPLIERMCP_ALLOWED_ORIGINS: '[]'
+    SUPPLIERMCP_ARTIFACT_DIR: /data/artifacts
+    SUPPLIERMCP_SOURCE_CONTRACTS_PATH: /config/source-contracts.json
+    SUPPLIERMCP_MAX_DOWNLOAD_BYTES: '1073741824'
+    SUPPLIERMCP_MAX_EXPANDED_BYTES: '2147483648'
+    SUPPLIERMCP_ARTIFACT_BUDGET: '21474836480'
+    SUPPLIERMCP_MEGA_LOGIN: ${SUPPLIERMCP_MEGA_LOGIN:-}
+    SUPPLIERMCP_MEGA_PASSWORD: ${SUPPLIERMCP_MEGA_PASSWORD:-}
+    SUPPLIERMCP_ED_PUBLIC_LOGIN: ${SUPPLIERMCP_ED_PUBLIC_LOGIN:-}
+    SUPPLIERMCP_ED_PUBLIC_PASSWORD: ${SUPPLIERMCP_ED_PUBLIC_PASSWORD:-}
+  configs:
+    - source: source_contracts
+      target: /config/source-contracts.json
+  volumes:
+    - artifacts:/data/artifacts
+  networks: [backend]
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    typesense:
+      condition: service_started
+  logging: &logging
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
+
+services:
+  migrate:
+    image: ${SUPPLIERMCP_IMAGE:?Set an immutable SupplierMCP image reference}
+    command: [python, -m, suppliermcp.worker, migrate]
+    restart: 'no'
+    environment:
+      SUPPLIERMCP_DATABASE_URL: postgresql://suppliermcp:${POSTGRES_PASSWORD:?Set a URL-safe database password}@postgres/suppliermcp
+    networks: [backend]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    logging: *logging
+  mcp:
+    <<: *app
+    networks:
+      backend: {}
+      cloudflare:
+        aliases: [suppliermcp-origin]
+  worker:
+    <<: *app
+    command: [python, -m, suppliermcp.worker, run]
+    healthcheck:
+      disable: true
+    stop_grace_period: 5m
+  postgres:
+    image: postgres@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+    environment:
+      POSTGRES_USER: suppliermcp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a URL-safe database password}
+      POSTGRES_DB: suppliermcp
+    volumes: [postgres:/var/lib/postgresql]
+    networks: [backend]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U suppliermcp -d suppliermcp]
+      interval: 5s
+      retries: 20
+    logging: *logging
+  typesense:
+    image: typesense/typesense@sha256:610f2d34b1f93d00762869da2c67736775e5798d19a2c8b91b014b8a0cc1e110
+    environment:
+      TYPESENSE_API_KEY: ${SUPPLIERMCP_TYPESENSE_KEY:?Set an index API key}
+      TYPESENSE_DATA_DIR: /data
+    volumes: [typesense:/data]
+    networks: [backend]
+    restart: unless-stopped
+    logging: *logging
+
+configs:
+  source_contracts:
+    content: ${SUPPLIERMCP_SOURCE_CONTRACTS_JSON:?Set verified source contracts as JSON}
+networks:
+  backend: {}
+  cloudflare:
+    external: true
+    name: cloudflare
+volumes:
+  postgres: {}
+  typesense: {}
+  artifacts: {}

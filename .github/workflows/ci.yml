@@ -15,5 +15,8 @@ jobs:
       - run: uv run pytest -q
       - run: docker build -t suppliermcp:local .
       - run: uv run python scripts/smoke.py
+      - run: uv run python scripts/portainer_smoke.py
+        env:
+          SUPPLIERMCP_SMOKE_IMAGE: suppliermcp:local
       - if: always()
         run: docker compose -f compose.test.yaml down -v
