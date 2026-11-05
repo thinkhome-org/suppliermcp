@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-11-05T23:06:55.273286+00:00",
+  "endpoint": "https://suppliermcp.thinkhome.org/mcp",
+  "commit": "80bbddb496cec3c9618fc72cccb9991889c88c75",
+  "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "validation_run": 42124696629,
+  "publication_run": 42125128376,
+  "installation": "fresh volumes; no Mac data transfer",
+  "deployment": {
+    "portainer_environment": 3,
+    "stack_id": 24,
+    "migration_exit_code": 0,
+    "mcp": "healthy",
+    "postgres": "healthy",
+    "typesense": "running",
+    "worker": "running",
+    "target_registry_pull": "succeeded",
+    "cloudflare_route": "created",
+    "dns_record": "created"
+  },
+  "checks": {
+    "unauthenticated_rejected": true,
+    "tool_count": 7,
+    "resource_count": 2,
+    "schema_available": true,
+    "liveness_http": 200,
+    "readiness_http": 200,
+    "invalid_bearer_http": 401
+  },
+  "catalog": {
+    "status": "initial_population_in_progress",
+    "ed_public": "staged; publication running",
+    "mega": "queued",
+    "ed_private": "disabled",
+    "revision": 0,
+    "index_revision": 0,
+    "staged_records": 249064,
+    "downloaded_artifact_bytes_observed": 47069868
+  },
+  "limitations": [
+    "Population and product search acceptance are not yet complete.",
+    "Future database migrations require review and backups; image rollback alone is insufficient."
+  ],
+  "product_checks": {
+    "ed": {
+      "catalog_total": 0,
+      "list_seconds": 0.143,
+      "total": 0,
+      "list_available": false
+    },
+    "mega": {
+      "catalog_total": 0,
+      "list_seconds": 0.076,
+      "total": 0,
+      "list_available": false
+    }
+  }
+}
