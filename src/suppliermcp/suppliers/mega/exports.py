@@ -162,8 +162,15 @@ def normalize_record(manifest, element, root_values=None):
 
             raise CatalogError("missing_product_identity")
         key = hashlib.sha256(tostring(element)).hexdigest()
+        # Only supplier row structures with a separate package identity are repeated facts.
+        repeated = bool(data.get("IdBaleni")) or manifest.endpoint.removesuffix("_El") in {
+            "X-StoItemPack",
+            "X-LMStiPacking",
+        }
         observations = (
-            root_facts + facts(manifest, data, key=key, many=True) + nested_facts(manifest, element)
+            root_facts
+            + facts(manifest, data, key=key, many=repeated)
+            + nested_facts(manifest, element)
         )
         result.append(
             SchemaRecord(

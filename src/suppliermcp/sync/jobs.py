@@ -57,6 +57,7 @@ def build_adapters(settings):
         adapter.max_expanded_bytes = settings.max_expanded_bytes
         adapter.max_description_bytes = settings.max_description_bytes
         adapter.transport.max_bytes = settings.max_download_bytes
+        adapter.transport.download_timeout = settings.download_timeout_seconds
     return adapters
 
 

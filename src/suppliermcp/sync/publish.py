@@ -73,6 +73,27 @@ def publish(conn, run_id, *, accept_reason=None):
             "SELECT started_at,artifact_sha256,revision FROM endpoint_checkpoints WHERE interface=%s AND domain=%s AND endpoint=%s",
             (manifest.interface, manifest.domain, manifest.endpoint),
         ).fetchone()
+        identities = [
+            r[0]
+            for r in conn.execute(
+                "SELECT DISTINCT COALESCE(data->>'item_id',data->'values'->>'item_id',(data->>'supplier') || ':' || (data->>'source_id')) FROM staging WHERE run_id=%s AND (kind IN ('SourceItem','Offer') OR (kind='SchemaRecord' AND data->>'kind'='product_facts'))",
+                (run_id,),
+            )
+        ]
+        replace_ids = set(identities)
+        for sku in manifest.requested_skus:
+            supplier = "mega" if manifest.interface == "mega" else "ed"
+            matches = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT id FROM source_items WHERE active AND data->>'supplier'=%s AND data->>'sku'=%s UNION SELECT (data->>'supplier') || ':' || (data->>'source_id') FROM staging WHERE run_id=%s AND kind='SourceItem' AND data->>'supplier'=%s AND data->>'sku'=%s",
+                    (supplier, sku, run_id, supplier, sku),
+                )
+            }
+            if len(matches) != 1:
+                raise CatalogError("unresolved_product_reference")
+            replace_ids.update(matches)
+        replace_ids = list(replace_ids)
         if checkpoint and manifest.started_at <= checkpoint[0]:
             conn.execute(
                 "UPDATE import_runs SET status='superseded',revision=%s WHERE id=%s",
@@ -81,6 +102,14 @@ def publish(conn, run_id, *, accept_reason=None):
             conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
             return checkpoint[2]
         if checkpoint and manifest.artifact_sha256 and manifest.artifact_sha256 == checkpoint[1]:
+            scope = " AND item_id=ANY(%s)" if manifest.mode == "targeted" else ""
+            args = (manifest.interface, manifest.endpoint) + ((replace_ids,) if scope else ())
+            conn.execute(
+                "UPDATE current_offers SET data=jsonb_set(data,'{refresh_failed}','false') WHERE interface=%s AND endpoint=%s"
+                + scope,
+                args,
+            )
+
             conn.execute(
                 "UPDATE endpoint_checkpoints SET started_at=%s WHERE interface=%s AND domain=%s AND endpoint=%s",
                 (manifest.started_at, manifest.interface, manifest.domain, manifest.endpoint),
@@ -95,13 +124,6 @@ def publish(conn, run_id, *, accept_reason=None):
                 (manifest.started_at, manifest.interface, manifest.domain),
             )
             return checkpoint[2]
-        identities = [
-            r[0]
-            for r in conn.execute(
-                "SELECT DISTINCT COALESCE(data->>'item_id',data->'values'->>'item_id',(data->>'supplier') || ':' || (data->>'source_id')) FROM staging WHERE run_id=%s AND (kind IN ('SourceItem','Offer') OR (kind='SchemaRecord' AND data->>'kind'='product_facts'))",
-                (run_id,),
-            )
-        ]
         authoritative = (
             manifest.authoritative_identity
             if manifest.authoritative_identity is not None
@@ -125,10 +147,11 @@ def publish(conn, run_id, *, accept_reason=None):
         if not quarantine:
             revision = conn.execute("SELECT nextval('catalog_revision')").fetchone()[0]
             changed = set()
+            dictionary_fields = set()
             if manifest.replace_scope != "none":
                 scoped = "" if manifest.replace_scope == "endpoint" else " AND item_id=ANY(%s)"
                 args = (manifest.interface, manifest.endpoint) + (
-                    () if not scoped else (identities,)
+                    () if not scoped else (replace_ids,)
                 )
                 for table in ["observations", "relationships"]:
                     removed = conn.execute(
@@ -139,6 +162,15 @@ def publish(conn, run_id, *, accept_reason=None):
                     )
                     changed.update(r[0] for r in removed)
                 if manifest.replace_scope == "endpoint":
+                    for kind, data in conn.execute(
+                        "SELECT kind,data FROM source_schema WHERE interface=%s AND endpoint=%s AND kind IN ('parameter','SCategorySys','SCategorySys_El')",
+                        (manifest.interface, manifest.endpoint),
+                    ):
+                        dictionary_fields.add(
+                            "native:mega:parameter:" + data["code"]
+                            if kind == "parameter"
+                            else "native:mega:ScaId"
+                        )
                     conn.execute(
                         "DELETE FROM source_schema WHERE interface=%s AND endpoint=%s",
                         (manifest.interface, manifest.endpoint),
@@ -160,7 +192,6 @@ def publish(conn, run_id, *, accept_reason=None):
                 """,
                 (run_id,),
             )
-            dictionary_fields = set()
             seen = {}
             cursor = conn.cursor(name="publish_rows")
             cursor.execute(

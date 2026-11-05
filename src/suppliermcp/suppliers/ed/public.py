@@ -86,6 +86,7 @@ class EdPublicAdapter:
                 continue
             manifest = BatchManifest(
                 interface=self.interface,
+                requested_skus=codes or [],
                 started_at=started_at,
                 domain=domain,
                 endpoint=endpoint,

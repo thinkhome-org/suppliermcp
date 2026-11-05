@@ -91,6 +91,7 @@ class Capabilities(Model):
 
 
 class BatchManifest(Model):
+    requested_skus: list[str] = Field(default_factory=list)
     authoritative_identity: bool | None = None
     replace_scope: Literal["none", "items", "endpoint"] = "none"
     interface: Interface

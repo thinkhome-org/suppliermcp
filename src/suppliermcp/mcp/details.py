@@ -41,22 +41,6 @@ def product_page(conn, product_id, section, cursor, principal, settings):
                 <= settings.max_response_bytes
             ):
                 return view
-        result_id = secrets.token_urlsafe(24)
-        expires = utcnow() + timedelta(seconds=settings.result_ttl_seconds)
-        data = {
-            "kind": "detail",
-            "product_id": product_id,
-            "section": section,
-            "count": 0,
-            "page_size": settings.page_size,
-            "max_response_bytes": settings.max_response_bytes,
-        }
-        conn.execute("DELETE FROM query_results WHERE expires_at<now()")
-        conn.execute(
-            "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
-            (result_id, principal, "detail", expires, Jsonb(data)),
-        )
-        count = 0
         with conn.cursor(name="detail_records") as source:
             if section == "overview":
                 source.execute("SELECT %s::jsonb", (Jsonb(view.model_dump(mode="json")),))
@@ -72,43 +56,65 @@ def product_page(conn, product_id, section, cursor, principal, settings):
                     sql += " AND field ~* %s"
                     params.append(ATTACHMENT)
                 source.execute(sql + " ORDER BY interface,endpoint,field,value_key", params)
-            for record_index, (record,) in enumerate(source):
-                raw = json.dumps(record, ensure_ascii=False)
-                # ASCII escaping may expand one code point to 12 bytes in an envelope.
-                width = max(1, (settings.max_response_bytes - 1500) // 12)
-                chunks = (
-                    [raw[i : i + width] for i in range(0, len(raw), width)]
-                    if len(json.dumps(record).encode()) > settings.max_response_bytes - 1500
-                    else None
-                )
-                records = (
-                    (
-                        {
-                            "encoding": "json",
-                            "record_index": record_index,
-                            "chunk_index": i,
-                            "chunk_count": len(chunks),
-                            "text": chunk,
-                        }
-                        for i, chunk in enumerate(chunks)
-                    )
-                    if chunks
-                    else iter([{"record_index": record_index, "data": record}])
-                )
-                for value in records:
-                    conn.execute(
-                        "INSERT INTO query_result_rows VALUES (%s,%s,%s)",
-                        (result_id, count, Jsonb(value)),
-                    )
-                    count += 1
-        data["count"] = count
-        conn.execute("UPDATE query_results SET data=%s WHERE id=%s", (Jsonb(data), result_id))
-        cursor = secrets.token_urlsafe(24)
-        conn.execute("INSERT INTO query_cursors VALUES (%s,%s,0)", (cursor, result_id))
-        return _next(conn, cursor, principal)
+            return _snapshot(
+                conn, (row[0] for row in source), product_id, section, principal, settings
+            )
 
 
-def _next(conn, cursor, principal):
+def _snapshot(conn, records, product_id, section, principal, settings, kind="detail"):
+    result_id = secrets.token_urlsafe(24)
+    expires = utcnow() + timedelta(seconds=settings.result_ttl_seconds)
+    data = {
+        "kind": kind,
+        "product_id": product_id,
+        "section": section,
+        "count": 0,
+        "page_size": settings.page_size,
+        "max_response_bytes": settings.max_response_bytes,
+    }
+    conn.execute("DELETE FROM query_results WHERE expires_at<now()")
+    conn.execute(
+        "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
+        (result_id, principal, kind, expires, Jsonb(data)),
+    )
+    count = 0
+    for record_index, record in enumerate(records):
+        raw = json.dumps(record, ensure_ascii=False)
+        # ASCII escaping may expand one code point to 12 bytes in an envelope.
+        width = max(1, (settings.max_response_bytes - 1500) // 12)
+        chunks = (
+            [raw[i : i + width] for i in range(0, len(raw), width)]
+            if len(json.dumps(record).encode()) > settings.max_response_bytes - 1500
+            else None
+        )
+        entries = (
+            (
+                {
+                    "encoding": "json",
+                    "record_index": record_index,
+                    "chunk_index": i,
+                    "chunk_count": len(chunks),
+                    "text": chunk,
+                }
+                for i, chunk in enumerate(chunks)
+            )
+            if chunks
+            else iter([{"record_index": record_index, "data": record}])
+        )
+        for value in entries:
+            conn.execute(
+                "INSERT INTO query_result_rows VALUES (%s,%s,%s)",
+                (result_id, count, Jsonb(value)),
+            )
+            count += 1
+    data["count"] = count
+    conn.execute("UPDATE query_results SET data=%s WHERE id=%s", (Jsonb(data), result_id))
+    cursor = secrets.token_urlsafe(24)
+    conn.execute("INSERT INTO query_cursors VALUES (%s,%s,0)", (cursor, result_id))
+    return _next(conn, cursor, principal, expected_kind=kind)
+
+
+def _next(conn, cursor, principal, expected_kind="detail"):
     row = conn.execute(
         "SELECT r.id,r.principal,r.expires_at,r.data,c.offset_value FROM query_cursors c JOIN query_results r ON r.id=c.result_id WHERE c.id=%s",
         (cursor,),
@@ -118,7 +124,7 @@ def _next(conn, cursor, principal):
     result_id, _, expires, data, offset = row
     if expires <= utcnow():
         raise CatalogError("result_expired")
-    if data.get("kind") != "detail":
+    if data.get("kind") != expected_kind:
         raise CatalogError("result_query_mismatch")
     continuation = secrets.token_urlsafe(24)
     result = {
@@ -151,3 +157,32 @@ def _next(conn, cursor, principal):
             (continuation, result_id, offset + len(result["records"])),
         )
     return result
+
+
+def dictionary_page(conn, interface, kind, principal, settings):
+    if interface is not None and interface not in {"mega", "ed_public", "ed_private"}:
+        raise CatalogError("invalid_interface")
+    with conn.transaction(), conn.cursor(name="dictionary_records") as source:
+        conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+        query = """SELECT jsonb_build_object('interface',s.interface,'endpoint',s.endpoint,'kind',s.kind,
+            'record_id',s.key,'values',s.data,'provenance',
+            (SELECT jsonb_build_object('fetched_at',c.started_at,'artifact_sha256',c.artifact_sha256,'revision',c.revision)
+             FROM endpoint_checkpoints c WHERE c.interface=s.interface AND c.endpoint=s.endpoint ORDER BY c.started_at DESC LIMIT 1))
+            FROM source_schema s WHERE s.kind <> 'relationship'"""
+        params = []
+        if interface is not None:
+            query += " AND s.interface=%s"
+            params.append(interface)
+        if kind is not None:
+            query += " AND s.kind=%s"
+            params.append(kind)
+        source.execute(query + " ORDER BY s.interface,s.endpoint,s.kind,s.key", params)
+        return _snapshot(
+            conn,
+            (row[0] for row in source),
+            None,
+            "dictionaries",
+            principal,
+            settings,
+            kind="dictionary",
+        )

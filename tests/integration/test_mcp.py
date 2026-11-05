@@ -236,3 +236,56 @@ async def test_comparison_batch_preserves_successes(conn):
                 )
             ).structured_content["result"]
             assert invalid[0]["error"]["code"] == "invalid_quantity"
+
+
+async def test_native_dictionary_tree_is_reachable_through_mcp(conn):
+    from suppliermcp.catalog.contracts import BatchManifest, SchemaRecord
+    from suppliermcp.sync.publish import publish, stage
+
+    values = {
+        "Id": "7",
+        "Name": "Memory",
+        "ParentId": "3",
+        "Note": "Supplier-specific detail",
+        "_xml": '<Node Id="7" ParentId="3"/>',
+    }
+    other = {"Id": "8", "Name": "Storage", "ParentId": "3"}
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="schema", endpoint="SPresentTree"),
+            [
+                SchemaRecord(interface="mega", kind="SPresentTree", values=v)
+                for v in [values, other]
+            ],
+        ),
+    )
+    with running_server(page_size=1) as (url, token):
+        async with Client(url, auth=token()) as client:
+            response = await client.call_tool(
+                "get_catalog_schema",
+                {"section": "dictionaries", "interface": "mega", "kind": "SPresentTree"},
+            )
+            page = response.structured_content["result"]
+            assert page["next_cursor"]
+            wrong_tool = await client.call_tool("get_product", {"cursor": page["next_cursor"]})
+            assert (
+                wrong_tool.structured_content["result"]["error"]["code"] == "result_query_mismatch"
+            )
+            records = page["records"]
+            next_page = await client.call_tool(
+                "get_catalog_schema", {"cursor": page["next_cursor"]}
+            )
+            records += next_page.structured_content["result"]["records"]
+            assert {r["data"]["values"]["Id"] for r in records} == {"7", "8"}
+            assert (
+                next(r["data"]["values"] for r in records if r["data"]["values"]["Id"] == "7")
+                == values
+            )
+            assert all(
+                r["data"]["interface"] == "mega"
+                and r["data"]["endpoint"] == "SPresentTree"
+                and r["data"]["provenance"]["revision"]
+                for r in records
+            )

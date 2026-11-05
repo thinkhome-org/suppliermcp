@@ -24,6 +24,7 @@ class Settings(Model):
     auth_public_key: str = ""
     auth_issuer: str = "suppliermcp"
     auth_audience: str = "suppliermcp"
+    download_timeout_seconds: float = Field(default=300, gt=0, le=900)
     max_download_bytes: int = Field(default=256 * 1024**2, gt=0)
     max_expanded_bytes: int = Field(default=1024**3, gt=0)
     artifact_budget: int = Field(default=5 * 1024**3, gt=0)

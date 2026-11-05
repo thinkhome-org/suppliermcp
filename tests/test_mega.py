@@ -83,3 +83,47 @@ def test_currency_export_and_mode_windows_are_selected_when_verified():
     adapter = MegaAdapter(contracts={"StoItemPriceOrdCur": contract})
     assert adapter.endpoints["price"] == "StoItemPriceOrdCur"
     assert adapter.discover().windows["StoItemPriceOrdCur"]["windows"] == contract["windows"]
+
+
+def test_retry_revalidates_window_before_second_http_request(tmp_path, monkeypatch):
+    from datetime import UTC, datetime
+
+    import httpx
+
+    from suppliermcp.suppliers.mega import capabilities
+    from suppliermcp.suppliers.transport import SupplierTransport
+    from suppliermcp.sync.artifacts import ArtifactStore
+
+    clock = [datetime(2026, 11, 5, 20, 59, 59, tzinfo=UTC)]
+    monkeypatch.setattr(capabilities, "utcnow", lambda: clock[0])
+    calls = []
+
+    def reply(request):
+        calls.append(request)
+        return httpx.Response(503 if len(calls) == 1 else 200, content=b"<Result/>")
+
+    def sleep(_):
+        clock[0] = datetime(2026, 11, 5, 21, 0, tzinfo=UTC)
+
+    transport = SupplierTransport(
+        {"i6ws.100mega.cz"},
+        {"GetResult"},
+        client=httpx.Client(transport=httpx.MockTransport(reply)),
+        resolver=lambda host: ["8.8.8.8"],
+        sleep=sleep,
+    )
+    adapter = MegaAdapter(
+        transport,
+        ArtifactStore(tmp_path),
+        {
+            "StoItemBase": {
+                "modes": ["full"],
+                "timezone": "Europe/Prague",
+                "days": [3],
+                "hours": [21],
+            }
+        },
+    )
+    with pytest.raises(CatalogError, match="outside_supplier_window"):
+        adapter.fetch("catalog")
+    assert len(calls) == 1

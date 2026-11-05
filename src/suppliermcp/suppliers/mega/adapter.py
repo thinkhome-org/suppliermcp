@@ -75,6 +75,7 @@ class MegaAdapter:
         domain = next((d for d, e in self.endpoints.items() if e == endpoint), "schema")
         manifest = BatchManifest(
             interface="mega",
+            requested_skus=codes or [],
             started_at=utcnow(),
             domain=domain,
             mode=mode,
@@ -90,6 +91,7 @@ class MegaAdapter:
             self.store,
             manifest,
             endpoint=method,
+            before_request=lambda: require_window(contract, mode),
         )
         return manifest
 

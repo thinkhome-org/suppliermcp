@@ -119,13 +119,30 @@ def register(server, settings):
 
     @server.tool(annotations=read)
     def get_catalog_schema(
-        category: str | None = None, cursor: str | None = None
+        category: str | None = None,
+        cursor: str | None = None,
+        section: str | None = None,
+        interface: str | None = None,
+        kind: str | None = None,
     ) -> dict | ErrorResult:
-        """Discover supported native/common filter fields and operators; never invent unsupported attributes."""
-        return safe(
-            settings,
-            lambda conn: catalog_schema_page(conn, category, cursor, principal(), settings),
-        )
+        """Discover filter fields; section=dictionaries returns complete native dictionaries/trees with provenance. Continue using cursor alone."""
+
+        def operation(conn):
+            if cursor:
+                if any(value is not None for value in [category, section, interface, kind]):
+                    raise CatalogError("result_query_mismatch")
+                return catalog_schema_page(conn, None, cursor, principal(), settings)
+            if section == "dictionaries":
+                if category is not None:
+                    raise CatalogError("invalid_schema_arguments")
+                from .details import dictionary_page
+
+                return dictionary_page(conn, interface, kind, principal(), settings)
+            if section not in {None, "fields"} or interface is not None or kind is not None:
+                raise CatalogError("invalid_schema_arguments")
+            return catalog_schema_page(conn, category, None, principal(), settings)
+
+        return safe(settings, operation)
 
     @server.tool(annotations={**read, "idempotentHint": False})
     def compare_offers(

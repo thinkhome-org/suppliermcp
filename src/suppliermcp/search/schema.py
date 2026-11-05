@@ -106,6 +106,7 @@ def _value_rows(view):
     native = {}
     native_types = {}
     many = set()
+    scalar = set()
     conflicted = set()
     for o in view.item.observations:
         if o.derivation == "mapped":
@@ -115,6 +116,8 @@ def _value_rows(view):
         native_types.setdefault(field, set()).add(o.value_type)
         if o.cardinality == "many":
             many.add(field)
+        else:
+            scalar.add(field)
         if o.state == "conflict":
             conflicted.add(field)
         if o.state == "known" and isinstance(o.value, (str, int, float)):
@@ -127,6 +130,7 @@ def _value_rows(view):
                     conflicted.add(field)
                     continue
             native[field].add(value)
+    conflicted.update(many & scalar)
     categories = {"mega:" + value for value in native.get("native:mega:ScaId", set())}
     if categories:
         native["category"] = categories
@@ -226,6 +230,10 @@ def catalog_schema_page(conn, category, cursor, principal, settings):
         result_id, _, expires, data, offset = row
         if expires <= utcnow():
             raise CatalogError("result_expired")
+        if data.get("kind") == "dictionary":
+            from suppliermcp.mcp.details import _next
+
+            return _next(conn, cursor, principal, expected_kind="dictionary")
         if data.get("kind") != "schema":
             raise CatalogError("result_query_mismatch")
     else:

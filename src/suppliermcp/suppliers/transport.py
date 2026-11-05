@@ -26,9 +26,11 @@ class SupplierTransport:
         resolver=resolve,
         sleep=time.sleep,
         max_bytes=256 * 1024**2,
+        download_timeout=300,
         auth=None,
     ):
         self.hosts, self.operations = set(hosts), set(operations)
+        self.download_timeout = download_timeout
         self.client = client or httpx.Client(timeout=30, trust_env=False)
         self.resolver, self.sleep, self.max_bytes, self.auth = resolver, sleep, max_bytes, auth
 
@@ -42,9 +44,14 @@ class SupplierTransport:
             consume=lambda chunks: b"".join(chunks),
         )
 
-    def download(self, url, store, manifest, *, endpoint="download"):
+    def download(self, url, store, manifest, *, endpoint="download", before_request=None):
         return self._request(
-            "GET", url, endpoint=endpoint, consume=lambda chunks: store.save(chunks, manifest)
+            "GET",
+            url,
+            endpoint=endpoint,
+            consume=lambda chunks: store.save(chunks, manifest),
+            before_request=before_request,
+            timeout=httpx.Timeout(self.download_timeout, connect=10),
         )
 
     def _request(
@@ -56,6 +63,8 @@ class SupplierTransport:
         consume,
         body: bytes | None = None,
         soap_action: str | None = None,
+        before_request=None,
+        timeout=httpx.USE_CLIENT_DEFAULT,
     ):
         if endpoint not in self.operations or method not in {"GET", "POST"}:
             raise CatalogError("operation_not_allowed")
@@ -86,6 +95,8 @@ class SupplierTransport:
                     if soap_action:
                         headers["SOAPAction"] = soap_action
                     auth = self.auth if current == original else None
+                    if before_request:
+                        before_request()
                     with self.client.stream(
                         method,
                         pinned,
@@ -93,6 +104,7 @@ class SupplierTransport:
                         content=body,
                         auth=auth,
                         extensions={"sni_hostname": current.host},
+                        timeout=timeout,
                     ) as response:
                         if response.is_redirect:
                             if method != "GET" or redirect == 5:
