@@ -12,6 +12,19 @@ def lookup(conn, identifiers):
         field = {"sku": "sku", "mpn": "mpn", "ean": "ean"}[identifier.kind]
         query = "SELECT id FROM source_items WHERE active AND data->>%s=%s"
         params = [field, identifier.value]
+        if identifier.kind == "ean":
+            query = "SELECT id FROM source_items s WHERE active AND (data->>%s=%s OR EXISTS(SELECT 1 FROM catalog_values v WHERE v.item_id=s.id AND v.state='known' AND v.value=%s AND v.field=ANY(%s)))"
+            params += [
+                identifier.value,
+                [
+                    "native:mega:EAN",
+                    "native:mega:EAN2",
+                    "native:mega:Row.StiEAN",
+                    "native:mega:Row.StiEAN2",
+                    "native:ed_public:EANCode",
+                    "native:ed_private:EANCode",
+                ],
+            ]
         if identifier.supplier:
             query += " AND data->>'supplier'=%s"
             params.append(identifier.supplier)

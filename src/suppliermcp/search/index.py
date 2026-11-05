@@ -79,14 +79,37 @@ def configured_client(settings):
 def document(row, conn=None):
     item_id, data, revision = row
     if conn is not None:
-        from suppliermcp.catalog.repository import get_product
-
-        data = get_product(conn, item_id).item.model_dump(mode="json")
+        return documents(conn, [row])[0]
     text = " ".join(str(data.get(k) or "") for k in ["name", "sku", "manufacturer", "mpn", "ean"])
     text += " " + " ".join(
         str(o.get("value") or "") for o in data.get("observations", []) if o.get("state") == "known"
     )
     return {"id": item_id, "text": normalize(text), "revision": revision}
+
+
+def documents(conn, rows):
+    from suppliermcp.catalog.repository import get_products
+
+    views = {v.product_id: v for v in get_products(conn, [r[0] for r in rows])}
+    labels = dict(
+        conn.execute(
+            "SELECT data->>'code',data->>'label' FROM source_schema WHERE kind='parameter'"
+        )
+    )
+    result = []
+    for item_id, _, revision in rows:
+        view = views[item_id]
+        data = view.item.model_dump(mode="json")
+        extra = [str(r.get("name") or "") for r in view.relationships]
+        extra.extend(
+            labels.get(o.field.removeprefix("parameter:"), "")
+            for o in view.item.observations
+            if o.field.startswith("parameter:")
+        )
+        doc = document((item_id, data, revision))
+        doc["text"] += " " + normalize(" ".join(extra))
+        result.append(doc)
+    return result
 
 
 def drain_outbox(conn, client):
@@ -98,13 +121,18 @@ def drain_outbox(conn, client):
         rows = conn.execute(
             "SELECT item_id,max(id) FROM index_outbox WHERE NOT done GROUP BY item_id ORDER BY min(id) LIMIT 200"
         ).fetchall()
-        documents, events = [], []
+        batch, events = [], []
+        active = {
+            r[0]: r
+            for r in conn.execute(
+                "SELECT id,data,revision FROM source_items WHERE id=ANY(%s) AND active",
+                ([r[0] for r in rows],),
+            )
+        }
         for item_id, event_id in rows:
-            row = conn.execute(
-                "SELECT id,data,revision FROM source_items WHERE id=%s AND active", (item_id,)
-            ).fetchone()
+            row = active.get(item_id)
             if row:
-                documents.append(document(row, conn=conn))
+                batch.append(row)
                 events.append((item_id, event_id))
             else:
                 client.request(
@@ -116,7 +144,7 @@ def drain_outbox(conn, client):
                     "UPDATE index_outbox SET done=true WHERE item_id=%s AND id<=%s AND NOT done",
                     (item_id, event_id),
                 ).rowcount
-        successes = client.import_documents(ALIAS, documents) if documents else []
+        successes = client.import_documents(ALIAS, documents(conn, batch)) if batch else []
         for (item_id, event_id), success in zip(events, successes, strict=True):
             if success:
                 count += conn.execute(
@@ -135,7 +163,7 @@ def rebuild_index(conn, client):
         with conn.cursor(name="index_rebuild") as cursor:
             cursor.execute("SELECT id,data,revision FROM source_items WHERE active ORDER BY id")
             while rows := cursor.fetchmany(200):
-                if not all(client.import_documents(name, [document(r, conn=conn) for r in rows])):
+                if not all(client.import_documents(name, documents(conn, rows))):
                     raise CatalogError("index_import_failed")
         client.request("PUT", f"/aliases/{ALIAS}", json={"collection_name": name})
         conn.execute("UPDATE index_outbox SET done=true WHERE NOT done")

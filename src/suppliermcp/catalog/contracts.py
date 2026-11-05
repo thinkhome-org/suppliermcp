@@ -31,6 +31,7 @@ class CatalogError(Exception):
 
 
 class Observation(Model):
+    value_type: Literal["text", "number"] = "text"
     value_key: str = ""
     cardinality: Literal["one", "many"] = "one"
     interface: Interface

@@ -32,13 +32,46 @@ def read_status(conn, enabled_interfaces=None):
 
 
 def get_product(conn, product_id):
-    row = conn.execute(
-        "SELECT data FROM source_items WHERE id=%s AND active", (product_id,)
-    ).fetchone()
-    if not row:
+    products = get_products(conn, [product_id])
+    if not products:
         raise CatalogError("product_not_found")
-    item = SourceItem.model_validate(row[0])
-    obs = conn.execute("SELECT data FROM observations WHERE item_id=%s", (product_id,)).fetchall()
+    return products[0]
+
+
+def get_products(conn, product_ids, *, include_evidence=True):
+    from collections import defaultdict
+
+    items = dict(
+        conn.execute(
+            "SELECT id,data FROM source_items WHERE id=ANY(%s) AND active", (list(product_ids),)
+        )
+    )
+    observations, offers, relationships = defaultdict(list), defaultdict(list), defaultdict(list)
+    if include_evidence:
+        for item_id, data in conn.execute(
+            "SELECT item_id,data FROM observations WHERE item_id=ANY(%s)", (list(items),)
+        ):
+            observations[item_id].append((data,))
+        for item_id, data in conn.execute(
+            "SELECT item_id,data FROM relationships WHERE item_id=ANY(%s)", (list(items),)
+        ):
+            relationships[item_id].append(data)
+    for item_id, data, interface, endpoint in conn.execute(
+        "SELECT item_id,data,interface,endpoint FROM current_offers WHERE item_id=ANY(%s)",
+        (list(items),),
+    ):
+        offers[item_id].append((data, interface, endpoint))
+    return [
+        _assemble(
+            item_id, items[item_id], observations[item_id], offers[item_id], relationships[item_id]
+        )
+        for item_id in product_ids
+        if item_id in items
+    ]
+
+
+def _assemble(product_id, data, obs, rows, relationships):
+    item = SourceItem.model_validate(data)
     if obs:
         from .contracts import Observation
 
@@ -46,9 +79,6 @@ def get_product(conn, product_id):
     from suppliermcp.search.schema import mapped_observations
 
     item.observations.extend(mapped_observations(item.observations))
-    rows = conn.execute(
-        "SELECT data,interface,endpoint FROM current_offers WHERE item_id=%s", (product_id,)
-    ).fetchall()
     offers = []
     for data, interface, endpoint in rows:
         offer = Offer.model_validate(data)
@@ -113,9 +143,6 @@ def get_product(conn, product_id):
             combined.price_rule = "unknown"
             conflicts.append("price_rule")
         combined.observations = [v for o in offers for v in o.observations]
-    relationships = [
-        r[0] for r in conn.execute("SELECT data FROM relationships WHERE item_id=%s", (product_id,))
-    ]
     return ProductView(
         product_id=product_id,
         item=item,

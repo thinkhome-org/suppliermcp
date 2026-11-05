@@ -18,7 +18,7 @@ def matching_ids(conn, query):
     conditions, params = [], []
     for f in query.filters:
         validate_filter(f, schema)
-        expr = "(SELECT CASE WHEN v.state='known' THEN "
+        expr = "(SELECT bool_or(CASE WHEN v.state='known' THEN "
         numeric = schema[f.field]["type"] == "number"
         expr += "v.value::numeric" if numeric else "v.value"
         if f.operator == "in":
@@ -28,7 +28,7 @@ def matching_ids(conn, query):
         else:
             expr += " " + {"eq": "=", "gte": ">=", "lte": "<="}[f.operator] + " %s"
             params.append(Decimal(str(f.value)) if numeric else f.value)
-        expr += " ELSE NULL END FROM catalog_values v WHERE v.item_id=s.id AND v.field=%s)"
+        expr += " ELSE NULL END) FROM catalog_values v WHERE v.item_id=s.id AND v.field=%s)"
         params.append(f.field)
         conditions.append(expr)
     expr = " AND ".join(conditions) or "true"

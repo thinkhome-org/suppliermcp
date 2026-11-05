@@ -184,12 +184,39 @@ def normalize_record(manifest, element, root_values=None):
             + nested_facts(manifest, element, tag + ".")
         )
         if data.get("CpaId") and "Value" in data:
+            if data.get("Name"):
+                result.append(
+                    SchemaRecord(
+                        interface="mega",
+                        kind="parameter",
+                        values={
+                            "code": data["CpaId"],
+                            "label": data["Name"],
+                            "cardinality": "one" if data.get("Single") == "1" else "many",
+                        },
+                    )
+                )
             observations.extend(
                 facts(
                     manifest,
                     {"parameter:" + data["CpaId"]: data["Value"]},
                     key=key,
                     many=data.get("Single") != "1",
+                )
+            )
+        if data.get("CpaId") and data.get("Measure"):
+            # CpsStiVal schema declares Measure fixed.14.4; its unit is not declared.
+            observations.append(
+                Observation(
+                    interface="mega",
+                    endpoint=manifest.endpoint,
+                    field="parameter:" + data["CpaId"] + ":measure",
+                    value=data["Measure"],
+                    value_type="number",
+                    value_key=key,
+                    cardinality="one" if data.get("Single") == "1" else "many",
+                    fetched_at=manifest.started_at,
+                    artifact_sha256=manifest.artifact_sha256,
                 )
             )
         result.append(

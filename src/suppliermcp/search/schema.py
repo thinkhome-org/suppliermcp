@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from suppliermcp.catalog.contracts import CatalogError
-from suppliermcp.catalog.repository import get_product
+from suppliermcp.catalog.repository import get_products
 
 MAPPINGS = json.loads((Path(__file__).parents[1] / "catalog/mappings.json").read_text())
 
@@ -24,8 +24,8 @@ def catalog_schema(conn, category=None):
     if (
         category is not None
         and not conn.execute(
-            "SELECT 1 FROM source_schema WHERE kind='ProductCategory' AND 'ed:' || (data->>'CategoryCode')=%s LIMIT 1",
-            (category,),
+            "SELECT 1 FROM source_schema WHERE (kind='ProductCategory' AND 'ed:' || (data->>'CategoryCode')=%s) OR (kind IN ('SCategorySys','SPresentTree') AND 'mega:' || (data->>'Id')=%s) LIMIT 1",
+            (category, category),
         ).fetchone()
     ):
         raise CatalogError(
@@ -41,6 +41,12 @@ def catalog_schema(conn, category=None):
         for field, kind in sorted(types.items())
     }
 
+    for (definition,) in conn.execute("SELECT data FROM source_schema WHERE kind='parameter'"):
+        field = "native:mega:parameter:" + definition["code"]
+        if field in result:
+            result[field].update(
+                label=definition["label"], cardinality=definition.get("cardinality", "many")
+            )
     for native, mapping in MAPPINGS.items():
         field = mapping["field"]
         if field in result:
@@ -69,55 +75,91 @@ def validate_filter(f, schema):
 
 
 def refresh_values(conn, item_ids):
-    for item_id in item_ids:
-        conn.execute("DELETE FROM catalog_values WHERE item_id=%s", (item_id,))
-        try:
-            view = get_product(conn, item_id)
-        except CatalogError:
+    ids = list(item_ids)
+    for start in range(0, len(ids), 200):
+        batch = ids[start : start + 200]
+        views = get_products(conn, batch)
+        conn.execute("DELETE FROM catalog_values WHERE item_id=ANY(%s)", (batch,))
+        with conn.cursor().copy(
+            "COPY catalog_values (item_id,field,value,state,value_type,value_key) FROM STDIN"
+        ) as copy:
+            for view in views:
+                for row in _value_rows(view):
+                    copy.write_row(row)
+
+
+def _value_rows(view):
+    item_id = view.product_id
+    values = {
+        f: (getattr(view.item, f), "text")
+        for f in ["supplier", "manufacturer", "sku", "ean", "mpn"]
+    }
+    offer = view.offers[0] if view.offers else None
+    for f, source, kind in [
+        ("price", "unit_net", "number"),
+        ("currency", "currency", "text"),
+        ("stock_state", "stock_state", "text"),
+        ("stock_qty", "stock_qty", "number"),
+    ]:
+        values[f] = (getattr(offer, source) if offer else None, kind)
+    native = {}
+    native_types = {}
+    many = set()
+    conflicted = set()
+    for o in view.item.observations:
+        if o.derivation == "mapped":
             continue
-        values = {
-            f: (getattr(view.item, f), "text")
-            for f in ["supplier", "manufacturer", "sku", "ean", "mpn"]
-        }
-        offer = view.offers[0] if view.offers else None
-        for f, source, kind in [
-            ("price", "unit_net", "number"),
-            ("currency", "currency", "text"),
-            ("stock_state", "stock_state", "text"),
-            ("stock_qty", "stock_qty", "number"),
-        ]:
-            values[f] = (getattr(offer, source) if offer else None, kind)
-        native = {}
-        for o in view.item.observations:
-            if o.derivation == "mapped":
-                continue
-            field = f"native:{o.interface}:{o.field}"
-            native.setdefault(field, set())
-            if o.state == "known" and isinstance(o.value, (str, int, float)):
-                native[field].add(str(o.value))
-        for field, entries in native.items():
-            values[field] = (next(iter(entries)) if len(entries) == 1 else None, "text")
-        mapped = {}
-        for native, mapping in MAPPINGS.items():
-            value = values.get(native, (None, "text"))[0]
-            if mapping.get("type") not in {"text", "number"} or mapping["field"] in BASE:
-                raise CatalogError("invalid_mapping")
-            if value is not None and mapping["type"] == "number":
+        field = f"native:{o.interface}:{o.field}"
+        native.setdefault(field, set())
+        native_types.setdefault(field, set()).add(o.value_type)
+        if o.cardinality == "many":
+            many.add(field)
+        if o.state == "conflict":
+            conflicted.add(field)
+        if o.state == "known" and isinstance(o.value, (str, int, float)):
+            value = str(o.value)
+            if o.value_type == "number":
                 try:
-                    value = Decimal(value) * Decimal(mapping.get("scale", "1"))
-                    if not value.is_finite():
-                        value = None
+                    if not Decimal(value).is_finite():
+                        raise InvalidOperation()
                 except InvalidOperation:
+                    conflicted.add(field)
+                    continue
+            native[field].add(value)
+    for field, entries in native.items():
+        if len(native_types[field]) != 1:
+            conflicted.add(field)
+        values[field] = (
+            next(iter(entries)) if len(entries) == 1 and field not in conflicted else None,
+            "number" if native_types[field] == {"number"} else "text",
+        )
+    mapped = {}
+    for native, mapping in MAPPINGS.items():
+        value = values.get(native, (None, "text"))[0]
+        if mapping.get("type") not in {"text", "number"} or mapping["field"] in BASE:
+            raise CatalogError("invalid_mapping")
+        if value is not None and mapping["type"] == "number":
+            try:
+                value = Decimal(value) * Decimal(mapping.get("scale", "1"))
+                if not value.is_finite():
                     value = None
-            mapped.setdefault(mapping["field"], []).append((value, mapping["type"]))
-        for field, entries in mapped.items():
-            known = {str(v) for v, _ in entries if v is not None}
-            values[field] = (next(iter(known)) if len(known) == 1 else None, entries[0][1])
-        for field, (value, kind) in values.items():
-            state = "known" if value is not None and value != "unknown" else "unknown"
-            conn.execute(
-                "INSERT INTO catalog_values VALUES (%s,%s,%s,%s,%s)",
-                (item_id, field, str(value) if value is not None else None, state, kind),
+            except InvalidOperation:
+                value = None
+        mapped.setdefault(mapping["field"], []).append((value, mapping["type"]))
+    for field, entries in mapped.items():
+        known = {str(v) for v, _ in entries if v is not None}
+        values[field] = (next(iter(known)) if len(known) == 1 else None, entries[0][1])
+    for field, (value, kind) in values.items():
+        entries = sorted(native[field]) if field in many and field not in conflicted else [value]
+        for index, entry in enumerate(entries or [None]):
+            state = "known" if entry is not None and entry != "unknown" else "unknown"
+            yield (
+                item_id,
+                field,
+                str(entry) if entry is not None else None,
+                state,
+                kind,
+                str(index),
             )
 
 
