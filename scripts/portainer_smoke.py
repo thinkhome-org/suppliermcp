@@ -84,6 +84,7 @@ def main():
             "-f",
             str(override),
         ]
+        blue = compose
         run(["docker", "network", "create", network])
         try:
             rollback_image = os.environ.get("SUPPLIERMCP_ROLLBACK_IMAGE")
@@ -122,6 +123,16 @@ def main():
                     )
                 backup.chmod(0o600)
                 env["SUPPLIERMCP_IMAGE"] = values["SUPPLIERMCP_IMAGE"]
+                # A v1 catalogue cannot prove XML ancestry. Upgrade on isolated volumes.
+                refused = subprocess.run(
+                    compose + ["run", "--rm", "--no-deps", "migrate"], capture_output=True, env=env
+                )
+                assert refused.returncode != 0 and b"catalog_reprojection_required" in (
+                    refused.stdout + refused.stderr
+                )
+                assert run(psql + [marker_query]).strip() == "1"
+                compose = list(blue)
+                compose[compose.index(project)] = project + "-green"
             run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
             address = run(compose + ["port", "mcp", "8000"]).strip()
             url = "http://" + address
@@ -181,9 +192,10 @@ def main():
                 run(compose + ["restart", "mcp", "postgres", "typesense", "worker"])
                 run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
                 assert run(psql + [marker_query]).strip() == "1"
-                run(compose + ["down", "-v"])
+                # Destroy only the disposable blue volume; restore the independent backup.
                 env["SUPPLIERMCP_IMAGE"] = rollback_image
-                run(compose + ["up", "-d", "--wait", "postgres"])
+                run(blue + ["down", "-v"])
+                run(blue + ["up", "-d", "--wait", "postgres"])
                 with backup.open("rb") as source:
                     subprocess.run(
                         database + ["psql", "-qX", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp"],
@@ -192,9 +204,9 @@ def main():
                         env=env,
                         check=True,
                     )
-                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                run(blue + ["up", "-d", "--wait", "--wait-timeout", "180"])
                 assert run(psql + [marker_query]).strip() == "1"
-                restored_url = "http://" + run(compose + ["port", "mcp", "8000"]).strip()
+                restored_url = "http://" + run(blue + ["port", "mcp", "8000"]).strip()
 
                 async def check_restored_image():
                     async with Client(restored_url + "/mcp", auth=token) as client:
@@ -207,13 +219,15 @@ def main():
 
                 asyncio.run(check_restored_image())
                 print(
-                    "PASS: upgrade, restart and v1 backup restoration with authenticated SKU lookup"
+                    "PASS: populated v1 upgrade rejection, isolated v2 restart and v1 backup restoration with authenticated SKU lookup"
                 )
             print(
                 "PASS: fresh migrations, readiness, auth, nine tools, two resources, exact config, disabled sources"
             )
         finally:
             run(compose + ["down", "-v"])
+            if compose != blue:
+                run(blue + ["down", "-v"])
             run(["docker", "network", "rm", network])
 
 
