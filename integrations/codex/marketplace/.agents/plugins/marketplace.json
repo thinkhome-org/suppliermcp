@@ -1,0 +1,17 @@
+{
+  "name": "thinkhome-suppliermcp",
+  "plugins": [
+    {
+      "name": "suppliermcp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/suppliermcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

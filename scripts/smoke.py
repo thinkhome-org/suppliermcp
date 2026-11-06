@@ -1,7 +1,7 @@
 """Authenticated disposable Compose smoke; removes only its randomly named project."""
 
 import asyncio
-import json
+import os
 import secrets
 import subprocess
 import tempfile
@@ -18,8 +18,8 @@ from suppliermcp.service import CATALOG_OPERATIONS
 ROOT = Path(__file__).resolve().parents[1]
 
 
-async def verify(token, seeded=False):
-    async with Client("http://127.0.0.1:8000/mcp", auth=token) as client:
+async def verify(url, token, seeded=False):
+    async with Client(url, auth=token) as client:
         assert {tool.name for tool in await client.list_tools()} == {
             *CATALOG_OPERATIONS,
             "list_operations",
@@ -66,9 +66,7 @@ def main():
         )
         env.chmod(0o600)
         override = path / "compose.yaml"
-        override.write_text(
-            json.dumps({"services": {name: {"env_file": [str(env)]} for name in ["mcp", "worker"]}})
-        )
+        override.write_text("services:\n  mcp:\n    ports: !override ['127.0.0.1::8000']\n")
         command = [
             "docker",
             "compose",
@@ -82,9 +80,20 @@ def main():
             str(override),
         ]
 
+        smoke_environment = {
+            k: v
+            for k, v in os.environ.items()
+            if not k.startswith("SUPPLIERMCP_") and k != "POSTGRES_PASSWORD"
+        }
+
         def run(*args, input=None):
             result = subprocess.run(
-                command + list(args), input=input, text=True, cwd=ROOT, capture_output=True
+                command + list(args),
+                input=input,
+                text=True,
+                cwd=ROOT,
+                capture_output=True,
+                env={**smoke_environment, "SUPPLIERMCP_ENV_FILE": str(env)},
             )
             if result.returncode:
                 raise RuntimeError(
@@ -97,7 +106,8 @@ def main():
             run("up", "-d", "--wait", "postgres", "typesense")
             run("run", "--rm", "mcp", "python", "-m", "suppliermcp.worker", "migrate")
             run("up", "-d", "--wait", "mcp", "worker")
-            asyncio.run(verify(token))
+            url = "http://" + run("port", "mcp", "8000").strip() + "/mcp"
+            asyncio.run(verify(url, token))
             code = """from suppliermcp.config import Settings
 from suppliermcp.catalog.db import connect
 from suppliermcp.catalog.contracts import SourceItem,BatchManifest
@@ -108,7 +118,8 @@ with connect(Settings.from_env()) as c:
             run("exec", "-T", "mcp", "python", "-", input=code)
             run("restart", "mcp", "postgres")
             run("up", "-d", "--wait", "mcp")
-            asyncio.run(verify(token, seeded=True))
+            url = "http://" + run("port", "mcp", "8000").strip() + "/mcp"
+            asyncio.run(verify(url, token, seeded=True))
             combinations = """import itertools
 from pydantic import SecretStr
 from suppliermcp.config import Settings

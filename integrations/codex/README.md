@@ -15,7 +15,7 @@ For the native Codex plugin, add `--codex`. This writes `.codex-plugin/plugin.js
 The GitHub release's Codex archive includes a local marketplace. Extract it, then install from the extracted root:
 
 ```sh
-codex plugin marketplace add /absolute/path/to/suppliermcp-codex-1.0.0
+codex plugin marketplace add "$PWD"
 codex plugin add suppliermcp@thinkhome-suppliermcp
 ```
 

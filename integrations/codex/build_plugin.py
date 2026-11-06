@@ -37,7 +37,7 @@ def build_plugin(source: Path, destination: Path, mcp_url: str, *, codex: bool =
     manifest = {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "suppliermcp",
-        "version": "1.0.0",
+        "version": "2.0.0-rc.1",
         "description": "Read-only supplier product discovery and per-product offer comparison.",
     }
     mcp = {

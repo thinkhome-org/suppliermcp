@@ -1,5 +1,9 @@
 name: validate
-on: [push, pull_request]
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_call:
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -13,6 +17,11 @@ jobs:
       - run: docker compose -f compose.test.yaml up -d --wait
       - run: uv run ruff check .
       - run: uv run pytest -q
+      - run: uv build --wheel
+      - name: Verify installed wheel outside the checkout
+        run: |
+          uv pip install --reinstall --no-deps dist/*.whl
+          (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/.venv/bin/python" "$GITHUB_WORKSPACE/scripts/verify_wheel.py")
       - run: docker build -t suppliermcp:local .
       - run: uv run python scripts/smoke.py
       - run: uv run python scripts/portainer_smoke.py

@@ -1,5 +1,6 @@
 import json
 
+from suppliermcp.data import data_dir
 from suppliermcp.service import CatalogService
 
 from .auth import current_identity, principal
@@ -8,11 +9,9 @@ HELP = "Use lookup_products for exact codes, search_products for non-exhaustive 
 
 
 def skill_text(name):
-    from pathlib import Path
-
     if name not in {"product-discovery", "offer-comparison"}:
         raise ValueError("Unknown skill")
-    return (Path(__file__).resolve().parents[3] / "skills" / name / "SKILL.md").read_text()
+    return (data_dir("skills") / name / "SKILL.md").read_text()
 
 
 def register(server, settings):

@@ -1,8 +1,7 @@
-from pathlib import Path
-
 import psycopg
 
 from suppliermcp.catalog.contracts import CatalogError
+from suppliermcp.data import data_dir
 
 
 def connect(settings):
@@ -15,11 +14,13 @@ def connect(settings):
 
 
 def migrate(conn):
-    root = Path(__file__).resolve().parents[3] / "migrations"
+    paths = sorted(data_dir("migrations").glob("*.sql"))
+    if not paths:
+        raise RuntimeError("Missing migration SQL")
     with conn.transaction():
         conn.execute("SELECT pg_advisory_xact_lock(91001)")
         conn.execute("CREATE TABLE IF NOT EXISTS migrations (name text PRIMARY KEY)")
-        for path in sorted(root.glob("*.sql")):
+        for path in paths:
             if not conn.execute("SELECT 1 FROM migrations WHERE name=%s", (path.name,)).fetchone():
                 conn.execute(path.read_text())
                 conn.execute("INSERT INTO migrations VALUES (%s)", (path.name,))
