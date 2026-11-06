@@ -14,6 +14,8 @@ PAGES = {
     "Validation": "docs/validation.md",
     "Supplier-contracts": "docs/supplier-contracts.md",
     "Supplier-API": "docs/supplier-api/README.md",
+    "Operation-reads": "docs/supplier-api/operation-reads.md",
+    "V2-acceptance": "docs/supplier-api/v2-acceptance.md",
     "Implementation-decisions": "docs/implementation-decisions.md",
     "Codex": "integrations/codex/README.md",
 }
