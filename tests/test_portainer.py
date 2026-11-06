@@ -22,6 +22,8 @@ def render(missing=None):
         ),
     }
     supplied["SUPPLIERMCP_AUTH_CLIENTS"] = '{"client-a":{}}'
+    supplied["SUPPLIERMCP_ED_PRIVATE_LOGIN"] = "test-private"
+    supplied["SUPPLIERMCP_ED_PRIVATE_PASSWORD"] = "test-private-password"
     env.update(supplied)
     if missing:
         env.pop(missing, None)
@@ -60,6 +62,8 @@ def test_portainer_render_isolates_services_and_orders_fresh_migrations():
             services[name]["depends_on"]["migrate"]["condition"] == "service_completed_successfully"
         )
         assert services[name]["image"] == supplied["SUPPLIERMCP_IMAGE"]
+        for key in ("SUPPLIERMCP_ED_PRIVATE_LOGIN", "SUPPLIERMCP_ED_PRIVATE_PASSWORD"):
+            assert services[name]["environment"][key] == supplied[key]
         assert (
             services[name]["environment"]["SUPPLIERMCP_AUTH_PUBLIC_KEY"]
             == supplied["SUPPLIERMCP_AUTH_PUBLIC_KEY"]

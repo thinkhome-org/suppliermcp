@@ -30,7 +30,7 @@ Portainer 2.45.1 imports physical lines and later writes their values directly i
 | `SUPPLIERMCP_MEGA_LOGIN`, `SUPPLIERMCP_MEGA_PASSWORD` | 100MEGA account pair, or both empty |
 | `SUPPLIERMCP_ED_PUBLIC_LOGIN`, `SUPPLIERMCP_ED_PUBLIC_PASSWORD` | eD PUBLIC account pair, or both empty |
 
-eD PRIVATE is deliberately not configured in this deployment. Keep JWT signing keys and client bearer tokens outside the application containers. Tokens require RS256, subject, expiry, issuer `suppliermcp` and audience `suppliermcp`. The public client profile uses the HTTPS URL above and a bearer token supplied through the client's protected environment.
+For an account with eD PRIVATE access, supply both `SUPPLIERMCP_ED_PRIVATE_LOGIN` and `SUPPLIERMCP_ED_PRIVATE_PASSWORD` using protected Portainer variables. Enable the desired PRIVATE refresh intervals in the verified source contracts. See [dedicated login](login.md) for the personal ChatGPT OAuth setup. Keep JWT signing keys and client bearer tokens outside the application containers. Tokens require RS256, subject, expiry, issuer `suppliermcp` and audience `suppliermcp`. The public client profile uses the HTTPS URL above and a bearer token supplied through the client's protected environment.
 
 The image does not contain source credentials, source contracts or client tokens. The initial download limit is 1 GiB, expanded XML limit 2 GiB and retained-artifact budget 20 GiB. Database/index disk usage is additional; the measured full local catalog occupied many gigabytes.
 
