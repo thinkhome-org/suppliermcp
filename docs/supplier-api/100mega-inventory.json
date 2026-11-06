@@ -42719,5 +42719,44 @@
     ],
     "evidence": "../live-validation-2026-11-05.json",
     "note": "A full-mode export is not automatically certified globally complete. Targeted publications and queued jobs are not full catalog acceptance."
+  },
+  "wsdl_operations": {
+    "mega_order": [
+      "AppendNoteIntText",
+      "AppendNoteText",
+      "AppendStoItem",
+      "CancelItem",
+      "CancelStoItem",
+      "Create",
+      "CreateComShipTo",
+      "CreateComShipToXCompanyId",
+      "CreateLoginTag",
+      "CreatePOL",
+      "CreateParameters",
+      "CreateXCompany",
+      "ExecuteTrgX",
+      "GetComShipTo",
+      "GetComShipToListChanged",
+      "GetComShipToListId",
+      "GetStatus",
+      "GetStatusListAppendReady",
+      "GetStatusListChanged",
+      "GetStatusListChangedExpS",
+      "GetStatusListCode",
+      "GetStatusListCodeO",
+      "GetStatusListId",
+      "GetStatusListOpened",
+      "GetStatusListTag",
+      "GetXCompany",
+      "GetXCompanyListChanged",
+      "GetXCompanyListId",
+      "SetOption"
+    ],
+    "mega_default": [
+      "GetResult",
+      "GetResultByCode",
+      "GetResultByFromTo",
+      "HelloWorld"
+    ]
   }
 }
