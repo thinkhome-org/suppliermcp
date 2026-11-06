@@ -1,7 +1,7 @@
 name: publish-release-candidate
 on:
   push:
-    tags: ['v2.0.0-rc.*']
+    tags: ['v2.0.0-rc.*', 'v2.0.0-stage.*']
 permissions:
   contents: read
 jobs:
@@ -29,7 +29,11 @@ jobs:
         run: |
           set -eu
           version="${GITHUB_REF_NAME#v}"
-          [[ "$version" =~ ^2\.0\.0-rc\.[1-9][0-9]*$ ]]
+          if [[ "$version" =~ ^2\.0\.0-stage\.[1-9][0-9]*$ ]]; then
+            version=2.0.0
+          else
+            [[ "$version" =~ ^2\.0\.0-rc\.[1-9][0-9]*$ ]]
+          fi
           native="suppliermcp-codex-$version"
           portable="suppliermcp-portable-$version"
           uv build --wheel
@@ -66,6 +70,7 @@ jobs:
           uv run python scripts/portainer_smoke.py
           printf '%s\n' "$SUPPLIERMCP_SMOKE_IMAGE" | tee dist/image-reference.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Promote the verified manifest to candidate tags
+        if: startsWith(github.ref_name, 'v2.0.0-rc.')
         env:
           DIGEST: ${{ steps.image.outputs.digest }}
         run: |

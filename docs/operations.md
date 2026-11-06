@@ -106,3 +106,5 @@ curl --fail http://127.0.0.1:18000/health/ready
 ```
 
 For installations with eD PRIVATE enabled, run its catalog refresh as well. Check authenticated catalog status and known SKU, current offer evidence, filtered listing, and search on the candidate. Verify required endpoint coverage before changing the client URL or reverse proxy. Keep the v1 stack, database, index and artifacts during acceptance. Rolling back means pointing clients back at the original stack. A copied v1 database, an old Typesense collection or a v1 result cursor cannot establish projected provenance.
+
+For the stable promotion procedure, see [Promote SupDB 2.0.0](stable-release.md).

@@ -152,6 +152,8 @@ async def run(settings, options, fixtures):
             "operator_fixture" if supplied else "generated_read_only",
             options.both_scopes,
         )
+        if options.image_reference:
+            row["image"] = options.image_reference
         rows[s.operation_id] = row
         save(options.output, rows)
 
@@ -162,6 +164,7 @@ async def run(settings, options, fixtures):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--image-reference", help="Exact digest used to launch this probe container")
     p.add_argument("--output", type=Path, required=True)
     p.add_argument(
         "--operation", action="append", help="Operation ID or shell pattern; repeat to combine"
