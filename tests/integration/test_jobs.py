@@ -71,24 +71,24 @@ def test_endpoint_failure_preserves_other_refresh_states(conn):
     assert state["domains"]["catalog"]["complete"] is True
 
 
-def test_restricted_endpoint_records_next_allowed_time(conn):
+def test_restricted_endpoint_records_next_allowed_time(conn, monkeypatch):
+    from datetime import UTC, datetime
+
+    from suppliermcp.suppliers.mega import capabilities
+    from suppliermcp.suppliers.mega.adapter import MegaAdapter
     from suppliermcp.sync import jobs
 
-    class Adapter:
-        interface = "mega"
-        endpoints = {"catalog": "base"}
-        contracts = {
-            "base": {
+    monkeypatch.setattr(capabilities, "utcnow", lambda: datetime(2026, 11, 6, 11, tzinfo=UTC))
+    adapter = MegaAdapter(
+        contracts={
+            "AttSti": {
                 "timezone": "Europe/Prague",
                 "modes": ["full"],
-                "windows": {"full": {"days": list(range(7)), "hours": [21]}},
+                "windows": {"full": {"days": list(range(7)), "hours": list(range(24))}},
             }
         }
-
-        def fetch_export(self, endpoint, codes=None):
-            raise CatalogError("outside_supplier_window")
-
-    with pytest.raises(CatalogError):
-        jobs.run_export_refresh(conn, Adapter(), "base")
+    )
+    with pytest.raises(CatalogError, match="outside_supplier_window"):
+        jobs.run_export_refresh(conn, adapter, "AttSti")
     state = conn.execute("SELECT data FROM source_state WHERE interface='mega'").fetchone()[0]
-    assert state["endpoints"]["base"]["next_allowed_at"] is not None
+    assert state["endpoints"]["AttSti"]["next_allowed_at"] == "2026-11-06T20:00:00+00:00"
