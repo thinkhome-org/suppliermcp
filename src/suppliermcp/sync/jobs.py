@@ -1,9 +1,11 @@
 """Source-isolated refreshes and PostgreSQL-backed scheduling."""
 
 import json
+from itertools import chain
 from pathlib import Path
 
 import procrastinate
+from procrastinate.exceptions import AlreadyEnqueued
 from psycopg.types.json import Jsonb
 
 from suppliermcp.catalog.contracts import CatalogError, utcnow
@@ -111,7 +113,7 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
             manifests, failures = adapter.enrichment()
             if hasattr(adapter, "dictionaries"):
                 dictionaries, dictionary_failures = adapter.dictionaries()
-                manifests.extend(dictionaries)
+                manifests = chain(manifests, dictionaries)
                 failures.extend(dictionary_failures)
             for chunk in manifests:
                 try:
@@ -245,7 +247,7 @@ def create_app(settings):
     def tick(timestamp):
         try:
             index.configure(lock="index", queueing_lock="index").defer()
-        except procrastinate.AlreadyEnqueued:
+        except AlreadyEnqueued:
             pass
         contracts = source_contracts(settings)
         with connect(settings) as conn:
@@ -309,7 +311,7 @@ def create_app(settings):
                             lock=("supplier:mega" if interface == "mega" else "supplier:ed"),
                             queueing_lock=f"{interface}:{source_endpoint}",
                         ).defer(interface=interface, domain=domain, endpoint=endpoint)
-                    except procrastinate.AlreadyEnqueued:
+                    except AlreadyEnqueued:
                         pass
 
             for adapter in adapters.values():

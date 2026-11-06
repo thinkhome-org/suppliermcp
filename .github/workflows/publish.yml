@@ -15,7 +15,7 @@ jobs:
       packages: write
     env:
       IMAGE: ghcr.io/thinkhome-org/suppliermcp
-      MCP_URL: https://suppliermcp.thinkhome.org/mcp
+      MCP_URL: https://supdb.thinkhome.org/mcp
     steps:
       - uses: actions/checkout@v4
         with:

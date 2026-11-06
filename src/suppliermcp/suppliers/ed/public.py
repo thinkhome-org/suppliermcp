@@ -70,8 +70,22 @@ class EdPublicAdapter:
             if codes
             else ({"onStock": False, "encoding": "utf-8"} if self.interface == "ed_public" else {})
         )
+        manifest = BatchManifest(
+            interface=self.interface,
+            requested_skus=codes or [],
+            started_at=started_at,
+            domain=domain,
+            endpoint=endpoint,
+            mode="targeted" if codes else "full",
+            capabilities=self.discover(),
+            authoritative_identity=self.interface == "ed_public" or endpoint in BASELINE_METHODS,
+            replace_scope="items" if codes else "endpoint",
+        )
+        return self._fetch_manifest(manifest, params)
+
+    def _fetch_manifest(self, manifest, params, *, require_url=False):
         for _ in range(12):
-            data = self.gateway.call(endpoint, **params)
+            data = self.gateway.call(manifest.endpoint, **params)
             try:
                 root = fromstring(data, forbid_dtd=True)
             except Exception:
@@ -84,23 +98,13 @@ class EdPublicAdapter:
             if (values.get("isReady", values.get("IsReady")) or "").lower() in {"false", "0"}:
                 self.sleep(10)
                 continue
-            manifest = BatchManifest(
-                interface=self.interface,
-                requested_skus=codes or [],
-                started_at=started_at,
-                domain=domain,
-                endpoint=endpoint,
-                mode="targeted" if codes else "full",
-                capabilities=self.discover(),
-                authoritative_identity=self.interface == "ed_public"
-                or endpoint in BASELINE_METHODS,
-                replace_scope="items" if codes else "endpoint",
-            )
             if not self.store:
                 raise CatalogError("artifact_store_not_configured")
             url = values.get("url", values.get("Url"))
             if url:
                 self.transport.download(url, self.store, manifest)
+            elif require_url:
+                raise CatalogError("invalid_export")
             else:
                 self.store.save([data], manifest)
             return manifest
@@ -111,8 +115,18 @@ class EdPublicAdapter:
         contract = getattr(self, "offer_contract", {})
         records = 0
 
+        saw_element = False
+        empty_commodity = False
+
         def check_status(element):
+            nonlocal saw_element, empty_commodity
             name = local(element.tag)
+            empty_commodity = (
+                not saw_element
+                and name == "ArrayOfProductComplete"
+                and not (element.text or "").strip()
+            )
+            saw_element = True
             if name == "StatusCode" and element.text == "ERROR" or name == "Fault":
                 raise CatalogError("supplier_response_error")
 
@@ -273,7 +287,8 @@ class EdPublicAdapter:
             yield apply_contract(offer, export_values | values, contract, manifest)
             records += 1
             element.clear()
-        if not records and manifest.domain != "schema":
+        valid_empty = manifest.endpoint == "getProductCatalogueFullDownloadXML" and empty_commodity
+        if not records and manifest.domain != "schema" and not valid_empty:
             raise CatalogError("invalid_export")
         # Full baselines enumerate identity; details/stock never establish catalog completeness.
         manifest.complete = records > 0 and manifest.endpoint in (

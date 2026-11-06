@@ -124,14 +124,29 @@ def test_enrichment_partition_failure_keeps_other_partitions(tmp_path):
     class Gateway:
         def call(self, method, **params):
             if method == "getProductCommodityList":
-                return b"<List><ProductCommodity><CommodityCode>A</CommodityCode></ProductCommodity><ProductCommodity><CommodityCode>B</CommodityCode></ProductCommodity></List>"
+                return b"<List><CommodityCode>   </CommodityCode><CommodityCode> A </CommodityCode><CommodityCode>B</CommodityCode></List>"
             if params.get("Comodities") == "B":
                 raise CatalogError("supplier_unavailable")
-            return b"<Products><Product><ProId>123</ProId><Code>001</Code><Name>SSD</Name></Product></Products>"
+            assert params == {"onStock": False, "Comodities": "A"}
+            self.attempts = getattr(self, "attempts", 0) + 1
+            ready = "false" if self.attempts == 1 else "true"
+            return f"<ProductListStatus><isReady>{ready}</isReady><url>https://ed.example/file</url></ProductListStatus>".encode()
 
-    adapter = EdPrivateAdapter(gateway=Gateway(), store=ArtifactStore(tmp_path))
+    class Transport:
+        def download(self, url, store, manifest):
+            assert url == "https://ed.example/file"
+            store.save([b"<ArrayOfProductComplete/>"], manifest)
+
+    adapter = EdPrivateAdapter(
+        gateway=Gateway(),
+        store=ArtifactStore(tmp_path),
+        transport=Transport(),
+        sleep=lambda _: None,
+    )
     manifests, failures = adapter.enrichment()
+    manifests = list(manifests)
     assert len(manifests) == 1 and failures == ["B"]
+    assert list(adapter.parse(manifests[0])) == []
     assert not manifests[0].complete
 
 
@@ -172,3 +187,27 @@ def test_description_budget(tmp_path):
                 )
             )
         )
+
+
+@pytest.mark.parametrize(
+    ("xml", "expected"),
+    [
+        ("<ArrayOfProductComplete><Unknown/></ArrayOfProductComplete>", "invalid_export"),
+        ("<ArrayOfProductComplete>invalid</ArrayOfProductComplete>", "invalid_export"),
+        (
+            "<ProductListStatus><isReady>true</isReady></ProductListStatus>",
+            "catalog_projection_unavailable",
+        ),
+    ],
+)
+def test_non_catalog_content_is_not_an_empty_commodity(tmp_path, xml, expected):
+    path = tmp_path / "chunk.xml"
+    path.write_text(xml)
+    manifest = BatchManifest(
+        interface="ed_private",
+        endpoint="getProductCatalogueFullDownloadXML",
+        domain="catalog",
+        path=str(path),
+    )
+    with pytest.raises(CatalogError, match=expected):
+        list(EdPrivateAdapter().parse(manifest))

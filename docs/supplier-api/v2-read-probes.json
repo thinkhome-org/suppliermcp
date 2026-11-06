@@ -1059,26 +1059,60 @@
     },
     "mega.AttSti.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 36.5,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:37+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:03:19+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:37+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.AttSti.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 26.7,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:37+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:04:32+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:37+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.AttSti.targeted": {
@@ -1096,26 +1130,60 @@
     },
     "mega.AttSti_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 47.06,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:38+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:03:19+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:38+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.AttSti_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 44.91,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:37+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:04:32+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:37+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.AttSti_El.targeted": {
@@ -1185,14 +1253,31 @@
     },
     "mega.Config.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 3.23,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:38+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:05:17+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:38+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.Config.targeted": {
@@ -1210,14 +1295,31 @@
     },
     "mega.Config_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 10.56,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:05:17+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.Config_El.targeted": {
@@ -1235,14 +1337,31 @@
     },
     "mega.CpsSti.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 180.63,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:05:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.CpsStiVal.delta": {
@@ -1260,14 +1379,31 @@
     },
     "mega.CpsStiVal.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 53.33,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:05:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.CpsStiVal.targeted": {
@@ -1298,14 +1434,31 @@
     },
     "mega.CpsStiVal_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 69.25,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:20:42+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:08:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:20:42+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.CpsStiVal_El.targeted": {
@@ -2153,74 +2306,176 @@
     },
     "mega.StoItemBase.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.39,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:49+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:06+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:49+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemBase.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 534.87,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:45+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:08:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:45+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemBase.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.58,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:45+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:06+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:45+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemBase_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.24,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:49+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:08+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:49+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemBase_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 145.8,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:49+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:17:23+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:49+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemBase_El.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.9,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:22:49+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:08+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:22:49+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemEAN.full": {
@@ -2407,14 +2662,31 @@
     },
     "mega.StoItemHook.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.42,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:23:34+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:10+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:23:34+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemHook.full": {
@@ -2445,14 +2717,31 @@
     },
     "mega.StoItemHook_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.19,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:23:34+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:10+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:23:34+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemHook_El.full": {
@@ -2754,26 +3043,60 @@
     },
     "mega.StoItemPriceOrd.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 0.81,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:29+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:11+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:29+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrd.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 43.8,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:28+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:17:23+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:28+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrd.targeted": {
@@ -2791,26 +3114,60 @@
     },
     "mega.StoItemPriceOrdCur.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.23,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:11+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrdCur.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 43.03,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:19:49+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrdCur.targeted": {
@@ -2828,26 +3185,60 @@
     },
     "mega.StoItemPriceOrdCur_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.72,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:32+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:13+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:32+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrdCur_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 37.65,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:19:49+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrdCur_El.targeted": {
@@ -2865,26 +3256,60 @@
     },
     "mega.StoItemPriceOrd_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 2.43,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:29+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:13+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:29+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrd_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 42.04,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:29+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:20:32+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:29+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceOrd_El.targeted": {
@@ -2928,14 +3353,31 @@
     },
     "mega.StoItemQtyFree.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.1,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T21:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:32+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T21:00:02+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T21:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:32+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFreeBO.full": {
@@ -3278,26 +3720,60 @@
     },
     "mega.StoItemQtyFree_El.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.23,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T21:00:00+00:00",
-      "observed_at": "2026-11-06T15:24:40+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T21:00:02+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T21:00:00+00:00",
+          "observed_at": "2026-11-06T15:24:40+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemShop_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.96,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:11+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:15+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:11+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemShop_El.full": {
@@ -3352,14 +3828,31 @@
     },
     "mega.StoItemShoptet_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 3.51,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:11+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:15+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:11+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemShoptet_El.full": {
@@ -3414,14 +3907,31 @@
     },
     "mega.StoItemSiv.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 64.13,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:51+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:20:32+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:51+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemSiv.targeted": {
@@ -3439,14 +3949,31 @@
     },
     "mega.StoItemSiv_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 37.34,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:51+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:21:36+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:51+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StoItemSiv_El.targeted": {
@@ -3464,38 +3991,89 @@
     },
     "mega.StrStiSync.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.42,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:52+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:19+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:52+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.StrStiSync_El.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.59,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:52+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:19+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:52+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-100M.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.41,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:27:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:20+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:27:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-100M.full": {
@@ -3537,26 +4115,60 @@
     },
     "mega.X-100M.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.62,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:26:52+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:20+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:26:52+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-100M_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 2.32,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:27:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:22+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:27:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-100M_El.full": {
@@ -3598,14 +4210,31 @@
     },
     "mega.X-100M_El.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.7,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:27:31+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:22+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:27:31+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-ASM-CpsStiVal.delta": {
@@ -3902,14 +4531,31 @@
     },
     "mega.X-ASM-StoItemSiv.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 5.13,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:28:54+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:21:36+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:28:54+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-ASM-StoItemSiv.targeted": {
@@ -3927,14 +4573,31 @@
     },
     "mega.X-ASM-StoItemSiv_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 4.05,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:28:54+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:22:13+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:28:54+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-ASM-StoItemSiv_El.targeted": {
@@ -4078,14 +4741,31 @@
     },
     "mega.X-Cybex.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.09,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:30:14+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:04:24+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:30:14+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Cybex.full": {
@@ -4116,26 +4796,60 @@
     },
     "mega.X-Cybex.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.12,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:29:35+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:24+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:29:35+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Cybex_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.13,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:30:14+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:04:25+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:30:14+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Cybex_El.full": {
@@ -4177,14 +4891,31 @@
     },
     "mega.X-Cybex_El.targeted": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.47,
       "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:30:14+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:25+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:30:14+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-EAN.delta": {
@@ -4423,15 +5154,15 @@
     },
     "mega.X-HOG.delta": {
       "both_scopes": false,
-      "build_stage": "post-rc1 local candidate",
-      "code_revision": "19b6d81",
+      "catalog_projection": true,
+      "elapsed_seconds": 0.6,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:59:06+00:00",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:27+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -4455,10 +5186,40 @@
           "observed_at": "2026-11-06T15:34:26+00:00",
           "outcome": "outside_supplier_window",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "build_stage": "post-rc1 local candidate",
+          "code_revision": "19b6d81",
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:59:06+00:00",
+          "outcome": "outside_supplier_window",
+          "package_version": "2.0.0rc1",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": true,
+          "catalog_projection": false,
+          "elapsed_seconds": 1.36,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 1073741824,
+          "max_expanded_bytes": 2147483648,
+          "mode": "delta",
+          "more_pages": false,
+          "observed_at": "2026-11-06T20:04:00+00:00",
+          "outcome": "verified_empty",
+          "package_version": "2.0.0rc3",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "outside_supplier_window",
-      "package_version": "2.0.0rc1",
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-HOG.full": {
@@ -4505,15 +5266,15 @@
     },
     "mega.X-HOG.targeted": {
       "both_scopes": false,
-      "build_stage": "post-rc1 local candidate",
-      "code_revision": "19b6d81",
-      "input": "generated_read_only",
+      "catalog_projection": true,
+      "elapsed_seconds": 0.52,
+      "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:59:06+00:00",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:27+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -4537,23 +5298,53 @@
           "observed_at": "2026-11-06T15:34:26+00:00",
           "outcome": "outside_supplier_window",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "build_stage": "post-rc1 local candidate",
+          "code_revision": "19b6d81",
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:59:06+00:00",
+          "outcome": "outside_supplier_window",
+          "package_version": "2.0.0rc1",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": true,
+          "catalog_projection": false,
+          "elapsed_seconds": 1.35,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 1073741824,
+          "max_expanded_bytes": 2147483648,
+          "mode": "targeted",
+          "more_pages": false,
+          "observed_at": "2026-11-06T20:04:00+00:00",
+          "outcome": "verified_empty",
+          "package_version": "2.0.0rc3",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "outside_supplier_window",
-      "package_version": "2.0.0rc1",
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-HOG_El.delta": {
       "both_scopes": false,
-      "build_stage": "post-rc1 local candidate",
-      "code_revision": "19b6d81",
+      "catalog_projection": true,
+      "elapsed_seconds": 0.49,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:59:06+00:00",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:27+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -4577,10 +5368,40 @@
           "observed_at": "2026-11-06T15:34:27+00:00",
           "outcome": "outside_supplier_window",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "build_stage": "post-rc1 local candidate",
+          "code_revision": "19b6d81",
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:59:06+00:00",
+          "outcome": "outside_supplier_window",
+          "package_version": "2.0.0rc1",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": true,
+          "catalog_projection": false,
+          "elapsed_seconds": 1.65,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 1073741824,
+          "max_expanded_bytes": 2147483648,
+          "mode": "delta",
+          "more_pages": false,
+          "observed_at": "2026-11-06T20:04:02+00:00",
+          "outcome": "verified_empty",
+          "package_version": "2.0.0rc3",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "outside_supplier_window",
-      "package_version": "2.0.0rc1",
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-HOG_El.full": {
@@ -4627,15 +5448,15 @@
     },
     "mega.X-HOG_El.targeted": {
       "both_scopes": false,
-      "build_stage": "post-rc1 local candidate",
-      "code_revision": "19b6d81",
-      "input": "generated_read_only",
+      "catalog_projection": true,
+      "elapsed_seconds": 0.51,
+      "input": "operator_fixture",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "targeted",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:59:06+00:00",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:27+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -4659,10 +5480,40 @@
           "observed_at": "2026-11-06T15:34:27+00:00",
           "outcome": "outside_supplier_window",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "build_stage": "post-rc1 local candidate",
+          "code_revision": "19b6d81",
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "targeted",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:59:06+00:00",
+          "outcome": "outside_supplier_window",
+          "package_version": "2.0.0rc1",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": true,
+          "catalog_projection": false,
+          "elapsed_seconds": 2.01,
+          "input": "operator_fixture",
+          "interface": "mega",
+          "max_download_bytes": 1073741824,
+          "max_expanded_bytes": 2147483648,
+          "mode": "targeted",
+          "more_pages": false,
+          "observed_at": "2026-11-06T20:04:02+00:00",
+          "outcome": "verified_empty",
+          "package_version": "2.0.0rc3",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "outside_supplier_window",
-      "package_version": "2.0.0rc1",
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-HalshopDayOffer.delta": {
@@ -4901,26 +5752,60 @@
     },
     "mega.X-Retail.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.58,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:31:06+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:31:06+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Retail.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 194.44,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:31:03+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:22:13+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:31:03+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Retail.targeted": {
@@ -4938,26 +5823,60 @@
     },
     "mega.X-Retail_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 0.86,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:31:06+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:31:06+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Retail_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 118.3,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:31:06+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:25:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:31:06+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-Retail_El.targeted": {
@@ -5313,14 +6232,31 @@
     },
     "mega.X-StoItemPriceOrdCur.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.41,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:00+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:29+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:00+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemPriceOrdCur.full": {
@@ -5375,14 +6311,31 @@
     },
     "mega.X-StoItemPriceOrdCur_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 0.8,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:00+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:29+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:00+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemPriceOrdCur_El.full": {
@@ -5516,26 +6469,60 @@
     },
     "mega.X-StoItemWoutNote.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 0.73,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:31+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemWoutNote.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 20.3,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:40+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:25:28+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:40+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemWoutNote.targeted": {
@@ -5553,26 +6540,60 @@
     },
     "mega.X-StoItemWoutNote_El.delta": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 1.37,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": false,
+      "observed_at": "2026-11-06T20:04:31+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "delta",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_empty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemWoutNote_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
+      "elapsed_seconds": 16.68,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "next_allowed_utc": "2026-11-06T20:00:00+00:00",
-      "observed_at": "2026-11-06T15:32:41+00:00",
-      "outcome": "outside_supplier_window",
+      "more_pages": true,
+      "observed_at": "2026-11-06T20:27:26+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "next_allowed_utc": "2026-11-06T20:00:00+00:00",
+          "observed_at": "2026-11-06T15:32:41+00:00",
+          "outcome": "outside_supplier_window",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc3",
       "scope": "catalog:read"
     },
     "mega.X-StoItemWoutNote_El.targeted": {
