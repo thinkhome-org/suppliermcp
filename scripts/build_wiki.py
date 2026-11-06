@@ -7,6 +7,7 @@ from urllib.parse import quote, urlsplit
 
 PAGES = {
     "Home": "README.md",
+    "Stable-release": "docs/stable-release.md",
     "Operations": "docs/operations.md",
     "Portainer": "docs/portainer.md",
     "Login": "docs/login.md",

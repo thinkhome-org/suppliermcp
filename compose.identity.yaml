@@ -10,6 +10,8 @@ services:
       KC_DB_PASSWORD: ${SUPDB_IDP_DB_PASSWORD:?Set a database password}
       KC_HOSTNAME: ${SUPDB_IDP_PUBLIC_URL:?Set the public HTTPS origin for login}
       KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_PROXY_TRUSTED_ADDRESSES: ${SUPDB_IDP_TRUSTED_PROXY_ADDRESSES:?Set the trusted ingress connector IP or CIDR}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${SUPDB_IDP_ADMIN:?Set the initial admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${SUPDB_IDP_ADMIN_PASSWORD:?Set the initial password}
     depends_on:

@@ -212,3 +212,34 @@ def test_green_stack_does_not_advertise_the_blue_tunnel_alias():
         "127.0.0.1:*",
         "localhost:*",
     ]
+
+
+def test_identity_stack_accepts_forwarded_headers_only_from_configured_proxy():
+    values = {
+        "SUPDB_IDP_DB_PASSWORD": "test-only",
+        "SUPDB_IDP_PUBLIC_URL": "https://login.example.org",
+        "SUPDB_IDP_ADMIN": "test-admin",
+        "SUPDB_IDP_ADMIN_PASSWORD": "test-only",
+        "SUPDB_IDP_TRUSTED_PROXY_ADDRESSES": "172.20.0.7/32",
+    }
+    raw = subprocess.check_output(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            "/dev/null",
+            "-f",
+            str(ROOT / "compose.identity.yaml"),
+            "config",
+            "--format",
+            "json",
+        ],
+        text=True,
+        env=os.environ | values,
+    )
+    services = json.loads(raw)["services"]
+    keycloak = services["keycloak"]["environment"]
+    assert keycloak["KC_PROXY_HEADERS"] == "xforwarded"
+    assert keycloak["KC_PROXY_TRUSTED_ADDRESSES"] == "172.20.0.7/32"
+    assert not any(s.get("ports") for s in services.values())
+    assert "cloudflare" not in services["identity-db"]["networks"]
