@@ -4,7 +4,7 @@ from importlib.metadata import version
 from inspect import Parameter, signature
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Query, Request
+from fastapi import Depends, FastAPI, Header, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import create_model
@@ -48,9 +48,13 @@ def create_api(settings):
 
     @app.post("/operations/{operation_id}/read")
     async def read_operation(
-        operation_id: str, arguments: dict, service: service_parameter
+        operation_id: str,
+        arguments: dict,
+        service: service_parameter,
+        cursor: Annotated[str | None, Header(alias="X-Read-Cursor")] = None,
     ) -> ReadResult:
-        return await service.read_operation(operation_id, arguments)
+        """Repeat the original arguments with X-Read-Cursor to continue a supplier read."""
+        return await service.read_operation(operation_id, arguments, cursor)
 
     def add_catalog_route(name):
         method = getattr(CatalogService, name)

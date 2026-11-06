@@ -146,3 +146,31 @@ async def test_every_reviewed_operation_is_discoverable_and_validated():
                     await mcp.call_tool(
                         "read_operation", {"operation_id": name, "arguments": arguments}
                     )
+
+
+async def test_remote_continuations_reach_shared_reader(monkeypatch):
+    async def read(self, identity, operation_id, arguments, *, cursor):
+        assert identity.subject == "alice" and operation_id == DOCUMENT
+        assert arguments == {"invoiceSymbol": "00017"}
+        return ReadResult(
+            operation_id=operation_id,
+            output_schema="invoice",
+            fields=[SupplierField(path="cursor", value=cursor)],
+            truncated=False,
+        )
+
+    monkeypatch.setattr("suppliermcp.suppliers.reads.OperationReader.read_operation", read)
+    with running_server(auth_clients=CLIENTS) as (url, sign):
+        token = sign(client_id="personal", scope=SCOPES)
+        args = {"invoiceSymbol": "00017"}
+        async with httpx.AsyncClient(headers=auth(token)) as http, Client(url, auth=token) as mcp:
+            response = await http.post(
+                url.removesuffix("/mcp") + f"/v2/operations/{DOCUMENT}/read",
+                headers={"X-Read-Cursor": "opaque"},
+                json=args,
+            )
+            assert response.json()["fields"][0]["value"] == "opaque"
+            result = await mcp.call_tool(
+                "read_operation", {"operation_id": DOCUMENT, "arguments": args, "cursor": "opaque"}
+            )
+            assert result.structured_content == response.json()

@@ -105,11 +105,16 @@ class CatalogService:
                 break
         return page
 
-    async def read_operation(self, operation_id: str, arguments: dict) -> ReadResult:
-        """Call a reviewed supplier read with the arguments from list_operations."""
+    async def read_operation(
+        self, operation_id: str, arguments: dict, cursor: str | None = None
+    ) -> ReadResult:
+        """Call a reviewed read. For the next page, repeat the arguments and pass next_cursor as cursor."""
         if self.reader is None:
             self.reader = OperationReader(self.settings)
-        value = await self.reader.read_operation(self.identity, operation_id, arguments)
+        continuation = {"cursor": cursor} if cursor is not None else {}
+        value = await self.reader.read_operation(
+            self.identity, operation_id, arguments, **continuation
+        )
         return self._bounded(value)
 
     @validate_call
