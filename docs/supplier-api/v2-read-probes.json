@@ -5369,12 +5369,14 @@
     },
     "mega.X-StoItemPriceOrdCur_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:52:19+00:00",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:59:24+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -5386,9 +5388,21 @@
           "observed_at": "2026-11-06T15:32:00+00:00",
           "outcome": "supplier_unavailable",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:52:19+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "supplier_unavailable",
+      "outcome": "verified_nonempty",
+      "package_version": "2.0.0rc1",
       "scope": "catalog:read"
     },
     "mega.X-StoItemPriceOrdCur_El.targeted": {
