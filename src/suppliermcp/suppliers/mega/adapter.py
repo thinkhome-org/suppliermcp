@@ -10,10 +10,12 @@ from suppliermcp.catalog.contracts import (
     Offer,
     SourceItem,
 )
-from suppliermcp.suppliers.offer_contract import apply_contract
+from suppliermcp.suppliers.offer_contract import apply_contract, import_projection
+from suppliermcp.suppliers.profiles import SERVICES
+from suppliermcp.suppliers.registry import resolve_operation
 from suppliermcp.sync.artifacts import parse_xml
 
-from .capabilities import require_window
+from .capabilities import require_window, verified_export_window
 from .exports import PRODUCT_EXPORTS, nested_facts, normalize_record
 from .exports import values as record_values
 
@@ -25,7 +27,11 @@ class MegaAdapter:
     endpoints = {"catalog": "StoItemBase", "stock": "StoItemQtyFree", "price": "StoItemPriceOrd"}
 
     def __init__(
-        self, transport=None, store=None, contracts=None, base_url="https://i6ws.100mega.cz"
+        self,
+        transport=None,
+        store=None,
+        contracts=None,
+        base_url="https://" + SERVICES["mega"].host,
     ):
         self.transport, self.store = transport, store
         self.contracts, self.base_url = contracts or {}, base_url
@@ -44,6 +50,13 @@ class MegaAdapter:
             coverage="partial" if self.contracts else "unknown",
         )
 
+    def export_window(self, endpoint, mode):
+        try:
+            spec = resolve_operation(f"mega.{endpoint}.{mode}")
+        except CatalogError:
+            return {}
+        return verified_export_window(spec, self.contracts.get(endpoint, {}))
+
     def fetch(self, domain, codes=None):
         endpoint = self.endpoints.get(domain)
         if not endpoint:
@@ -58,7 +71,7 @@ class MegaAdapter:
         if bool(from_time) != bool(to_time) or codes and from_time:
             raise CatalogError("invalid_export_range")
         mode = "targeted" if codes else "delta" if from_time else "full"
-        contract = self.contracts.get(endpoint, {})
+        contract = self.export_window(endpoint, mode)
         require_window(contract, mode)
         if codes and len(codes) != 1:
             raise CatalogError("unsupported_targeted_read")
@@ -87,7 +100,7 @@ class MegaAdapter:
             delta_to=to_time,
         )
         self.transport.download(
-            f"{self.base_url}/Default.asmx/{method}?{urlencode(params)}",
+            f"{self.base_url}{SERVICES['mega'].path}/{method}?{urlencode(params)}",
             self.store,
             manifest,
             endpoint=method,
@@ -104,13 +117,16 @@ class MegaAdapter:
         root_container = []
 
         def remember_root(root):
+            root_values.clear()
             root_values.update(root.attrib)
-            root_container.append(root)
+            export_values.clear()
+            root_container[:] = [root]
 
         for element in parse_xml(
             Path(manifest.path),
             max_expanded=self.max_expanded_bytes,
             on_root=remember_root,
+            projection=lambda name: import_projection(manifest, name, offer_contract),
         ):
             tag = element.tag.rsplit("}", 1)[-1]
             if tag == offer_contract.get("export_timestamp_field"):

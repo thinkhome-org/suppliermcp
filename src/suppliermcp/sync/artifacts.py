@@ -103,14 +103,44 @@ class ArtifactStore:
         return removed
 
 
-def _elements(source, on_root=None):
+def _elements(source, on_root=None, projection=None, validate_element=None):
     stack = []
+    nodes = []
     for event, element in iterparse(source, events=("start", "end"), forbid_dtd=True):
         if event == "start":
+            if projection:
+                if not nodes:
+                    node = projection(element.tag)
+                elif nodes[-1] is None:
+                    node = None
+                else:
+                    node = nodes[-1].child(element.tag)
+                    if nodes[-1].text:
+                        stack[-1].text = None
+                nodes.append(node)
+                if node is not None:
+                    for attr in tuple(element.attrib):
+                        if not node.allows_attribute(attr):
+                            del element.attrib[attr]
             if not stack and on_root:
                 on_root(element)
             stack.append(element)
             continue
+        if validate_element:
+            validate_element(element)
+        if projection:
+            node = nodes.pop()
+            element.tail = None
+            if node is None:
+                element.clear()
+                stack.pop()
+                if stack:
+                    stack[-1].remove(element)
+                continue
+            if not node.text:
+                element.text = None
+            for child in element:
+                child.tail = None
         had_content = bool(len(element) or element.attrib or element.text)
         yield element
         stack.pop()
@@ -119,25 +149,39 @@ def _elements(source, on_root=None):
             stack[-1].remove(element)
 
 
-def parse_xml(path: Path, max_expanded=1024**3, on_root=None):
+@contextmanager
+def bounded_archive(stream, max_expanded):
+    # CPython reads ZIP64 end records here without allocating the central directory.
+    end = zipfile._EndRecData(stream)
+    if end is None:
+        raise zipfile.BadZipFile()
+    if end[zipfile._ECD_ENTRIES_TOTAL] > 100 or end[zipfile._ECD_SIZE] > 512 * 1024:
+        raise CatalogError("payload_too_large")
+    with zipfile.ZipFile(stream) as archive:
+        entries = archive.infolist()
+        if len(entries) > 100 or sum(e.file_size for e in entries) > max_expanded:
+            raise CatalogError("payload_too_large")
+        yield archive
+
+
+def parse_xml(
+    path: Path, max_expanded=1024**3, on_root=None, projection=None, validate_element=None
+):
     """Yield complete end elements; callers may clear processed record elements."""
     try:
         if zipfile.is_zipfile(path):
-            with zipfile.ZipFile(path) as archive:
-                entries = archive.infolist()
-                if len(entries) > 100 or sum(e.file_size for e in entries) > max_expanded:
-                    raise CatalogError("payload_too_large")
-                for entry in entries:
+            with path.open("rb") as stream, bounded_archive(stream, max_expanded) as archive:
+                for entry in archive.infolist():
                     member = PurePosixPath(entry.filename)
                     if member.is_absolute() or ".." in member.parts or "\\" in entry.filename:
                         raise CatalogError("unsafe_archive")
                     if entry.is_dir():
                         continue
                     with archive.open(entry) as source:
-                        yield from _elements(source, on_root)
+                        yield from _elements(source, on_root, projection, validate_element)
         else:
             if path.stat().st_size > max_expanded:
                 raise CatalogError("payload_too_large")
-            yield from _elements(path, on_root)
+            yield from _elements(path, on_root, projection, validate_element)
     except (DefusedXmlException, ParseError, zipfile.BadZipFile, OSError):
         raise CatalogError("invalid_export") from None

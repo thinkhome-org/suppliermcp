@@ -236,3 +236,110 @@ def test_listing_does_not_wait_for_worker_expiration_cleanup(conn):
         cleaner.execute("DELETE FROM query_results WHERE id='expired'")
         conn.execute("SET lock_timeout = '500ms'")
         assert start_listing(conn, CatalogQuery(), "user").total == 25
+
+
+def test_order_totals_with_ties_and_missing_currency(conn):
+    from suppliermcp.catalog.contracts import Offer
+    from suppliermcp.config import Settings
+
+    rows = []
+    for code, unit, multiple, currency in [
+        ("a", "1", 100, "CZK"),
+        ("b", "2", 10, "CZK"),
+        ("c", "2", 10, "CZK"),
+        ("d", "0", 1, None),
+        ("e", "0", 1, "EUR"),
+        ("f", "1", None, "CZK"),
+    ]:
+        item = SourceItem(supplier="mega", source_id=code, sku=code, name=code)
+        rows.extend(
+            [
+                item,
+                Offer(
+                    item_id=item.item_id,
+                    unit_net=unit,
+                    order_multiple=multiple,
+                    currency=currency,
+                    fees_net=0,
+                ),
+            ]
+        )
+    publish(
+        conn,
+        stage(
+            conn, BatchManifest(interface="mega", domain="catalog", artifact_sha256="prices"), rows
+        ),
+    )
+    query = CatalogQuery(sort="price_asc", currency="CZK", quantity=12)
+    page = start_listing(conn, query, "alice", Settings(page_size=1))
+    with pytest.raises(CatalogError, match="result_not_found"):
+        next_page(conn, page.next_cursor, "bob")
+    rows = list(page.results)
+    while page.next_cursor:
+        page = next_page(conn, page.next_cursor, "alice")
+        rows.extend(page.results)
+    ids = [p.product_id for p in rows]
+    first = rows[0].quote
+    assert (first.requested_qty, first.orderable_qty, first.total_net) == (12, 20, 40)
+    assert "currency_unknown" in rows[3].quote.reasons
+    assert rows[4].quote.currency == "EUR" and "currency_mismatch" in rows[4].quote.reasons
+    assert rows[5].quote.orderable_qty is None and "order_multiple_unknown" in rows[5].quote.reasons
+    expected = conn.execute("""
+        SELECT item_id FROM current_offers ORDER BY CASE WHEN data->>'currency'='CZK'
+            THEN ceil(12 / (data->>'order_multiple')::numeric) * (data->>'order_multiple')::numeric
+               * ((data->>'unit_net')::numeric + (data->>'fees_net')::numeric) END NULLS LAST, item_id
+    """).fetchall()
+    assert ids == [row[0] for row in expected] == ["mega:" + s for s in "bcadef"]
+
+
+def test_unit_price_sort_preserves_unknowns_and_missing_offers(conn):
+    from suppliermcp.catalog.contracts import Offer
+
+    seed(conn)
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="price", artifact_sha256="unit"),
+            [
+                Offer(item_id="mega:23", currency="CZK", unit_net=5),
+                Offer(item_id="mega:24", currency="CZK", unit_net=6),
+            ],
+        ),
+    )
+    page = start_listing(conn, CatalogQuery(sort="price_desc", currency="CZK"), "alice")
+    ids = [p.product_id for p in page.results + next_page(conn, page.next_cursor, "alice").results]
+    assert ids == ["mega:24", "mega:23", *sorted(f"mega:{n}" for n in range(23))]
+
+
+@pytest.mark.parametrize("quantity", [6, 12])
+def test_listing_valuepack_quote_matches_comparison(conn, quantity):
+    from suppliermcp.catalog.contracts import Offer, utcnow
+    from suppliermcp.catalog.offers import quote
+
+    item = SourceItem(supplier="mega", source_id="pack", sku="001", name="Pack")
+    missing = SourceItem(supplier="mega", source_id="none", sku="002", name="No offer")
+    offer = Offer(
+        item_id=item.item_id,
+        currency="CZK",
+        unit_net=7,
+        fees_net="0.50",
+        order_multiple=5,
+        price_rule="valuepack",
+        discount_min_qty=15,
+        discount=2,
+    )
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog", artifact_sha256="pack"),
+            [item, missing, offer],
+        ),
+    )
+    page = start_listing(
+        conn, CatalogQuery(sort="price_asc", currency="CZK", quantity=quantity), "alice"
+    )
+    assert page.results[0].quote == quote(offer, quantity, utcnow())
+    assert page.results[1].quote.reasons == ["offer_missing"]
+    assert page.results[1].quote.evidence_at is None

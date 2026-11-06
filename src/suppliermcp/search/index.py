@@ -1,6 +1,8 @@
 """Rebuildable index; PostgreSQL remains authoritative."""
 
+import hashlib
 import json
+import re
 import secrets
 import unicodedata
 from pathlib import Path
@@ -9,8 +11,9 @@ from urllib.parse import quote
 import httpx
 
 from suppliermcp.catalog.contracts import CatalogError
+from suppliermcp.catalog.db import require_projected_catalog
 
-ALIAS = "supplier_catalog"
+ALIAS = "supplier_catalog_clean_v2"
 SYNONYMS = json.loads(Path(__file__).with_name("synonyms.json").read_text())
 
 
@@ -21,14 +24,23 @@ def normalize(text):
     return " ".join(SYNONYMS.get(word, word) for word in plain.split())
 
 
+SEARCH_FIELDS = {"code": 12, "model": 10, "model_component": 7, "name": 8, "brand": 5, "text": 1}
+FACET_FIELDS = {"manufacturer", "stock_state", "category", "currency"}
+
+
+def facet_key(field, value):
+    return hashlib.sha256(f"{field}\0{value}".encode()).hexdigest()
+
+
 class IndexClient:
     def __init__(self, http):
         self.http = http
 
-    def request(self, method, path, **kwargs):
+    def request(self, method, path, *, allow_missing=False, **kwargs):
         try:
             response = self.http.request(method, path, **kwargs)
-            response.raise_for_status()
+            if not (allow_missing and response.status_code == 404):
+                response.raise_for_status()
             return response
         except httpx.HTTPError:
             raise CatalogError(
@@ -59,7 +71,9 @@ class IndexClient:
             json={
                 "name": name,
                 "fields": [
-                    {"name": "text", "type": "string"},
+                    *({"name": field, "type": "string"} for field in SEARCH_FIELDS),
+                    {"name": "verified", "type": "string[]", "facet": True},
+                    {"name": "unknown_facets", "type": "string[]", "facet": True},
                     {"name": "revision", "type": "int64"},
                     {"name": "supplier", "type": "string", "facet": True},
                 ],
@@ -85,8 +99,22 @@ def document(row, conn=None):
     text += " " + " ".join(
         str(o.get("value") or "") for o in data.get("observations", []) if o.get("state") == "known"
     )
+    # Typesense joins hyphenated words. Keep exact compound tokens and expose complete model parts.
+    identifiers = normalize(" ".join(data.get(k) or "" for k in ("name", "sku", "mpn")))
+    parts = [
+        part
+        for part in re.findall(r"\b([a-z0-9]+)-(?=[a-z0-9])", identifiers)
+        if not part.isalpha() and not part.isdigit()
+    ]
     return {
         "id": item_id,
+        "name": normalize(data.get("name") or ""),
+        "code": normalize(" ".join(data.get(k) or "" for k in ("sku", "ean"))),
+        "model": normalize(data.get("mpn") or ""),
+        "model_component": " ".join(dict.fromkeys(parts)),
+        "brand": normalize(data.get("manufacturer") or ""),
+        "verified": [],
+        "unknown_facets": sorted(FACET_FIELDS),
         "text": normalize(text),
         "revision": revision,
         "supplier": data.get("supplier", item_id.partition(":")[0]),
@@ -97,6 +125,15 @@ def documents(conn, rows):
     from suppliermcp.catalog.repository import get_products
 
     views = {v.product_id: v for v in get_products(conn, [r[0] for r in rows])}
+    facets = {}
+    known_fields = {}
+    for item_id, field, value in conn.execute(
+        "SELECT item_id,field,value FROM catalog_values WHERE item_id=ANY(%s) "
+        "AND field=ANY(%s) AND state='known'",
+        (list(views), sorted(FACET_FIELDS)),
+    ):
+        facets.setdefault(item_id, []).append(facet_key(field, value))
+        known_fields.setdefault(item_id, set()).add(field)
     labels = dict(
         conn.execute(
             "SELECT data->>'code',data->>'label' FROM source_schema WHERE kind='parameter'"
@@ -123,6 +160,8 @@ def documents(conn, rows):
             if o.interface == "mega" and o.field == "ScaId" and o.state == "known"
         )
         doc = document((item_id, data, revision))
+        doc["verified"] = facets.get(item_id, [])
+        doc["unknown_facets"] = sorted(FACET_FIELDS - known_fields.get(item_id, set()))
         doc["text"] += " " + normalize(" ".join(extra))
         result.append(doc)
     return result
@@ -131,6 +170,7 @@ def documents(conn, rows):
 def drain_outbox(conn, client):
     count = 0
     with conn.transaction():
+        require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         # Share the publication lane so a snapshot cannot overtake a newer publication.
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
@@ -173,6 +213,7 @@ def drain_outbox(conn, client):
 def rebuild_index(conn, client):
     name = "catalog_" + secrets.token_hex(8)
     with conn.transaction():
+        require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
         client.create(name)

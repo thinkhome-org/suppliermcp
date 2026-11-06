@@ -1,5 +1,11 @@
 # Live supplier API inventory
 
+## V2 operation reference
+
+- [eD PUBLIC](ed_public-reference.md) and [eD PRIVATE](ed_private-reference.md)
+- [100MEGA exports](mega-reference.md), [order service](mega_order-reference.md) and [default service](mega_default-reference.md)
+- [Calling reads](operation-reads.md) and [candidate acceptance](v2-acceptance.md)
+
 Observed 2026-11-05. These are discovery results, not a declaration of working ingestion.
 
 The JSON inventories contain all advertised operation names and product schema definitions. Business-document data was not requested. No account credentials or account-bearing download URLs are included.
@@ -95,3 +101,11 @@ Use each JSON inventory for current endpoint-level results. The initial family t
 ## Night-window acceptance
 
 Full baseline, price and parameter exports were published; the final checked catalog/index both contained 157,959 active products at revision 19. See [live validation](../validation.md) for measured timings, actual MCP/Codex checks and remaining queued enrichments. `published_full_export` records a full-mode import; only `verified_complete: true` asserts the separately verified completeness contract. A queued or parser-replayed export is not a completed integration test.
+
+## Contract review on 2026-11-06
+
+The two supplier emails and two saved text extracts identified the eD documentation and the 100MEGA export and order services. Their account details, examples, and attachments stay outside the repository. Comparing the two supplied eD PDFs with the current WSDLs found 19 PUBLIC operations and 32 PRIVATE operations. The PUBLIC PDF describes 17. Both additional WSDL methods marked internal and the e-shop credential method are blocked. PRIVATE section 3.18 explicitly marks its transform method unimplemented. The other four PRIVATE exclusions create orders or change documents.
+
+The authenticated 100MEGA export index still has 65 families, 120 export names and three mode columns. Each name and each weekday and hour matched the saved account inventory. The runtime inventory includes disabled modes. The three raw Default.asmx selectors are blocked because they accept arbitrary result types. A named export uses the corresponding fixed selector. The remaining Default.asmx method is a demonstration. Order.asmx advertises 29 methods. Its WSDL documents 15 reads returning order status, company or delivery-address data. Thirteen operations change state and ExecuteTrgX runs arbitrary named functionality. All 15 reads require document scope. Source metadata was fetched without invoking any order method. [100MEGA Order WSDL](https://i6ws.100mega.cz/Order.asmx?WSDL) and [order guide](https://i6ws.100mega.cz/OrderReadMe.txt).
+
+The packaged decisions in [operation_contracts.json](../../src/suppliermcp/suppliers/operation_contracts.json) pin reviewed names, schemas and windows. Each SOAP entry records effect, scope, caller fields, result type and effect evidence. Each export records scope, evidence and indexes into the full, targeted and delta windows (ISO weekdays and Europe/Prague hours). Document-transfer acknowledgement semantics, order-token contents and shop-settings fields still require supplier confirmation. These families are blocked. Runtime account permission and the account's current availability must also be checked for any enabled read. This review established advertised contracts. Authenticated execution of each read is tracked separately.

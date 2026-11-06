@@ -1,26 +1,44 @@
 # SupplierMCP
 
-Read-only supplier catalog MCP for Codex. eD PUBLIC, eD PRIVATE and 100MEGA are independently optional. PostgreSQL retains supplier evidence and last-known offers; Typesense supports non-exhaustive text discovery. Exact lookup and typed listing work without Typesense.
+SupplierMCP 2.0 is a release candidate for read-only access to eD PUBLIC, eD PRIVATE and 100MEGA. Enable each interface independently. The catalog retains supplier evidence and last-known offers in PostgreSQL. Typesense powers text discovery. Exact lookup and complete typed listing also work when Typesense is unavailable.
 
-Seven tools: `lookup_products`, `search_products`, `list_products`, `get_product`, `get_catalog_schema`, `compare_offers`, `get_catalog_status`.
+## Interfaces
 
-- Supplier-only facts, conservative variant matching, explicit unknowns and freshness.
-- Immutable 30-minute result pages, principal-bound cursors and separate unknown matches.
-- Quantity-aware net offer comparison, known fees included; no shipping calculation or basket optimization.
-- No writes to suppliers; no order, invoice, delivery or claim access.
+| Client | Entry point |
+| --- | --- |
+| Python 3.12 | Install the candidate wheel, then import `CatalogService` from `suppliermcp.service`. Supply settings and an authorized identity. |
+| REST | See `/v2/docs` or `/v2/openapi.json`. Submit catalog requests to `POST /v2/catalog/{tool_name}`. Discover supplier operations with `GET /v2/operations` and invoke an allowed read with `POST /v2/operations/{operation_id}/read`. |
+| MCP | Connect to `/mcp` over Streamable HTTP. Codex and ChatGPT OAuth setup is in the [login guide](docs/login.md). |
+
+The seven catalog tools are `lookup_products`, `search_products`, `list_products`, `get_product`, `get_catalog_schema`, `compare_offers` and `get_catalog_status`. Use `list_operations` and `read_operation` for supplier-specific reads. The registry identifies allowed operations, required arguments and scopes. Account permissions and supplier availability determine which reads can return live data.
+
+Ordinary registered clients receive catalog access. Document reads require a trusted registration for the subject and client, plus the signed `documents:read` scope. Supplier writes are blocked. Catalog prices carry freshness and provenance. Quantity comparisons account for known fees and packaging, and exclude shipping.
 
 ## Connect Codex
 
-Download the native Codex ZIP from the [v1.0.0 release](https://github.com/thinkhome-org/suppliermcp/releases/tag/v1.0.0), extract it, and run the following commands from its marketplace root:
+Download the native Codex ZIP for your server version from [GitHub Releases](https://github.com/thinkhome-org/suppliermcp/releases). Extract it and run these commands in the extracted marketplace directory:
 
 ```sh
 codex plugin marketplace add "$PWD"
 codex plugin add suppliermcp@thinkhome-suppliermcp
 ```
 
-Set `SUPPLIERMCP_THINKHOME_TOKEN` in the environment that launches Codex, then restart Codex. Ask the server operator for a client token. You can test the connection by asking Codex to search for an SSD separately at eD and 100MEGA. For your own server, follow the Docker instructions below and [build the plugin for your MCP URL](integrations/codex/README.md).
+For the ThinkHome bearer-token connection, set `SUPPLIERMCP_THINKHOME_TOKEN` in the environment that launches Codex, then restart Codex. Both release ZIPs target the ThinkHome endpoint. For a different server, [build the plugin with your MCP URL](integrations/codex/README.md).
 
-## Local development
+## Run locally
+
+Copy `.env.example` to `.env`, set the database and index secrets, configure token verification and register your clients. Leave supplier credentials absent for an empty catalog. See [operations](docs/operations.md) before importing data.
+
+```sh
+docker compose build
+docker compose up -d --wait postgres typesense
+docker compose run --rm mcp python -m suppliermcp.worker migrate
+docker compose up -d mcp worker
+```
+
+The default local origin is `http://127.0.0.1:8000`. For a hosted installation see the [Portainer guide](docs/portainer.md).
+
+## Test and release
 
 ```sh
 uv sync --locked
@@ -29,21 +47,8 @@ uv run pytest -q
 uv run ruff check .
 ```
 
-Tests require disposable PostgreSQL and Typesense; missing infrastructure fails visibly. The test catalog is synthetic and does not establish real supplier API compatibility.
+CI uses a synthetic catalog. Candidate tags run validation before publishing a multi-architecture GHCR image. The prerelease includes the Python wheel, native and portable plugin ZIPs, checksums and the digest used for its image smoke test. Production promotion requires separate live acceptance.
 
-## Docker
-
-Copy `.env.example` to `.env`, replace the database/index secrets and configure the public verification key. Leave supplier credential pairs absent until ready. See [operations](docs/operations.md) before starting imports.
-
-```sh
-docker compose build
-docker compose up -d postgres typesense
-docker compose run --rm mcp python -m suppliermcp.worker migrate
-docker compose up -d mcp worker
-```
-
-Only `127.0.0.1:8000` is published. Connect to `http://127.0.0.1:8000/mcp` with a valid bearer token. Issuance, tunnel and deployment are outside this repository's setup. [Codex setup and optional skills](integrations/codex/README.md).
-
-See [supplier contracts](docs/supplier-contracts.md), [approved design](docs/superpowers/specs/2026-11-05-suppliermcp-v1-design.md) and [compatibility](docs/compatibility.md). Live-account acceptance and real-catalog relevance remain required before production use.
+Follow implementation and live verification in the [SupDB project board (organization access required)](https://github.com/orgs/thinkhome-org/projects/2). See the [Wiki](https://github.com/thinkhome-org/suppliermcp/wiki), [supplier operation inventory](docs/supplier-api/README.md), [validation evidence](docs/validation.md) and [v2 design](docs/superpowers/specs/2026-11-06-supdb-v2-design.md).
 
 Copyright © ThinkHome s.r.o. All rights reserved.

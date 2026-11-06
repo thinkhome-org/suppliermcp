@@ -1,0 +1,62 @@
+name: promote-stable
+on:
+  push:
+    tags: ['v2.0.0']
+permissions:
+  contents: read
+concurrency: stable-2.0.0
+jobs:
+  promote:
+    environment: supdb-stable
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      packages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RECORD: docs/releases/2.0.0
+      IMAGE: ghcr.io/thinkhome-org/suppliermcp
+    steps:
+      - name: Require a protected stable-release environment
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/environments/supdb-stable" |
+            jq -e '(.can_admins_bypass == false) and any(.protection_rules[]; .type == "required_reviewers" and (.reviewers | length) > 0)'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.9.9'
+          python-version: '3.12'
+      - name: Verify staged assets, source revision and complete live acceptance
+        run: |
+          stage=$(jq -er .stage_tag "$RECORD/acceptance.json")
+          [[ "$stage" =~ ^v2\.0\.0-stage\.[1-9][0-9]*$ ]]
+          source=$(git rev-parse "refs/tags/$stage^{commit}")
+          git merge-base --is-ancestor "$source" HEAD
+          git diff --quiet "$source" HEAD -- . ":(exclude)$RECORD/operations.json" ":(exclude)$RECORD/acceptance.json"
+          gh release view "$stage" --json isPrerelease,isDraft | jq -e '.isPrerelease and (.isDraft | not)'
+          gh release download "$stage" --dir dist
+          uv run --locked python scripts/verify_promotion.py "$RECORD" dist "$source"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote the accepted manifest without rebuilding
+        run: |
+          image=$(cat dist/image-reference.txt)
+          docker pull "$image"
+          test "$(docker image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$(jq -r .source_commit "$RECORD/acceptance.json")"
+          test "$(docker run --rm "$image" python -c 'from importlib.metadata import version; print(version("suppliermcp"))')" = 2.0.0
+          docker buildx imagetools create -t "$IMAGE:$GITHUB_REF_NAME" "$image"
+          test "$(docker buildx imagetools inspect "$IMAGE:$GITHUB_REF_NAME" --format '{{json .Manifest}}' | jq -r .digest)" = "${image#*@}"
+      - name: Release the exact staged wheel and plugins
+        run: |
+          cd dist
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --latest \
+            --title 'SupplierMCP 2.0.0' --notes "Accepted image: $(cat image-reference.txt). See docs/releases/2.0.0 at this tag." \
+            SHA256SUMS image-reference.txt suppliermcp-2.0.0-py3-none-any.whl suppliermcp-{codex,portable}-2.0.0.zip

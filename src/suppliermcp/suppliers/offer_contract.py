@@ -46,3 +46,27 @@ def apply_contract(offer, values, contract, manifest):
             )
         )
     return result
+
+
+def import_projection(manifest, root, contract):
+    """Admit an account-verified price timestamp only at its declared record/export level."""
+    from suppliermcp.suppliers.catalog_projection import Projection, catalog_projection
+
+    node = catalog_projection(manifest.interface, manifest.endpoint, root)
+    if contract.get("timestamp_is_price_evidence") is not True:
+        return node
+    types = dict(node.types)
+    fields = [
+        (record, contract.get("timestamp_field"))
+        for record in ("Product", "ProductComplete", "ProductShort", "StoItem")
+    ]
+    fields.append((node.kind, contract.get("export_timestamp_field")))
+    for kind, name in fields:
+        if kind not in types or not name:
+            continue
+        children, attributes = types[kind]
+        types[kind] = (
+            children | {name: "$"},
+            [*attributes, name] if manifest.interface == "mega" else attributes,
+        )
+    return Projection(types, node.kind, node.namespace)

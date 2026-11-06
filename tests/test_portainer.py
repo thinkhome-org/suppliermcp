@@ -1,5 +1,6 @@
 """Rendered deployment boundaries, without production secrets or a Docker daemon."""
 
+import hashlib
 import json
 import os
 import subprocess
@@ -10,7 +11,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def render(missing=None):
+def test_v1_production_git_stack_manifest_stays_pinned():
+    expected = "b2ac0f774b21ab18832c7a44574b2b871eb0caf61faecc8fdc735e35600f1f93"
+    assert hashlib.sha256((ROOT / "compose.portainer.yaml").read_bytes()).hexdigest() == expected
+
+
+def render(missing=None, extra=None):
     env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
     supplied = {
         "SUPPLIERMCP_IMAGE": "ghcr.io/thinkhome-org/suppliermcp@sha256:" + "0" * 64,
@@ -21,6 +27,10 @@ def render(missing=None):
             {"mega": {"label": "Unicode žluťoučký", "exports": {}}}
         ),
     }
+    supplied["SUPPLIERMCP_AUTH_CLIENTS"] = '{"client-a":{}}'
+    supplied["SUPPLIERMCP_ED_PRIVATE_LOGIN"] = "test-private"
+    supplied["SUPPLIERMCP_ED_PRIVATE_PASSWORD"] = "test-private-password"
+    supplied.update(extra or {})
     env.update(supplied)
     if missing:
         env.pop(missing, None)
@@ -31,7 +41,7 @@ def render(missing=None):
             "--env-file",
             "/dev/null",
             "-f",
-            str(ROOT / "compose.portainer.yaml"),
+            str(ROOT / "compose.portainer-v2.yaml"),
             "config",
             "--format",
             "json",
@@ -51,7 +61,7 @@ def test_portainer_render_isolates_services_and_orders_fresh_migrations():
     assert not any(s.get("ports") for s in services.values())
     assert {n for n, s in services.items() if "cloudflare" in s.get("networks", {})} == {"mcp"}
     assert config["networks"]["cloudflare"]["external"] is True
-    assert services["mcp"]["networks"]["cloudflare"]["aliases"] == ["suppliermcp-origin"]
+    assert services["mcp"]["networks"]["cloudflare"]["aliases"] == ["suppliermcp-green-origin"]
     assert services["migrate"]["restart"] == "no"
     assert services["migrate"]["command"] == ["python", "-m", "suppliermcp.worker", "migrate"]
     for name in ("mcp", "worker"):
@@ -59,9 +69,15 @@ def test_portainer_render_isolates_services_and_orders_fresh_migrations():
             services[name]["depends_on"]["migrate"]["condition"] == "service_completed_successfully"
         )
         assert services[name]["image"] == supplied["SUPPLIERMCP_IMAGE"]
+        for key in ("SUPPLIERMCP_ED_PRIVATE_LOGIN", "SUPPLIERMCP_ED_PRIVATE_PASSWORD"):
+            assert services[name]["environment"][key] == supplied[key]
         assert (
             services[name]["environment"]["SUPPLIERMCP_AUTH_PUBLIC_KEY"]
             == supplied["SUPPLIERMCP_AUTH_PUBLIC_KEY"]
+        )
+        assert (
+            services[name]["environment"]["SUPPLIERMCP_AUTH_CLIENTS"]
+            == supplied["SUPPLIERMCP_AUTH_CLIENTS"]
         )
         assert services[name]["configs"][0]["target"] == "/config/source-contracts.json"
         assert not any(v["type"] == "bind" for v in services[name].get("volumes", []))
@@ -121,7 +137,7 @@ def test_portainer_ui_env_file_roundtrip_preserves_special_values(tmp_path):
             "--env-file",
             str(stack_env),
             "-f",
-            str(ROOT / "compose.portainer.yaml"),
+            str(ROOT / "compose.portainer-v2.yaml"),
             "config",
             "--format",
             "json",
@@ -156,7 +172,7 @@ def test_contract_updates_change_both_service_hashes():
         "--env-file",
         "/dev/null",
         "-f",
-        str(ROOT / "compose.portainer.yaml"),
+        str(ROOT / "compose.portainer-v2.yaml"),
         "config",
         "--hash",
         "mcp,worker",
@@ -183,3 +199,53 @@ def test_portainer_env_rejects_variable_name_injection(tmp_path):
     assert result.returncode != 0
     assert not output.exists()
     assert "sensitive-test-value" not in result.stderr
+
+
+def test_green_stack_does_not_advertise_the_blue_tunnel_alias():
+    result, _ = render(
+        extra={
+            "SUPDB_ORIGIN_ALIAS": "supdb-green-origin",
+            "SUPDB_PUBLIC_HOST": "supdb-green.example.org",
+        }
+    )
+    assert result.returncode == 0
+    mcp = json.loads(result.stdout)["services"]["mcp"]
+    assert mcp["networks"]["cloudflare"]["aliases"] == ["supdb-green-origin"]
+    hosts = json.loads(mcp["environment"]["SUPPLIERMCP_ALLOWED_HOSTS"])
+    assert hosts == [
+        "supdb-green.example.org",
+        "supdb-green-origin:8000",
+        "127.0.0.1:*",
+        "localhost:*",
+    ]
+
+
+def test_identity_stack_accepts_forwarded_headers_only_from_configured_proxy():
+    values = {
+        "SUPDB_IDP_DB_PASSWORD": "test-only",
+        "SUPDB_IDP_PUBLIC_URL": "https://login.example.org",
+        "SUPDB_IDP_ADMIN": "test-admin",
+        "SUPDB_IDP_ADMIN_PASSWORD": "test-only",
+        "SUPDB_IDP_TRUSTED_PROXY_ADDRESSES": "172.20.0.7/32",
+    }
+    raw = subprocess.check_output(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            "/dev/null",
+            "-f",
+            str(ROOT / "compose.identity.yaml"),
+            "config",
+            "--format",
+            "json",
+        ],
+        text=True,
+        env=os.environ | values,
+    )
+    services = json.loads(raw)["services"]
+    keycloak = services["keycloak"]["environment"]
+    assert keycloak["KC_PROXY_HEADERS"] == "xforwarded"
+    assert keycloak["KC_PROXY_TRUSTED_ADDRESSES"] == "172.20.0.7/32"
+    assert not any(s.get("ports") for s in services.values())
+    assert "cloudflare" not in services["identity-db"]["networks"]

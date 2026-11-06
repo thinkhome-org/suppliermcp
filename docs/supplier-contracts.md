@@ -41,3 +41,9 @@ An optional `offer` object is supported under each eD interface configuration an
 ```
 
 Mapped common observations preserve source endpoint, artifact hash, time and derivation. Verified packaging mappings therefore feed both typed filtering and conservative product matching. Conflicting mapped values remain unresolved.
+
+## Adding a supplier in an existing protocol family
+
+Declare a service in `suppliers/profiles.py` with its supplier ID, family, server-side credential slot, fixed HTTPS host and path, and reviewed binding. Several services may share one account. For example, 100MEGA's order, default and export services use the same credentials. eD PUBLIC and PRIVATE have separate credential slots and share the supplier ID `ed`. Operation discovery exposes these identifiers as `supplier`, `family` and `account`.
+
+Add the service's WSDL or export evidence and explicit operation decisions to `operation_contracts.json`. Verify authentication, SOAP wrapping, response shape, account export windows, scopes, and allowed download origins before enabling that account in configuration. Reuse the family transport. Catalog projections, product identity, stock and price meanings, and sync adapter registration require supplier-specific review and fixtures.

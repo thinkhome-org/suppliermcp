@@ -69,3 +69,26 @@ def test_processed_records_are_released_from_parent(tmp_path):
             element.clear()
         if element.tag == "Result":
             assert len(element) == 0
+
+
+def test_zip_member_table_is_bounded_before_object_allocation(tmp_path, monkeypatch):
+    import struct
+
+    from suppliermcp.sync.artifacts import bounded_archive
+
+    archive_path = tmp_path / "untrusted.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("data.xml", "<Products/>")
+    content = bytearray(archive_path.read_bytes())
+    end = content.rindex(b"PK\x05\x06")
+    struct.pack_into("<I", content, end + 12, 99999999)
+    archive_path.write_bytes(content)
+    monkeypatch.setattr(
+        zipfile, "ZipFile", lambda *a, **kw: pytest.fail("unbounded member allocation")
+    )
+    with (
+        archive_path.open("rb") as source,
+        pytest.raises(CatalogError, match="payload_too_large"),
+        bounded_archive(source, 10**7),
+    ):
+        pass

@@ -19,7 +19,7 @@ from suppliermcp.suppliers.ed.public import EdPublicAdapter
 def test_public_prices_and_out_of_stock(tmp_path):
     p = tmp_path / "public.xml"
     p.write_text(
-        """<ProductList xmlns="urn:test"><Product><ProId>123</ProId><Code>001</Code><Name>SSD</Name><YourPrice>125.50</YourPrice><YourPriceWithFees>126.50</YourPriceWithFees><OnStock>true</OnStock><PriceCurrency>CZK</PriceCurrency></Product><Product><ProId>124</ProId><Code>002</Code><Name>RAM</Name><OnStock>false</OnStock></Product></ProductList>"""
+        """<ProductList xmlns="http://www.elinkx.cz"><Product><ProId>123</ProId><Code>001</Code><Name>SSD</Name><YourPrice>125.50</YourPrice><YourPriceWithFees>126.50</YourPriceWithFees><OnStock>true</OnStock><PriceCurrency>CZK</PriceCurrency></Product><Product><ProId>124</ProId><Code>002</Code><Name>RAM</Name><OnStock>false</OnStock></Product></ProductList>"""
     )
     m = BatchManifest(
         interface="ed_public", domain="catalog", endpoint="getProductList", path=str(p)
@@ -46,17 +46,20 @@ def test_private_placeholders_and_unknown_date(tmp_path):
     offer = next(r for r in rows if isinstance(r, Offer))
     assert offer.unit_net is None and offer.vat_percent is None
     obs = next(
-        o
-        for r in rows
-        if isinstance(r, SourceItem)
-        for o in r.observations
-        if o.field == "DateAvailible"
+        o for r in rows if isinstance(r, SourceItem) for o in r.observations if o.field == "OnStock"
     )
-    assert obs.state == "missing"
+    assert obs.state == "placeholder"
     public = Observation(
         interface="ed_public", endpoint="getProductList", field="YourPrice", value="125.50"
     )
     assert merge_ed([public, *offer.observations])[0].value == "125.50"
+    # The stock export, unlike the baseline, declares DateAvailible.
+    p.write_text(
+        "<ArrayOfProductShort><ProductShort><ProId>123</ProId><Code>001</Code><DateAvailible>1900-01-01</DateAvailible></ProductShort></ArrayOfProductShort>"
+    )
+    m.endpoint = "getProductCatalogueStockDownloadXML"
+    item = next(r for r in EdPrivateAdapter().parse(m) if isinstance(r, SourceItem))
+    assert next(o for o in item.observations if o.field == "DateAvailible").state == "missing"
 
 
 def test_conflicting_prices_not_silently_resolved():
@@ -83,11 +86,15 @@ def test_private_failure_and_readiness():
 
 def test_supplier_error_does_not_echo_message(tmp_path):
     p = tmp_path / "error.xml"
-    p.write_text("<Response><StatusCode>ERROR</StatusCode><ErrorText>secret</ErrorText></Response>")
-    with pytest.raises(CatalogError) as e:
+    p.write_text(
+        "<ArrayOfProduct><Product><ProId>1</ProId><Code>A</Code></Product><StatusCode>ERROR</StatusCode><ErrorText>secret</ErrorText></ArrayOfProduct>"
+    )
+    with pytest.raises(CatalogError, match="supplier_response_error") as e:
         list(
             EdPublicAdapter().parse(
-                BatchManifest(interface="ed_public", domain="catalog", path=str(p))
+                BatchManifest(
+                    interface="ed_public", domain="catalog", endpoint="getProductList", path=str(p)
+                )
             )
         )
     assert "secret" not in str(e.value)
@@ -148,11 +155,20 @@ def test_relationship_and_navigator_evidence(tmp_path):
 def test_description_budget(tmp_path):
     path = tmp_path / "oversized.xml"
     path.write_text(
-        "<Product><ProId>1</ProId><Code>A</Code><Description>"
+        "<ArrayOfProduct><Product><ProId>1</ProId><Code>A</Code><Description>"
         + ("x" * 100)
-        + "</Description></Product>"
+        + "</Description></Product></ArrayOfProduct>"
     )
     adapter = EdPublicAdapter()
     adapter.max_description_bytes = 50
     with pytest.raises(CatalogError, match="description_too_large"):
-        list(adapter.parse(BatchManifest(interface="ed_public", domain="catalog", path=str(path))))
+        list(
+            adapter.parse(
+                BatchManifest(
+                    interface="ed_public",
+                    domain="catalog",
+                    endpoint="getProductList",
+                    path=str(path),
+                )
+            )
+        )

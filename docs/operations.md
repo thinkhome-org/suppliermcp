@@ -36,7 +36,7 @@ A failed refresh keeps prior prices and marks refresh failure. Re-downloading un
 
 ## Search limits
 
-Discovery scans at most 1,000 candidates and reports the limit, indexing lag, and non-exhaustiveness. Use exact/list tools when Typesense is unavailable. Lists materialize at most 100,000 rows; larger results return exact count and inclusive/exclusive source-ID partitions. Pages last 30 minutes, hold at most 20 rows, and reduce rows to respect response size. Request cursors without changed filters; another identity cannot reuse them. Oversized individual products return a visible size error, never silent description truncation.
+Discovery returns at most 1,000 confirmed ranked matches. With filters, it can scan further candidates to verify eligibility and count unknowns. It reports truncation and index lag. Use exact/list tools when Typesense is unavailable. Lists materialize at most 100,000 rows; larger results return exact count and inclusive/exclusive source-ID partitions. Pages last 30 minutes, hold at most 20 rows, and reduce rows to respect response size. Request cursors without changed filters; another identity cannot reuse them. Oversized individual products return a visible size error, never silent description truncation.
 
 Only verified common fields support numeric filters. Native unmapped fields remain source-scoped text. Category-specific mappings must be verified before enabling category schema. The committed map starts empty: no invented RAM/capacity/category facts.
 
@@ -51,14 +51,14 @@ Source status retains separate domain outcomes and the last verified complete ca
 
 ## Persistent local runtime
 
-The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Its protected configuration is in `/Users/samuel/.local/share/suppliermcp-live/`: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
+The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Choose a protected operator directory for configuration: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
 
-From the repository:
+From the repository, after setting `SUPPLIERMCP_ENV_FILE` and `SUPPLIERMCP_CONTRACTS_FILE` to the protected files:
 
 ```sh
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env up -d --build
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh ed_public
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" up -d --build
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" exec worker python -m suppliermcp.worker refresh ed_public
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" exec worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
 ```
 
 The last command is permitted only within the verified full-export window. Outside it, the scheduler records `outside_supplier_window` and `next_allowed_at`. Do not bypass windows by looping targeted reads. One canonical representation per scheduled family is used; equivalent `_El` variants remain available for explicit product-only probes. PUBLIC catalog refreshes hourly; 100MEGA baseline daily, prices/stock hourly, selected enrichment daily. eD PRIVATE is disabled until separately configured. The initial budget is 1 GiB compressed/downloaded, 2 GiB expanded and 20 GiB retained artifacts, rather than assuming one account's measured export size is a universal maximum.
@@ -68,3 +68,43 @@ MCP is bound only to `http://127.0.0.1:8000/mcp`. `/health/live` checks the proc
 A failed publication keeps its staged import and raw artifact. After fixing the cause, `python -m suppliermcp.worker resume-import RUN_ID` publishes that retained run and reconciles endpoint status without fetching again or changing its original source/fetch evidence time. It does not bypass quarantine; only the separate `accept-import RUN_ID --reason ...` operation does. Never use an acceptance override merely to hide an incomplete or malformed download.
 
 Large downloads use a 300-second inactivity/read timeout (`SUPPLIERMCP_DOWNLOAD_TIMEOUT_SECONDS`, configurable up to 900), with a 10-second connection timeout. Small SOAP/status requests retain the client timeout. This avoids rejecting a valid bulk export merely because its first byte takes more than 30 seconds. Each actual 100MEGA request, including retries and redirects, rechecks its mode-specific allowed window. No request is intentionally started after the window closes.
+
+### Moving a populated v1 catalog to v2
+
+A v1 product, price, or dictionary entry can originate under a noncatalog XML ancestor. The stored row cannot prove where it came from. On a populated legacy database the v2 migration exits with `catalog_reprojection_required` and rolls back. The v1 stack and its data remain usable. The v2 API, readiness probe and index builder require a database initialized with `011_clean_catalog.sql`.
+
+Build the candidate on new PostgreSQL, Typesense and artifact volumes. With the local Compose stack, choose a unique project name and a free candidate port. The example uses a private runtime environment file and a port override. Replace the two paths with your configuration files.
+
+```sh
+export SUPPLIERMCP_ENV_FILE=/absolute/path/to/runtime.env
+export SUPPLIERMCP_CONTRACTS_FILE=/absolute/path/to/source-contracts.json
+candidate_project=suppliermcp-green
+# Proceed with this project name only when this prints no existing volumes.
+docker volume ls -q --filter "label=com.docker.compose.project=$candidate_project"
+override_file=$(mktemp)
+cat > "$override_file" <<'YAML'
+services:
+  mcp:
+    image: suppliermcp:green-local
+    ports: !override ["127.0.0.1:18000:8000"]
+  worker:
+    image: suppliermcp:green-local
+YAML
+green() {
+  docker compose --project-name "$candidate_project" --env-file "$SUPPLIERMCP_ENV_FILE" \
+    -f compose.yaml -f "$override_file" "$@"
+}
+green build worker
+green up -d postgres typesense
+green run --rm worker python -m suppliermcp.worker migrate
+green run --rm worker python -m suppliermcp.worker refresh ed_public
+# Run each configured 100MEGA endpoint inside its verified window.
+green run --rm worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
+green run --rm worker python -m suppliermcp.worker rebuild-index
+green up -d mcp worker
+curl --fail http://127.0.0.1:18000/health/ready
+```
+
+For installations with eD PRIVATE enabled, run its catalog refresh as well. Check authenticated catalog status and known SKU, current offer evidence, filtered listing, and search on the candidate. Verify required endpoint coverage before changing the client URL or reverse proxy. Keep the v1 stack, database, index and artifacts during acceptance. Rolling back means pointing clients back at the original stack. A copied v1 database, an old Typesense collection or a v1 result cursor cannot establish projected provenance.
+
+For the stable promotion procedure, see [Promote SupDB 2.0.0](stable-release.md).

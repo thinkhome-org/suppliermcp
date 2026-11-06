@@ -54,10 +54,15 @@ def test_ed_not_ready_is_polled(tmp_path):
 def test_ed_status_without_catalog_is_rejected(tmp_path):
     path = tmp_path / "status.xml"
     path.write_text("<Response><StatusCode>DONE</StatusCode></Response>")
-    with pytest.raises(CatalogError, match="invalid_export"):
+    with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
         list(
             EdPublicAdapter().parse(
-                BatchManifest(interface="ed_public", domain="catalog", path=str(path))
+                BatchManifest(
+                    interface="ed_public",
+                    domain="catalog",
+                    endpoint="getProductList",
+                    path=str(path),
+                )
             )
         )
 
@@ -129,7 +134,7 @@ def test_mega_price_currency_and_nested_evidence(tmp_path):
     assert offer.fees_net == 2
     item = next(r for r in rows if isinstance(r, SourceItem))
     assert item.ean == "0012345678901"
-    assert {o.value for o in item.observations if o.field == "Extra.Value"} == {"one", "two"}
+    assert not any(o.field.startswith("Extra.") for o in item.observations)
 
 
 def test_mega_row_parameters_and_relationships(tmp_path):
@@ -270,7 +275,7 @@ def test_shop_export_preserves_sku_join_and_nested_fields(tmp_path):
 
     p = tmp_path / "shop.xml"
     p.write_text(
-        "<SHOP><SHOPITEM><CODE>0007</CODE><NAME>Memory</NAME><PARAMETERS><PARAMETER><NAME>Color</NAME><VALUE>red</VALUE></PARAMETER></PARAMETERS></SHOPITEM></SHOP>"
+        "<SHOP><SHOPITEM><CODE>0007</CODE><NAME>Memory</NAME><TEXT_PROPERTIES><TEXT_PROPERTY><NAME>Color</NAME><VALUE>red</VALUE></TEXT_PROPERTY></TEXT_PROPERTIES></SHOPITEM></SHOP>"
     )
     m = BatchManifest(interface="mega", domain="schema", endpoint="StoItemShoptet_El", path=str(p))
     rows = list(MegaAdapter().parse(m))

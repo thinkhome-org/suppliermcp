@@ -1,16 +1,21 @@
 from suppliermcp.catalog.contracts import CatalogError, Coverage, Offer, ProductView, SourceItem
+from suppliermcp.suppliers.profiles import CATALOG_INTERFACES
 
 
 def read_status(conn, enabled_interfaces=None):
     rev = conn.execute("SELECT COALESCE(max(revision),0) FROM domain_checkpoints").fetchone()[0]
     pending = conn.execute("SELECT min(revision) FROM index_outbox WHERE NOT done").fetchone()[0]
-    states = dict(conn.execute("SELECT interface,data FROM source_state").fetchall())
+    states = {
+        name: state
+        for name, state in conn.execute("SELECT interface,data FROM source_state").fetchall()
+        if name in CATALOG_INTERFACES
+    }
     configured = (
-        set(enabled_interfaces)
+        set(enabled_interfaces).intersection(CATALOG_INTERFACES)
         if enabled_interfaces is not None
         else {k for k, v in states.items() if v.get("configured")}
     )
-    for interface in ["ed_public", "ed_private", "mega"]:
+    for interface in CATALOG_INTERFACES:
         state = states.setdefault(interface, {"outcome": "not_fetched", "domains": {}})
         state["configured"] = interface in configured
         if interface not in configured:

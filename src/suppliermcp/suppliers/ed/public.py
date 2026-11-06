@@ -16,7 +16,7 @@ from suppliermcp.catalog.contracts import (
     SchemaRecord,
     SourceItem,
 )
-from suppliermcp.suppliers.offer_contract import apply_contract
+from suppliermcp.suppliers.offer_contract import apply_contract, import_projection
 from suppliermcp.sync.artifacts import parse_xml
 
 from .authority import BASELINE_METHODS, PLACEHOLDERS
@@ -110,12 +110,21 @@ class EdPublicAdapter:
         export_values = {}
         contract = getattr(self, "offer_contract", {})
         records = 0
-        for element in parse_xml(Path(manifest.path), max_expanded=self.max_expanded_bytes):
+
+        def check_status(element):
+            name = local(element.tag)
+            if name == "StatusCode" and element.text == "ERROR" or name == "Fault":
+                raise CatalogError("supplier_response_error")
+
+        for element in parse_xml(
+            Path(manifest.path),
+            max_expanded=self.max_expanded_bytes,
+            projection=lambda name: import_projection(manifest, name, contract),
+            validate_element=check_status,
+        ):
             name = local(element.tag)
             if name == contract.get("export_timestamp_field"):
                 export_values[name] = element.text
-            if name == "StatusCode" and element.text == "ERROR" or name == "Fault":
-                raise CatalogError("supplier_response_error")
             if manifest.domain == "schema" and name in {
                 "ProductRealationParent",
                 "ProductRelationParent",

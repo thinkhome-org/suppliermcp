@@ -13,6 +13,8 @@ from suppliermcp.suppliers.ed.gateway import READS, EdGateway
 from suppliermcp.suppliers.ed.private import EdPrivateAdapter
 from suppliermcp.suppliers.ed.public import EdPublicAdapter
 from suppliermcp.suppliers.mega.adapter import MegaAdapter
+from suppliermcp.suppliers.mega.capabilities import account_exports
+from suppliermcp.suppliers.profiles import SERVICES
 from suppliermcp.suppliers.transport import SupplierTransport
 from suppliermcp.sync.artifacts import ArtifactStore
 
@@ -29,24 +31,27 @@ def source_contracts(settings):
 
 def build_adapters(settings):
     adapters, contracts = {}, source_contracts(settings)
-    for interface, (login, password) in settings.credentials.items():
+    for interface in settings.enabled_interfaces:
         options = contracts.get(interface, {})
         store = ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget)
+        profile = SERVICES[interface]
+        login, password = settings.credentials[profile.account]
         if interface == "mega":
             transport = SupplierTransport(
-                {"i6ws.100mega.cz"},
+                {profile.host},
                 {"GetResult", "GetResultByCode", "GetResultByFromTo"},
                 auth=(login.get_secret_value(), password.get_secret_value()),
             )
-            adapters[interface] = MegaAdapter(transport, store, options.get("exports", {}))
+            adapters[interface] = MegaAdapter(
+                transport, store, account_exports(options, login.get_secret_value(), profile)
+            )
         else:
-            host = ("public" if interface == "ed_public" else "private") + "-ws-cz.elinkx.biz"
             transport = SupplierTransport(
-                {host, *options.get("download_hosts", [])}, READS | {"download"}
+                {profile.host, *options.get("download_hosts", [])}, READS | {"download"}
             )
             gateway = EdGateway(
                 transport,
-                "https://" + host + "/service.asmx",
+                profile.url,
                 login.get_secret_value(),
                 password.get_secret_value(),
             )
@@ -67,11 +72,26 @@ def run_export_refresh(conn, adapter, endpoint, codes=None):
 
 
 def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
-    now, manifest = utcnow(), None
-    revision = None
     source_endpoint = endpoint or getattr(
         adapter, "endpoints", getattr(adapter, "methods", {})
     ).get(domain, domain)
+    if codes and adapter.interface == "ed_private":
+        source_endpoint = "getProductDetail"
+    # Each installation has one configured account per interface.
+    lock_key = f"suppliermcp.refresh:{adapter.interface}:{source_endpoint}"
+    if not conn.execute(
+        "SELECT pg_try_advisory_lock(hashtextextended(%s, 0))", (lock_key,)
+    ).fetchone()[0]:
+        raise CatalogError("refresh_in_progress", retryable=True)
+    try:
+        return _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint)
+    finally:
+        conn.execute("SELECT pg_advisory_unlock(hashtextextended(%s, 0))", (lock_key,))
+
+
+def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
+    now, manifest = utcnow(), None
+    revision = None
     outcome = "refresh_failed"
     try:
         manifest = (
@@ -123,54 +143,63 @@ def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
     return revision
 
 
+def locked_source_state(conn, interface):
+    """Called inside a transaction; serialize updates to the same interface JSON."""
+    conn.execute(
+        "INSERT INTO source_state VALUES (%s, '{}'::jsonb) ON CONFLICT DO NOTHING", (interface,)
+    )
+    return conn.execute(
+        "SELECT data FROM source_state WHERE interface=%s FOR UPDATE", (interface,)
+    ).fetchone()[0]
+
+
 def record_refresh_outcome(
     conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes=None
 ):
-    previous = conn.execute(
-        "SELECT data FROM source_state WHERE interface=%s", (adapter.interface,)
-    ).fetchone()
-    state = previous[0] if previous else {"configured": True, "domains": {}}
-    domains = state.setdefault("domains", {})
-    previous_domain = domains.get(domain, {})
-    complete = bool(manifest and manifest.complete and manifest.mode == "full" and outcome == "ok")
-    domains[domain] = {
-        "outcome": outcome,
-        "attempted_at": now.isoformat(),
-        "complete": complete,
-        "last_verified_complete_revision": revision
-        if complete
-        else previous_domain.get("last_verified_complete_revision"),
-    }
-    endpoints = state.setdefault("endpoints", {})
-    prior_endpoint = endpoints.get(source_endpoint, {})
-    next_allowed = None
-    if outcome == "outside_supplier_window":
-        from suppliermcp.suppliers.mega.capabilities import next_window
-
-        next_allowed = next_window(
-            adapter.contracts.get(source_endpoint, {}), "targeted" if codes else "full"
+    with conn.transaction():
+        state = locked_source_state(conn, adapter.interface)
+        domains = state.setdefault("domains", {})
+        previous_domain = domains.get(domain, {})
+        complete = bool(
+            manifest and manifest.complete and manifest.mode == "full" and outcome == "ok"
         )
-    endpoints[source_endpoint] = {
-        "outcome": outcome,
-        "attempted_at": now.isoformat(),
-        "last_success_at": now.isoformat()
-        if outcome == "ok"
-        else prior_endpoint.get("last_success_at"),
-        "next_allowed_at": next_allowed.isoformat() if next_allowed else None,
-        "complete": complete,
-        "revision": revision if outcome == "ok" else prior_endpoint.get("revision"),
-    }
-    state.update(
-        configured=True,
-        attempted_at=now.isoformat(),
-        outcome="ok" if all(d["outcome"] == "ok" for d in endpoints.values()) else "partial",
-    )
-    if outcome not in {"ok", "partial"}:
-        state["outcome"] = outcome
-    conn.execute(
-        "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
-        (adapter.interface, Jsonb(state)),
-    )
+        domains[domain] = {
+            "outcome": outcome,
+            "attempted_at": now.isoformat(),
+            "complete": complete,
+            "last_verified_complete_revision": revision
+            if complete
+            else previous_domain.get("last_verified_complete_revision"),
+        }
+        endpoints = state.setdefault("endpoints", {})
+        prior_endpoint = endpoints.get(source_endpoint, {})
+        next_allowed = None
+        if outcome == "outside_supplier_window":
+            from suppliermcp.suppliers.mega.capabilities import next_window
+
+            mode = "targeted" if codes else "full"
+            next_allowed = next_window(adapter.export_window(source_endpoint, mode), mode)
+        endpoints[source_endpoint] = {
+            "outcome": outcome,
+            "attempted_at": now.isoformat(),
+            "last_success_at": now.isoformat()
+            if outcome == "ok"
+            else prior_endpoint.get("last_success_at"),
+            "next_allowed_at": next_allowed.isoformat() if next_allowed else None,
+            "complete": complete,
+            "revision": revision if outcome == "ok" else prior_endpoint.get("revision"),
+        }
+        state.update(
+            configured=True,
+            attempted_at=now.isoformat(),
+            outcome="ok" if all(d["outcome"] == "ok" for d in endpoints.values()) else "partial",
+        )
+        if outcome not in {"ok", "partial"}:
+            state["outcome"] = outcome
+        conn.execute(
+            "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
+            (adapter.interface, Jsonb(state)),
+        )
 
 
 def create_app(settings):
@@ -190,16 +219,21 @@ def create_app(settings):
 
     @app.task(name="suppliermcp.index", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60))
     def index():
-        from suppliermcp.search.index import ALIAS, configured_client, drain_pending, rebuild_index
+        from suppliermcp.search.index import (
+            ALIAS,
+            SEARCH_FIELDS,
+            configured_client,
+            drain_pending,
+            rebuild_index,
+        )
 
         client = configured_client(settings)
         try:
             with connect(settings) as conn:
-                aliases = client.request("GET", "/aliases").json()["aliases"]
-                exists = any(a["name"] == ALIAS for a in aliases)
-                if not exists or not any(
-                    f["name"] == "supplier"
-                    for f in client.request("GET", f"/collections/{ALIAS}").json()["fields"]
+                collection = client.request("GET", f"/collections/{ALIAS}", allow_missing=True)
+                required = {*SEARCH_FIELDS, "unknown_facets", "verified", "supplier", "revision"}
+                if collection.status_code == 404 or not required.issubset(
+                    f["name"] for f in collection.json()["fields"]
                 ):
                     rebuild_index(conn, client)
                 return drain_pending(conn, client)
@@ -218,7 +252,7 @@ def create_app(settings):
             conn.execute("DELETE FROM query_results WHERE expires_at < now()")
             ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
             adapters = build_adapters(settings)
-            for interface in settings.enabled_interfaces:
+            for interface, adapter in adapters.items():
                 options = contracts.get(interface, {})
                 schedules = [
                     (domain, None, interval)
@@ -231,7 +265,6 @@ def create_app(settings):
                 for domain, endpoint, interval in schedules:
                     if domain not in {"catalog", "price", "stock", "schema"} or interval < 60:
                         continue
-                    adapter = adapters[interface]
                     source_endpoint = endpoint or getattr(
                         adapter, "endpoints", getattr(adapter, "methods", {})
                     ).get(domain, domain)
@@ -251,23 +284,25 @@ def create_app(settings):
                             require_window,
                         )
 
-                        contract = options.get("exports", {}).get(source_endpoint, {})
+                        contract = adapter.export_window(source_endpoint, "full")
                         try:
                             require_window(contract, "full")
                         except CatalogError as error:
                             upcoming = next_window(contract, "full")
-                            entry = state.setdefault("endpoints", {}).setdefault(
-                                source_endpoint, {}
-                            )
-                            entry.update(
-                                outcome=error.code,
-                                next_allowed_at=upcoming.isoformat() if upcoming else None,
-                            )
-                            state["configured"] = True
-                            conn.execute(
-                                "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
-                                (interface, Jsonb(state)),
-                            )
+                            with conn.transaction():
+                                state = locked_source_state(conn, interface)
+                                entry = state.setdefault("endpoints", {}).setdefault(
+                                    source_endpoint, {}
+                                )
+                                entry.update(
+                                    outcome=error.code,
+                                    next_allowed_at=upcoming.isoformat() if upcoming else None,
+                                )
+                                state["configured"] = True
+                                conn.execute(
+                                    "INSERT INTO source_state VALUES (%s,%s) ON CONFLICT(interface) DO UPDATE SET data=EXCLUDED.data",
+                                    (interface, Jsonb(state)),
+                                )
                             continue
                     try:
                         refresh.configure(
@@ -293,10 +328,8 @@ def schedule_refresh(interface, domain, codes=None, settings=None):
         adapter = build_adapters(settings)[interface]
         from suppliermcp.suppliers.mega.capabilities import require_window
 
-        require_window(
-            adapter.contracts.get(adapter.endpoints.get(domain), {}),
-            "targeted" if codes else "full",
-        )
+        mode = "targeted" if codes else "full"
+        require_window(adapter.export_window(adapter.endpoints.get(domain), mode), mode)
     app = create_app(settings)
     with app.open():
         return (

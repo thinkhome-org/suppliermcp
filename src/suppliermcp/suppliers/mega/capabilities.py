@@ -1,10 +1,12 @@
 """Account-specific method windows; unknown permissions fail closed."""
 
+import hashlib
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from defusedxml.ElementTree import fromstring
 
 from suppliermcp.catalog.contracts import CatalogError, utcnow
+from suppliermcp.suppliers.profiles import SERVICES
 
 
 def parse_capabilities(data: bytes) -> dict:
@@ -53,6 +55,31 @@ def parse_capabilities(data: bytes) -> dict:
         raise CatalogError("invalid_capabilities") from None
 
 
+def account_binding(login, profile=SERVICES["mega"]):
+    return hashlib.sha256((profile.host + "\0" + login).encode()).hexdigest()
+
+
+def account_exports(options, login, profile=SERVICES["mega"]):
+    return (
+        options.get("exports", {})
+        if options.get("account_login_sha256") == account_binding(login, profile)
+        else {}
+    )
+
+
+def verified_export_window(spec, account):
+    """Intersect ISO supplier weekdays with zero-based local Python weekdays."""
+    if spec.mode not in account.get("modes", []) or account.get("timezone") != "Europe/Prague":
+        return {}
+    local = account.get("windows", {}).get(spec.mode, account)
+    return {
+        "modes": [spec.mode],
+        "timezone": "Europe/Prague",
+        "days": sorted({day - 1 for day in spec.days} & set(local.get("days", []))),
+        "hours": sorted(set(spec.hours) & set(local.get("hours", []))),
+    }
+
+
 def require_window(contract, mode, now=None):
     if mode not in contract.get("modes", []) or not contract.get("timezone"):
         raise CatalogError("capability_not_verified")
@@ -82,3 +109,76 @@ def next_window(contract, mode, now=None):
             if error.code != "outside_supplier_window":
                 return None
     return None
+
+
+def refresh_account_contracts(settings, previous):
+    """Replace the authenticated account's capabilities while keeping its offer mappings."""
+    from suppliermcp.suppliers.transport import SupplierTransport
+
+    profile = SERVICES["mega"]
+    credentials = settings.credentials.get(profile.account)
+    if not credentials:
+        raise CatalogError("source_not_configured")
+    binding = account_binding(credentials[0].get_secret_value())
+    if previous.get("mega", {}).get("account_login_sha256", binding) != binding:
+        raise CatalogError("account_contract_mismatch")
+    transport = SupplierTransport(
+        {profile.host},
+        {"capabilities"},
+        auth=tuple(v.get_secret_value() for v in credentials),
+        max_bytes=4 * 1024**2,
+    )
+    try:
+        current = parse_capabilities(
+            transport.read(
+                "GET", f"https://{profile.host}/ResultTypeInfo.ashx", endpoint="capabilities"
+            )
+        )
+    finally:
+        transport.client.close()
+    old = previous.get("mega", {}).get("exports", {})
+    exports = {
+        name: old.get(name, {})
+        | {"modes": row["modes"], "windows": row["windows"], "timezone": "Europe/Prague"}
+        for name, row in current.items()
+    }
+    return previous | {
+        "mega": previous.get("mega", {}) | {"account_login_sha256": binding, "exports": exports}
+    }
+
+
+def main():
+    import argparse
+    import json
+    import os
+    import tempfile
+    from pathlib import Path
+
+    from suppliermcp.config import Settings
+
+    parser = argparse.ArgumentParser(description="Refresh 100MEGA account-specific read windows")
+    parser.add_argument("output", type=Path)
+    parser.add_argument(
+        "--source",
+        type=Path,
+        help="Existing source-contracts JSON; defaults to the output file if present",
+    )
+    args = parser.parse_args()
+    source = args.source or args.output
+    previous = json.loads(source.read_text()) if source.exists() else {}
+    current = refresh_account_contracts(Settings.from_env(), previous)
+    with tempfile.NamedTemporaryFile(dir=args.output.parent, mode="w", delete=False) as handle:
+        temp = Path(handle.name)
+        try:
+            json.dump(current, handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+            os.replace(temp, args.output)
+        finally:
+            temp.unlink(missing_ok=True)
+    print(f"Verified {len(current['mega']['exports'])} export names")
+
+
+if __name__ == "__main__":
+    main()

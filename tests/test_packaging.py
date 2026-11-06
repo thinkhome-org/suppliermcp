@@ -87,3 +87,14 @@ def test_runtime_mounts_contracts_for_both_processes():
         )
         assert any("/config/source-contracts.json:ro" in v for v in service["volumes"])
         assert service["env_file"][0]["path"] == "${SUPPLIERMCP_ENV_FILE:-.env}"
+
+
+def test_release_plugin_version_tracks_wheel_version(tmp_path):
+    import shutil
+
+    source = tmp_path / "source"
+    shutil.copytree(ROOT / "skills", source / "skills")
+    for package, plugin in [("2.0.0rc3", "2.0.0-rc.3"), ("2.0.0", "2.0.0")]:
+        (source / "pyproject.toml").write_text(f'[project]\nversion = "{package}"\n')
+        path = module.build_plugin(source, tmp_path / package, "https://catalog.example/mcp")
+        assert json.loads((path / "plugin.json").read_text())["version"] == plugin

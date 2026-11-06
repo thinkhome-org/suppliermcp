@@ -70,7 +70,7 @@ def test_unknown_window_prevents_network_call():
 def test_missing_identity_and_invalid_schema(tmp_path):
     with pytest.raises(CatalogError, match="missing_product_identity"):
         parse(tmp_path, '<Result><StoItem Name="Broken"/></Result>')
-    with pytest.raises(CatalogError, match="unexpected_export_root"):
+    with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
         parse(tmp_path, "<html><body>Error</body></html>")
 
 
@@ -127,3 +127,35 @@ def test_retry_revalidates_window_before_second_http_request(tmp_path, monkeypat
     with pytest.raises(CatalogError, match="outside_supplier_window"):
         adapter.fetch("catalog")
     assert len(calls) == 1
+
+
+def test_worker_rejects_attsti_at_noon_even_with_permissive_local_window(monkeypatch):
+    from datetime import UTC, datetime
+
+    from suppliermcp.suppliers.mega import capabilities
+
+    monkeypatch.setattr(capabilities, "utcnow", lambda: datetime(2026, 11, 6, 11, tzinfo=UTC))
+    adapter = MegaAdapter(
+        contracts={
+            "AttSti": {
+                "timezone": "Europe/Prague",
+                "modes": ["full"],
+                "days": list(range(7)),
+                "hours": list(range(24)),
+            }
+        }
+    )
+    with pytest.raises(CatalogError, match="outside_supplier_window"):
+        adapter.fetch_export("AttSti")
+
+
+def test_window_file_must_belong_to_the_configured_login():
+    from suppliermcp.suppliers.mega.capabilities import account_binding, account_exports
+
+    opts = {
+        "account_login_sha256": account_binding("first"),
+        "exports": {"Test": {"modes": ["full"]}},
+    }
+    assert account_exports(opts, "second") == {}
+    assert account_exports({"exports": opts["exports"]}, "first") == {}
+    assert account_exports(opts, "first") == opts["exports"]

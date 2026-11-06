@@ -128,11 +128,12 @@ def test_migration_preserves_legacy_evidence(conn):
         conn.execute(
             "INSERT INTO observations VALUES ('mega:7','mega','base','Name','{\"value\":\"Original\"}')"
         )
-        migrate(conn)
-        assert conn.execute("SELECT data,value_key FROM observations").fetchone() == (
-            {"value": "Original"},
-            "",
-        )
+        import psycopg
+
+        with pytest.raises(psycopg.errors.RaiseException, match="catalog_reprojection_required"):
+            migrate(conn)
+        assert conn.execute("SELECT data FROM observations").fetchone() == ({"value": "Original"},)
+        assert not conn.execute("SELECT 1 FROM migrations WHERE name LIKE '011%'").fetchone()
         conn.execute("SET LOCAL search_path TO public")
         conn.execute("DROP SCHEMA legacy_upgrade CASCADE")
 
@@ -220,3 +221,80 @@ def test_class_export_keeps_unmatched_sku_until_catalog_catches_up(conn):
     put(conn, endpoint, rows, **options)
     assert get_product(conn, "mega:2").item.observations[0].value == "A"
     assert conn.execute(query).fetchall() == []
+
+
+def test_identical_empty_targeted_responses_replace_each_requested_sku(conn):
+    put(conn, "A", [product("A", ["red"]), product("A", ["blue"], id="2")])
+    for sku in ["001", "002"]:
+        put(
+            conn,
+            "A",
+            [],
+            requested_skus=[sku],
+            replace_scope="items",
+            mode="targeted",
+            artifact_sha256="same-empty-body",
+        )
+    assert not get_product(conn, "mega:2").item.observations
+
+
+def test_replaying_unchanged_run_keeps_original_revision(conn):
+    first = put(conn, "A", [product("A", ["red"])], artifact_sha256="first")
+    run_id = stage(
+        conn,
+        BatchManifest(interface="mega", domain="schema", endpoint="A", artifact_sha256="first"),
+        [product("A", ["red"])],
+    )
+    assert publish(conn, run_id) == first
+    put(conn, "A", [product("A", ["blue"])], artifact_sha256="next")
+    assert publish(conn, run_id) == first
+
+
+async def test_v1_nested_identity_cannot_cross_catalog_cutover(conn, monkeypatch):
+    from contextlib import nullcontext
+    from pathlib import Path
+
+    import psycopg
+    from psycopg.types.json import Jsonb
+
+    from suppliermcp.access import Identity
+    from suppliermcp.catalog.db import migrate
+    from suppliermcp.config import Settings
+    from suppliermcp.search.index import rebuild_index
+    from suppliermcp.service import CatalogService
+
+    with conn.transaction():
+        conn.execute("CREATE SCHEMA v1_upgrade")
+        conn.execute("SET LOCAL search_path TO v1_upgrade")
+        conn.execute("CREATE TABLE migrations(name text PRIMARY KEY)")
+        for path in sorted(Path("migrations").glob("00[1-9]*.sql")):
+            conn.execute(path.read_text())
+            conn.execute("INSERT INTO migrations VALUES (%s)", (path.name,))
+        # V1 silently flattened a ProductComplete nested inside ShipTo into this ordinary typed row.
+        old = SourceItem(supplier="ed", source_id="7", sku="private-address", name="private-name")
+        conn.execute(
+            "INSERT INTO source_items VALUES (%s,%s,true,1)",
+            (old.item_id, Jsonb(old.model_dump(mode="json"))),
+        )
+        monkeypatch.setattr("suppliermcp.service.connect", lambda settings: nullcontext(conn))
+        service = CatalogService(
+            Settings(), Identity("issuer", "user", "client", frozenset({"catalog:read"}))
+        )
+        for attempt in range(2):
+            result = await service.get_product(product_id=old.item_id)
+            assert result.error["code"] == "catalog_migration_required"
+            assert "private-" not in result.model_dump_json()
+            with pytest.raises(CatalogError) as error:
+                rebuild_index(conn, None)
+            assert error.value.code == "catalog_migration_required"
+            if attempt == 0:
+                with pytest.raises(
+                    psycopg.errors.RaiseException, match="catalog_reprojection_required"
+                ):
+                    migrate(conn)
+        assert conn.execute("SELECT data FROM source_items").fetchone()[0] == old.model_dump(
+            mode="json"
+        )
+        assert not conn.execute("SELECT 1 FROM migrations WHERE name LIKE '011%'").fetchone()
+        conn.execute("SET LOCAL search_path TO public")
+        conn.execute("DROP SCHEMA v1_upgrade CASCADE")

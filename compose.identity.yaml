@@ -1,0 +1,44 @@
+# Standalone Portainer stack for the SupDB login service.
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak@sha256:3879c623248408de29a5303178b5816c77e8dfef3890c361f8c0bbeaa979ba3b
+    command: ["start"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${SUPDB_IDP_DB_PASSWORD:?Set a database password}
+      KC_HOSTNAME: ${SUPDB_IDP_PUBLIC_URL:?Set the public HTTPS origin for login}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_PROXY_TRUSTED_ADDRESSES: ${SUPDB_IDP_TRUSTED_PROXY_ADDRESSES:?Set the trusted ingress connector IP or CIDR}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${SUPDB_IDP_ADMIN:?Set the initial admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${SUPDB_IDP_ADMIN_PASSWORD:?Set the initial password}
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    networks:
+      private: {}
+      cloudflare:
+        aliases: [supdb-login-origin]
+    restart: unless-stopped
+  identity-db:
+    image: postgres@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${SUPDB_IDP_DB_PASSWORD:?Set a database password}
+    volumes: ["identity-data:/var/lib/postgresql"]
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      retries: 30
+    restart: unless-stopped
+networks:
+  private:
+    internal: true
+  cloudflare:
+    external: true
+volumes:
+  identity-data:

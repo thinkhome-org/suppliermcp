@@ -3,6 +3,7 @@
 import argparse
 import json
 import re
+import tomllib
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -34,10 +35,15 @@ def build_plugin(source: Path, destination: Path, mcp_url: str, *, codex: bool =
         if re.search(r"\]\((?!https?://)[^)]*\)", content):
             raise ValueError("This package supports self-contained skills only")
         files[f"skills/{name}/SKILL.md"] = content
+    package_version = tomllib.loads((source / "pyproject.toml").read_text())["project"]["version"]
+    match = re.fullmatch(r"(\d+\.\d+\.\d+)(?:rc([1-9]\d*))?", package_version)
+    if not match:
+        raise ValueError("Expected a stable or rc package version")
+    version = match[1] + ("-rc." + match[2] if match[2] else "")
     manifest = {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "suppliermcp",
-        "version": "1.0.0",
+        "version": version,
         "description": "Read-only supplier product discovery and per-product offer comparison.",
     }
     mcp = {

@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import httpx
@@ -27,16 +28,17 @@ def test_curated_queries(conn):
         ),
     )
     with httpx.Client(
-        base_url="http://localhost:58109", headers={"X-TYPESENSE-API-KEY": "test-only"}
+        base_url=os.getenv("SUPPLIERMCP_TEST_INDEX_URL", "http://localhost:58109"),
+        headers={"X-TYPESENSE-API-KEY": "test-only"},
     ) as http:
         index = IndexClient(http)
         rebuild_index(conn, index)
         for case in cases:
-            ids = {
+            ids = [
                 r.product_id for r in search(conn, index, case["query"], [], "evaluation").results
-            }
-            assert "mega:" + case["id"] in ids, case
-            assert not ids.intersection("mega:" + v for v in case["exclude"]), case
+            ]
+            assert "mega:" + case["id"] in ids[:5], case
+            assert not set(ids).intersection("mega:" + v for v in case["exclude"]), case
             assert (
                 lookup(
                     conn, [Identifier(kind="sku", supplier="mega", value="00" + case["id"])]

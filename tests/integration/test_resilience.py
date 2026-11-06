@@ -219,3 +219,87 @@ def test_auth_and_timeout_leave_other_source_and_retained_data_queryable(conn, c
     assert start_listing(conn, CatalogQuery(supplier="ed"), "alice").total == 1
     assert get_product(conn, "mega:1").offers[0].unit_net == Decimal(10)
     assert read_status(conn, ["ed_public"]).interfaces["mega"]["outcome"] == "disabled"
+
+
+def test_unavailable_index_keeps_published_outbox_repairable(conn):
+    import httpx
+
+    from suppliermcp.search.index import IndexClient, drain_pending
+
+    revision = publish(
+        conn, stage(conn, BatchManifest(interface="mega", domain="catalog"), [item()])
+    )
+
+    def offline(request):
+        raise httpx.ConnectError("offline", request=request)
+
+    with httpx.Client(base_url="http://index", transport=httpx.MockTransport(offline)) as client:
+        with pytest.raises(CatalogError) as failure:
+            drain_pending(conn, IndexClient(client))
+        assert failure.value.code == "text_search_unavailable"
+    assert get_product(conn, "mega:1").product_id == "mega:1"
+    assert conn.execute("SELECT revision, done FROM index_outbox").fetchone() == (revision, False)
+
+    def recovered(request):
+        import json
+
+        assert json.loads(request.content)["id"] == "mega:1"
+        return httpx.Response(200, json={"success": True})
+
+    with httpx.Client(base_url="http://index", transport=httpx.MockTransport(recovered)) as client:
+        assert drain_pending(conn, IndexClient(client)) == 1
+    assert conn.execute("SELECT done FROM index_outbox").fetchone() == (True,)
+
+
+def test_direct_and_queued_refreshes_exclude_overlapping_export(conn):
+    import psycopg
+
+    class Busy:
+        interface = "mega"
+        endpoints = {"catalog": "StoItemBase"}
+
+        def fetch(self, domain, codes):
+            with psycopg.connect(
+                conn.info.dsn, password=conn.info.password, autocommit=True
+            ) as other:
+                with pytest.raises(CatalogError, match="refresh_in_progress"):
+                    run_refresh(other, self, domain)
+            return BatchManifest(
+                interface=self.interface, domain=domain, endpoint=self.endpoints[domain]
+            )
+
+        def parse(self, manifest):
+            yield item()
+
+    run_refresh(conn, Busy(), "catalog")
+
+
+def test_simultaneous_outcome_updates_preserve_both_endpoints(conn):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from types import SimpleNamespace
+
+    import psycopg
+
+    from suppliermcp.sync.jobs import record_refresh_outcome
+
+    barrier = Barrier(8)
+
+    def write(number):
+        with psycopg.connect(conn.info.dsn, password=conn.info.password, autocommit=True) as other:
+            barrier.wait(timeout=15)
+            record_refresh_outcome(
+                other,
+                SimpleNamespace(interface="mega"),
+                "schema",
+                str(number),
+                utcnow(),
+                "ok",
+                None,
+                number,
+            )
+
+    with ThreadPoolExecutor(max_workers=8) as workers:
+        list(workers.map(write, range(8)))
+    state = conn.execute("SELECT data FROM source_state WHERE interface='mega'").fetchone()[0]
+    assert set(state["endpoints"]) == set(map(str, range(8)))

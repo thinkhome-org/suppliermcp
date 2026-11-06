@@ -4,55 +4,80 @@ import json
 from suppliermcp.catalog.contracts import CatalogError, CatalogQuery, SearchResult
 from suppliermcp.catalog.repository import get_products, read_status
 
-from .index import ALIAS, normalize
+from .index import ALIAS, FACET_FIELDS, SEARCH_FIELDS, facet_key, normalize
 from .listing import matching_ids, materialize
+from .schema import catalog_schema, validate_filter
 
 
 def search(conn, client, text, filters, principal, settings=None):
     if not text.strip() or len(text) > 1000:
         raise CatalogError("invalid_search_text")
-    candidates = []
-    found = 0
     params = {
         "q": normalize(text),
-        "query_by": "text",
+        "query_by": ",".join(SEARCH_FIELDS),
+        "query_by_weights": ",".join(map(str, SEARCH_FIELDS.values())),
+        "include_fields": "id",
         "per_page": 250,
         "drop_tokens_threshold": 0,
         "num_typos": 0,
         "prefix": "false",
     }
-    supplier_clauses = []
-    for f in filters:
-        if f.field != "supplier" or f.operator not in {"eq", "in"}:
-            continue
-        values = [f.value] if f.operator == "eq" else f.value
-        if isinstance(values, list) and values and all(v in ("ed", "mega") for v in values):
-            supplier_clauses.append("supplier:=[" + ",".join(values) + "]")
-    if supplier_clauses:
-        # Rank within the requested suppliers before applying the candidate limit.
-        params["filter_by"] = " && ".join(supplier_clauses)
-    for page in range(1, 5):
-        data = client.request(
-            "GET",
-            f"/collections/{ALIAS}/documents/search",
-            params={**params, "page": page},
-        ).json()
-        found = data["found"]
-        candidates.extend(hit["document"]["id"] for hit in data["hits"])
-        if len(candidates) >= found:
-            break
     with conn.transaction():
         conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-        confirmed, unknown = matching_ids(conn, CatalogQuery(filters=filters))
-        allowed = set(confirmed)
-        ids = list(dict.fromkeys(i for i in candidates if i in allowed))
-        products = get_products(conn, ids, include_evidence=False)
+        query = CatalogQuery(filters=filters)
+        schema = catalog_schema(conn) if filters else {}
+        # Only known, validated filter values enter the index expression.
+        clauses = []
+        for f in filters:
+            validate_filter(f, schema)
+            if f.operator not in {"eq", "in"}:
+                continue
+            values = [f.value] if f.operator == "eq" else f.value
+            if f.field == "supplier" and all(v in {"ed", "mega"} for v in values):
+                clauses.append("supplier:=[" + ",".join(values) + "]")
+            elif f.field in FACET_FIELDS:
+                clauses.append(
+                    "(verified:=["
+                    + ",".join(facet_key(f.field, v) for v in values)
+                    + "] || unknown_facets:="
+                    + f.field
+                    + ")"
+                )
         coverage = read_status(conn, settings.enabled_interfaces if settings else None)
+        if clauses and coverage.index_revision == coverage.revision:
+            params["filter_by"] = " && ".join(clauses)
+        ids = {}
+        unknown_hits = set()
+        limited = False
+        page = 1
+        while True:
+            data = client.request(
+                "GET",
+                f"/collections/{ALIAS}/documents/search",
+                params={**params, "page": page},
+            ).json()
+            candidates = [hit["document"]["id"] for hit in data["hits"]]
+            confirmed, unknown = matching_ids(conn, query, candidate_ids=candidates, schema=schema)
+            allowed = set(confirmed)
+            for candidate in candidates:
+                if candidate in allowed and candidate not in ids:
+                    if len(ids) == 1000:
+                        limited = True
+                        break
+                    ids[candidate] = None
+            unknown_hits.update(unknown)
+            exhausted = not candidates or page * params["per_page"] >= data["found"]
+            if exhausted or (not filters and len(ids) >= 1000):
+                break
+            page += 1
+        limited |= not exhausted
+        ids = list(ids)
+        products = get_products(conn, ids, include_evidence=False)
         coverage.complete = False
         coverage.warnings.append("text_discovery_is_not_exhaustive")
         if coverage.index_revision < coverage.revision:
             coverage.warnings.append("index_lag")
-        if found > 1000:
+        if limited:
             coverage.warnings.append("candidate_scan_limited_to_1000")
         digest = hashlib.sha256(
             json.dumps(
@@ -65,7 +90,7 @@ def search(conn, client, text, filters, principal, settings=None):
             coverage,
             principal,
             digest,
-            unknown_total=len(set(unknown) & set(candidates)),
+            unknown_total=len(unknown_hits),
             settings=settings,
         )
         return SearchResult(**result.model_dump())

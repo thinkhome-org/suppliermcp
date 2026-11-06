@@ -64,3 +64,11 @@ def test_stale_and_incomparable_winners():
     )
     assert compare([a], Decimal(1), now).fresh_winner is None
     assert not quote(b.model_copy(update={"source_updated_at": None}), Decimal(1), now).fresh
+
+
+def test_twelve_units_order_twenty_and_separate_incomparable():
+    offer = Offer(item_id="mega:1", unit_net="5", fees_net="1", currency="CZK", order_multiple=10)
+    unknown = Offer(item_id="ed:2", unit_net="8", currency="CZK")
+    result = compare([unknown, offer], Decimal(12), utcnow())
+    assert result.offers[1].orderable_qty == 20 and result.offers[1].total_net == 120
+    assert result.incomparable_ids == ["ed:2"]

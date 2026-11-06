@@ -78,3 +78,57 @@ def test_rejects_unexpected_http_compression():
     with pytest.raises(CatalogError) as error:
         transport.read("GET", "https://example.com/export", endpoint="read")
     assert error.value.code == "unsupported_content_encoding"
+
+
+@pytest.mark.parametrize(
+    ("fault", "detail", "expected"),
+    [
+        ("Client", "private supplied arguments", "supplier_soap_client_fault"),
+        (
+            "Server",
+            "System.Data.SqlClient.SqlException: private account row",
+            "supplier_soap_server_sql_fault",
+        ),
+        (
+            "Server",
+            "System.ApplicationException: private account row",
+            "supplier_soap_server_application_fault",
+        ),
+    ],
+)
+def test_soap_fault_is_sanitized_and_not_retried(fault, detail, expected):
+    count = 0
+
+    def reply(request):
+        nonlocal count
+        count += 1
+        return httpx.Response(
+            500,
+            content=f'<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><s:Fault><faultcode>s:{fault}</faultcode><faultstring>{detail}</faultstring></s:Fault></s:Body></s:Envelope>'.encode(),
+        )
+
+    with pytest.raises(CatalogError) as error:
+        transport(reply).consume(
+            "POST",
+            "https://api.example/read",
+            endpoint="read",
+            soap_action='"action"',
+            consume=list,
+        )
+    assert error.value.code == expected and not error.value.retryable
+    assert count == 1 and "private" not in str(error.value.as_dict())
+
+
+def test_read_separates_http_service_errors_from_timeouts():
+    for code in ("supplier_http_5xx", "supplier_timeout"):
+
+        def fail(request, expected=code):
+            if expected == "supplier_timeout":
+                raise httpx.ReadTimeout("private content")
+            return httpx.Response(503, content=b"private content")
+
+        with pytest.raises(CatalogError) as error:
+            transport(fail).consume(
+                "GET", "https://api.example/read", endpoint="read", consume=list
+            )
+        assert error.value.code == code and error.value.retryable

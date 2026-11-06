@@ -1,26 +1,52 @@
-name: publish-image
+name: publish-release-candidate
 on:
-  workflow_run:
-    workflows: [validate]
-    types: [completed]
-    branches: [main]
+  push:
+    tags: ['v2.0.0-rc.*', 'v2.0.0-stage.*']
 permissions:
   contents: read
 jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
   publish:
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_repository.full_name == github.repository
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
+    env:
+      IMAGE: ghcr.io/thinkhome-org/suppliermcp
+      MCP_URL: https://suppliermcp.thinkhome.org/mcp
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
           persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.9.9'
+          python-version: '3.12'
+      - run: uv sync --locked
+      - name: Verify the dedicated login stack
+        run: uv run python scripts/identity_smoke.py
+      - name: Build version-matched release assets
+        run: |
+          set -eu
+          version="${GITHUB_REF_NAME#v}"
+          if [[ "$version" =~ ^2\.0\.0-stage\.[1-9][0-9]*$ ]]; then
+            version=2.0.0
+          else
+            [[ "$version" =~ ^2\.0\.0-rc\.[1-9][0-9]*$ ]]
+          fi
+          native="suppliermcp-codex-$version"
+          portable="suppliermcp-portable-$version"
+          uv build --wheel
+          test -f "dist/suppliermcp-${version/-rc./rc}-py3-none-any.whl"
+          cp -R integrations/codex/marketplace "$native"
+          uv run --locked python integrations/codex/build_plugin.py "$native/plugins/suppliermcp" --codex --url "$MCP_URL"
+          uv run --locked python integrations/codex/build_plugin.py "$portable" --url "$MCP_URL"
+          jq -e --arg v "$version" '.version == $v' "$native/plugins/suppliermcp/.codex-plugin/plugin.json"
+          jq -e --arg v "$version" '.version == $v' "$portable/plugin.json"
+          zip -qr "dist/$native.zip" "$native"
+          zip -qr "dist/$portable.zip" "$portable"
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
@@ -32,13 +58,31 @@ jobs:
         id: image
         with:
           context: .
-          push: true
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           platforms: linux/amd64,linux/arm64
           labels: |
             org.opencontainers.image.source=https://github.com/thinkhome-org/suppliermcp
-            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
-          tags: ghcr.io/thinkhome-org/suppliermcp:sha-${{ github.event.workflow_run.head_sha }}
-      - name: Record immutable deployment reference
+            org.opencontainers.image.revision=${{ github.sha }}
+      - name: Rehearse v2 restart and v1 rollback, then record the tested digest
         env:
-          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
-        run: echo "ghcr.io/thinkhome-org/suppliermcp@${IMAGE_DIGEST}" >> "$GITHUB_STEP_SUMMARY"
+          SUPPLIERMCP_ROLLBACK_IMAGE: ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23
+          SUPPLIERMCP_SMOKE_IMAGE: ${{ env.IMAGE }}@${{ steps.image.outputs.digest }}
+        run: |
+          docker pull "$SUPPLIERMCP_SMOKE_IMAGE"
+          uv run python scripts/portainer_smoke.py
+          printf '%s\n' "$SUPPLIERMCP_SMOKE_IMAGE" | tee dist/image-reference.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Promote the verified manifest to candidate tags
+        if: startsWith(github.ref_name, 'v2.0.0-rc.')
+        env:
+          DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          docker buildx imagetools create --tag "$IMAGE:sha-$GITHUB_SHA" --tag "$IMAGE:$GITHUB_REF_NAME" "$IMAGE@$DIGEST"
+          test "$(docker buildx imagetools inspect "$IMAGE:$GITHUB_REF_NAME" --format '{{json .Manifest}}' | jq -r .digest)" = "$DIGEST"
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          sha256sum *.whl *.zip image-reference.txt > SHA256SUMS
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title "SupplierMCP $GITHUB_REF_NAME" --notes "Candidate build of $GITHUB_SHA. Immutable GHCR image: $(cat image-reference.txt)." *

@@ -16,6 +16,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastmcp import Client
 from portainer_env import write_portainer_env
 
+from suppliermcp.service import CATALOG_OPERATIONS
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -29,14 +31,16 @@ def main():
         .decode()
     )
     contracts = json.dumps({"test_note": "Unicode žluťoučký $literal"})
-    env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("SUPPLIERMCP_", "SUPDB_"))}
     values = {
         "SUPPLIERMCP_IMAGE": os.environ.get(
             "SUPPLIERMCP_SMOKE_IMAGE", "suppliermcp:portainer-test"
         ),
+        "SUPDB_ORIGIN_ALIAS": "suppliermcp-green-origin",
         "POSTGRES_PASSWORD": secrets.token_urlsafe(24),
         "SUPPLIERMCP_TYPESENSE_KEY": secrets.token_urlsafe(24),
         "SUPPLIERMCP_AUTH_PUBLIC_KEY": public,
+        "SUPPLIERMCP_AUTH_LEGACY_SUBJECTS": '["smoke"]',
         "SUPPLIERMCP_SOURCE_CONTRACTS_JSON": contracts,
     }
     values["PORTAINER_ROUNDTRIP"] = ' $ABSENT ${ABSENT} apostrophe\' back\\slash "quote" '
@@ -69,27 +73,97 @@ def main():
                 }
             )
         )
-        compose = [
-            "docker",
-            "compose",
-            "--project-name",
-            project,
-            "--env-file",
-            str(stack_env),
-            "-f",
-            str(ROOT / "compose.portainer.yaml"),
-            "-f",
-            str(override),
-        ]
+
+        def command(project_name, manifest):
+            return [
+                "docker",
+                "compose",
+                "--project-name",
+                project_name,
+                "--env-file",
+                str(stack_env),
+                "-f",
+                str(ROOT / manifest),
+                "-f",
+                str(override),
+            ]
+
+        blue = command(project + "-blue", "compose.portainer.yaml")
+        green = command(project + "-green", "compose.portainer-v2.yaml")
         run(["docker", "network", "create", network])
         try:
-            run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
-            address = run(compose + ["port", "mcp", "8000"]).strip()
+            rollback_image = os.environ.get("SUPPLIERMCP_ROLLBACK_IMAGE")
+            database = blue + ["exec", "-T", "postgres"]
+            marker_query = (
+                "SELECT count(*) FROM source_items WHERE id='mega:rollback-check' AND active"
+            )
+            psql = database + ["psql", "-XAt", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp", "-c"]
+            if rollback_image:
+                env["SUPPLIERMCP_IMAGE"] = rollback_image
+                run(blue + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                run(
+                    psql
+                    + [
+                        """INSERT INTO source_items(id,data,revision) VALUES ('mega:rollback-check',
+                    '{"supplier":"mega","source_id":"rollback-check","sku":"0007","name":"Synthetic"}',0)"""
+                    ]
+                )
+                # Quiesce writers before backing up the disposable v1 installation.
+                run(blue + ["stop", "mcp", "worker"])
+                backup = Path(directory) / "v1.sql"
+                with backup.open("wb") as out:
+                    subprocess.run(
+                        database
+                        + [
+                            "pg_dump",
+                            "-U",
+                            "suppliermcp",
+                            "--no-owner",
+                            "--no-privileges",
+                            "suppliermcp",
+                        ],
+                        stdout=out,
+                        env=env,
+                        check=True,
+                    )
+                backup.chmod(0o600)
+                env["SUPPLIERMCP_IMAGE"] = values["SUPPLIERMCP_IMAGE"]
+                # A v1 catalogue cannot prove XML ancestry. Upgrade on isolated volumes.
+                refused = subprocess.run(
+                    command(project + "-blue", "compose.portainer-v2.yaml")
+                    + ["run", "--rm", "--no-deps", "migrate"],
+                    capture_output=True,
+                    env=env,
+                )
+                assert refused.returncode != 0 and b"catalog_reprojection_required" in (
+                    refused.stdout + refused.stderr
+                )
+                assert run(psql + [marker_query]).strip() == "1"
+            run(green + ["up", "-d", "--wait", "--wait-timeout", "180"])
+
+            def aliases(stack):
+                container = run(stack + ["ps", "-q", "mcp"]).strip()
+                networks = json.loads(
+                    run(
+                        [
+                            "docker",
+                            "inspect",
+                            "--format",
+                            "{{json .NetworkSettings.Networks}}",
+                            container,
+                        ]
+                    )
+                )
+                return networks[network]["Aliases"]
+
+            assert "suppliermcp-green-origin" in aliases(green)
+            assert "suppliermcp-origin" not in aliases(green)
+            address = run(green + ["port", "mcp", "8000"]).strip()
             url = "http://" + address
             assert httpx.get(url + "/health/ready").status_code == 200
             assert httpx.post(url + "/mcp").status_code == 401
             mounted = run(
-                compose
+                green
                 + [
                     "exec",
                     "-T",
@@ -101,7 +175,7 @@ def main():
             )
             assert mounted == contracts
             transported = run(
-                compose
+                green
                 + [
                     "exec",
                     "-T",
@@ -125,7 +199,11 @@ def main():
 
             async def verify():
                 async with Client(url + "/mcp", auth=token) as client:
-                    assert len(await client.list_tools()) == 7
+                    assert {tool.name for tool in await client.list_tools()} == {
+                        *CATALOG_OPERATIONS,
+                        "list_operations",
+                        "read_operation",
+                    }
                     assert len(await client.list_resources()) == 2
                     result = (await client.call_tool("get_catalog_status", {})).structured_content
                     status = result.get("result", result)
@@ -133,11 +211,49 @@ def main():
                     assert all(s["outcome"] == "disabled" for s in status["interfaces"].values())
 
             asyncio.run(verify())
+            if rollback_image:
+                assert run(psql + [marker_query]).strip() == "1"
+                run(green + ["restart", "mcp", "postgres", "typesense", "worker"])
+                run(green + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                assert run(psql + [marker_query]).strip() == "1"
+                # Destroy only the disposable blue volume; restore the independent backup.
+                env["SUPPLIERMCP_IMAGE"] = rollback_image
+                run(blue + ["down", "-v"])
+                run(blue + ["up", "-d", "--wait", "postgres"])
+                with backup.open("rb") as source:
+                    subprocess.run(
+                        database + ["psql", "-qX", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp"],
+                        stdin=source,
+                        stdout=subprocess.DEVNULL,
+                        env=env,
+                        check=True,
+                    )
+                run(blue + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                assert run(psql + [marker_query]).strip() == "1"
+                assert "suppliermcp-origin" in aliases(blue)
+                assert "suppliermcp-green-origin" not in aliases(blue)
+                restored_url = "http://" + run(blue + ["port", "mcp", "8000"]).strip()
+
+                async def check_restored_image():
+                    async with Client(restored_url + "/mcp", auth=token) as client:
+                        result = await client.call_tool(
+                            "lookup_products",
+                            {"identifiers": [{"kind": "sku", "supplier": "mega", "value": "0007"}]},
+                        )
+                        data = result.structured_content
+                        assert data.get("result", data)["entries"][0]["status"] == "found"
+
+                asyncio.run(check_restored_image())
+                print(
+                    "PASS: populated v1 upgrade rejection, isolated v2 restart and v1 backup restoration with authenticated SKU lookup"
+                )
             print(
-                "PASS: fresh migrations, readiness, auth, seven tools, two resources, exact config, disabled sources"
+                "PASS: fresh migrations, readiness, auth, nine tools, two resources, exact config, disabled sources"
             )
         finally:
-            run(compose + ["down", "-v"])
+            run(green + ["down", "-v"])
+            if rollback_image:
+                run(blue + ["down", "-v"])
             run(["docker", "network", "rm", network])
 
 

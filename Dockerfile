@@ -8,7 +8,7 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY src ./src
 COPY migrations ./migrations
 COPY skills ./skills
-RUN uv sync --locked --no-dev && useradd --uid 10001 --create-home app && mkdir -p /data/artifacts && chown -R app:app /data
+RUN uv sync --locked --no-dev --no-editable && useradd --uid 10001 --create-home app && mkdir -p /data/artifacts && chown -R app:app /data
 USER 10001
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"
