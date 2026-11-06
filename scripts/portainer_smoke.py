@@ -37,6 +37,7 @@ def main():
         "POSTGRES_PASSWORD": secrets.token_urlsafe(24),
         "SUPPLIERMCP_TYPESENSE_KEY": secrets.token_urlsafe(24),
         "SUPPLIERMCP_AUTH_PUBLIC_KEY": public,
+        "SUPPLIERMCP_AUTH_LEGACY_SUBJECTS": '["smoke"]',
         "SUPPLIERMCP_SOURCE_CONTRACTS_JSON": contracts,
     }
     values["PORTAINER_ROUNDTRIP"] = ' $ABSENT ${ABSENT} apostrophe\' back\\slash "quote" '

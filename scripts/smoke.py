@@ -49,7 +49,8 @@ def main():
         path = Path(temporary)
         env = path / "smoke.env"
         env.write_text(
-            "POSTGRES_PASSWORD="
+            'SUPPLIERMCP_AUTH_LEGACY_SUBJECTS=["smoke"]\n'
+            + "POSTGRES_PASSWORD="
             + secrets.token_hex(20)
             + "\nSUPPLIERMCP_TYPESENSE_KEY="
             + secrets.token_hex(20)

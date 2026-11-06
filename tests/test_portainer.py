@@ -21,6 +21,7 @@ def render(missing=None):
             {"mega": {"label": "Unicode žluťoučký", "exports": {}}}
         ),
     }
+    supplied["SUPPLIERMCP_AUTH_CLIENTS"] = '{"client-a":{}}'
     env.update(supplied)
     if missing:
         env.pop(missing, None)
@@ -62,6 +63,10 @@ def test_portainer_render_isolates_services_and_orders_fresh_migrations():
         assert (
             services[name]["environment"]["SUPPLIERMCP_AUTH_PUBLIC_KEY"]
             == supplied["SUPPLIERMCP_AUTH_PUBLIC_KEY"]
+        )
+        assert (
+            services[name]["environment"]["SUPPLIERMCP_AUTH_CLIENTS"]
+            == supplied["SUPPLIERMCP_AUTH_CLIENTS"]
         )
         assert services[name]["configs"][0]["target"] == "/config/source-contracts.json"
         assert not any(v["type"] == "bind" for v in services[name].get("volumes", []))

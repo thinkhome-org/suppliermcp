@@ -26,6 +26,7 @@ def running_server(**overrides):
         **(
             {
                 "auth_public_key": public,
+                "auth_legacy_subjects": ["alice", "bob"],
                 "database_url": "postgresql://test:test@localhost:55439/test",
                 "typesense_url": "http://localhost:58109",
                 "typesense_key": "test-only",

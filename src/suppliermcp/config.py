@@ -8,7 +8,13 @@ from pydantic import Field, SecretStr
 from suppliermcp.catalog.contracts import Model
 
 
+class ClientRegistration(Model):
+    document_subjects: set[str] = Field(default_factory=set)
+
+
 class Settings(Model):
+    auth_clients: dict[str, ClientRegistration] = Field(default_factory=dict)
+    auth_legacy_subjects: set[str] = Field(default_factory=set)
     credentials: dict[str, tuple[SecretStr, SecretStr]] = Field(
         default_factory=dict, repr=False, exclude=True
     )
@@ -54,7 +60,12 @@ class Settings(Model):
                 continue
             value = os.getenv("SUPPLIERMCP_" + name.upper())
             if value is not None:
-                if name in {"allowed_hosts", "allowed_origins"}:
+                if name in {
+                    "allowed_hosts",
+                    "allowed_origins",
+                    "auth_clients",
+                    "auth_legacy_subjects",
+                }:
                     import json
 
                     value = json.loads(value)
