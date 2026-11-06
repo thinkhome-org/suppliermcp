@@ -10,6 +10,7 @@ jobs:
     environment: supdb-stable
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
       packages: write
     env:
@@ -17,6 +18,10 @@ jobs:
       RECORD: docs/releases/2.0.0
       IMAGE: ghcr.io/thinkhome-org/suppliermcp
     steps:
+      - name: Require a protected stable-release environment
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/environments/supdb-stable" |
+            jq -e '(.can_admins_bypass == false) and any(.protection_rules[]; .type == "required_reviewers" and (.reviewers | length) > 0)'
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
