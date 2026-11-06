@@ -1,6 +1,12 @@
-# SupplierMCP
+# SupDB · SupplierMCP
 
 SupplierMCP 2.0 is a release candidate for read-only access to eD PUBLIC, eD PRIVATE and 100MEGA. Enable each interface independently. The catalog retains supplier evidence and last-known offers in PostgreSQL. Typesense powers text discovery. Exact lookup and complete typed listing also work when Typesense is unavailable.
+
+## Connect to the ThinkHome candidate
+
+The installed Mac Codex connection is named `supdb_v2`. To check it, ask “Use supdb_v2 to get the catalog status.” The hosted service for remote clients is [SupDB MCP](https://supdb.thinkhome.org/mcp). In personal ChatGPT, open **Plugins → Add → Add custom MCP server**, enter that URL, choose OAuth, and sign in using your registered client. The server uses a dedicated [SupDB login](docs/login.md). Applications connecting to the hosted HTTP API can inspect its [OpenAPI documentation](https://supdb.thinkhome.org/v2/docs).
+
+The [acceptance record](docs/supplier-api/v2-acceptance.md) identifies the tested builds, client checks and deployment state. The [operation results](docs/supplier-api/operation-reads.md) distinguish live responses, account denials, supplier errors and missing test inputs. Supplier operation results and background catalog imports are tracked separately.
 
 ## Interfaces
 
@@ -10,9 +16,11 @@ SupplierMCP 2.0 is a release candidate for read-only access to eD PUBLIC, eD PRI
 | REST | See `/v2/docs` or `/v2/openapi.json`. Submit catalog requests to `POST /v2/catalog/{tool_name}`. Discover supplier operations with `GET /v2/operations` and invoke an allowed read with `POST /v2/operations/{operation_id}/read`. |
 | MCP | Connect to `/mcp` over Streamable HTTP. Codex and ChatGPT OAuth setup is in the [login guide](docs/login.md). |
 
+Choose `lookup_products` for exact identifiers (preserve leading zeros), `search_products` for ranked text matches, and `list_products` for complete results within known filters. Check available filter fields with `get_catalog_schema`.
+
 The seven catalog tools are `lookup_products`, `search_products`, `list_products`, `get_product`, `get_catalog_schema`, `compare_offers` and `get_catalog_status`. Use `list_operations` and `read_operation` for supplier-specific reads. The registry identifies allowed operations, required arguments and scopes. Account permissions and supplier availability determine which reads can return live data.
 
-Ordinary registered clients receive catalog access. Document reads require a trusted registration for the subject and client, plus the signed `documents:read` scope. Supplier writes are blocked. Catalog prices carry freshness and provenance. Quantity comparisons account for known fees and packaging, and exclude shipping.
+Ordinary registered clients receive catalog access. Document reads require a trusted registration for the subject and client, plus the signed `documents:read` scope. Supplier writes are blocked. PostgreSQL stores the latest catalog. Documents and addresses are fetched on demand. Catalog prices carry freshness and provenance. Quantity comparisons account for known fees and packaging, and exclude shipping.
 
 ## Connect Codex
 

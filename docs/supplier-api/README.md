@@ -6,7 +6,7 @@
 - [100MEGA exports](mega-reference.md), [order service](mega_order-reference.md) and [default service](mega_default-reference.md)
 - [Calling reads](operation-reads.md) and [candidate acceptance](v2-acceptance.md)
 
-Observed 2026-11-05. These are discovery results, not a declaration of working ingestion.
+The dated discovery notes below describe the initial reconnaissance on 2026-11-05. Use the [per-operation matrix](v2-read-probes.json) for observed v2 live outcomes.
 
 The JSON inventories contain all advertised operation names and product schema definitions. Business-document data was not requested. No account credentials or account-bearing download URLs are included.
 

@@ -1,5 +1,7 @@
 # Validation evidence
 
+For v2, see the [candidate acceptance and outstanding cases](supplier-api/v2-acceptance.md), [per-operation results](supplier-api/v2-read-probes.json) and [catalog search validation](supplier-api/v2-search-validation.md). The dated results below describe the original v1 deployment.
+
 ## Live acceptance on 2026-11-05
 
 The protected local project is `suppliermcp-live`, with authenticated MCP at `http://127.0.0.1:8000/mcp`. Machine-readable, payload-free evidence is in [live-validation-2026-11-05.json](live-validation-2026-11-05.json). The first snapshot below precedes the night-window follow-up. Counts are measured snapshots, not a promise that a changing supplier catalog is constant.
