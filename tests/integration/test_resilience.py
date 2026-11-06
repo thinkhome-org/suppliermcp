@@ -259,7 +259,9 @@ def test_direct_and_queued_refreshes_exclude_overlapping_export(conn):
         endpoints = {"catalog": "StoItemBase"}
 
         def fetch(self, domain, codes):
-            with psycopg.connect(conn.info.dsn, password=conn.info.password, autocommit=True) as other:
+            with psycopg.connect(
+                conn.info.dsn, password=conn.info.password, autocommit=True
+            ) as other:
                 with pytest.raises(CatalogError, match="refresh_in_progress"):
                     run_refresh(other, self, domain)
             return BatchManifest(
@@ -270,3 +272,34 @@ def test_direct_and_queued_refreshes_exclude_overlapping_export(conn):
             yield item()
 
     run_refresh(conn, Busy(), "catalog")
+
+
+def test_simultaneous_outcome_updates_preserve_both_endpoints(conn):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from types import SimpleNamespace
+
+    import psycopg
+
+    from suppliermcp.sync.jobs import record_refresh_outcome
+
+    barrier = Barrier(8)
+
+    def write(number):
+        with psycopg.connect(conn.info.dsn, password=conn.info.password, autocommit=True) as other:
+            barrier.wait(timeout=15)
+            record_refresh_outcome(
+                other,
+                SimpleNamespace(interface="mega"),
+                "schema",
+                str(number),
+                utcnow(),
+                "ok",
+                None,
+                number,
+            )
+
+    with ThreadPoolExecutor(max_workers=8) as workers:
+        list(workers.map(write, range(8)))
+    state = conn.execute("SELECT data FROM source_state WHERE interface='mega'").fetchone()[0]
+    assert set(state["endpoints"]) == set(map(str, range(8)))
