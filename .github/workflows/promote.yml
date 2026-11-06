@@ -7,6 +7,7 @@ permissions:
 concurrency: stable-2.0.0
 jobs:
   promote:
+    environment: supdb-stable
     runs-on: ubuntu-latest
     permissions:
       contents: write
