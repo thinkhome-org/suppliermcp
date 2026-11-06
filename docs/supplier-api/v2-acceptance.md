@@ -1,0 +1,20 @@
+# SupDB v2 candidate acceptance
+
+## 2026-11-06, isolated stack using the ThinkHome supplier account
+
+These observations cover the tested components and revision at the time of each check. The production service still ran v1 during these checks.
+
+| Check | Observed result |
+|---|---|
+| eD PRIVATE authenticated SOAP | `getProductProducerList` returned `DONE` and 1,506 producers using the account previously used for PUBLIC. |
+| Restored PostgreSQL catalogue | A transaction-consistent logical backup of the live v1 database restored into a separate PostgreSQL instance. Migration 009 preserved all 157,841 active IDs, verified by hashing the ordered ID list before and after. Subsequent migrations require separate verification. |
+| Python/REST/MCP parity | The regression suite exercised the seven catalogue functions, supplier-operation argument validation, client scopes and cross-client continuation rejection. |
+| REST with live supplier data | The registered catalogue client read the private product-producer list and received HTTP 403 on the invoice-list operation. The personal client successfully called both operations. |
+| Actual Codex CLI | An ephemeral Codex session invoked the local candidate by Streamable HTTP. Trace inspection confirmed completed calls to eD PRIVATE transportation and eD PUBLIC invoice-list reads. This checks the Codex client and account grants, using a locally signed access token. |
+| Dedicated login | A disposable Keycloak 26.8.2 realm completed an authorization-code exchange with PKCE S256 for personal and ordinary test registrations. The application verifier checked the issuer, signing key, audience, subject and grants. The ordinary client had only catalogue access. This loopback test did not exercise remote JWKS fetching or ChatGPT web consent. |
+| Production v1 | The existing HTTPS readiness endpoint returned 200. No v2 production promotion was part of that check. |
+| GitHub | The integrated Wiki was initialized and nine public operator/developer pages were published. Organization Project 2 is linked to the repository, tracks the acceptance areas and has auto-add enabled for open repository issues and PRs. |
+
+Use the per-operation evidence for claims about supplier coverage. A successful method listing, a successful XML download request, a parsed page of results and a complete import prove different things.
+
+[Wiki](https://github.com/thinkhome-org/suppliermcp/wiki) · [Release project](https://github.com/orgs/thinkhome-org/projects/2) · [Candidate pull request](https://github.com/thinkhome-org/suppliermcp/pull/6)
