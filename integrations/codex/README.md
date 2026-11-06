@@ -1,6 +1,8 @@
 # Codex connection
 
-The server uses Streamable HTTP with a signed RS256 bearer token. Supply a token from your identity issuer in `SUPPLIERMCP_TOKEN`; never commit tokens. Copy the example TOML into the desired isolated Codex profile after review. The ThinkHome deployment uses `https://supdb.thinkhome.org/mcp` through the existing Cloudflare connector; see [Portainer deployment](../../docs/portainer.md).
+Connect Codex to the [ThinkHome Portainer deployment](../../docs/portainer.md) over Streamable HTTP. The operator uses the server name `supdb_v2` and the URL `https://supdb.thinkhome.org/mcp`. The Mac runs the Codex client. Portainer runs catalog imports, search, storage and MCP.
+
+For a new bearer-token client, copy the [example TOML](mcp.toml.example) into its Codex configuration and load its registered token into the launching process. For a client registered for OAuth, follow the [login guide](../../docs/login.md). In Codex, ask “Use supdb_v2 to get the catalog status.”
 
 Tools work without skills. To package the two optional canonical skills:
 
@@ -19,7 +21,7 @@ codex plugin marketplace add "$PWD"
 codex plugin add suppliermcp@thinkhome-suppliermcp
 ```
 
-Restart an already running desktop client to load the plugin and MCP configuration. To use an existing authenticated `mcp_servers.suppliermcp` connection instead of supplying an environment variable to the desktop process, disable only the bundled duplicate connection:
+Restart an already running desktop client to load the plugin and MCP configuration. To use an existing authenticated connection, such as `mcp_servers.supdb_v2`, instead of supplying an environment variable to the desktop process, disable only the bundled duplicate connection:
 
 ```toml
 [plugins."suppliermcp@thinkhome-suppliermcp".mcp_servers.suppliermcp]
@@ -30,6 +32,4 @@ The plugin's skills remain enabled. Keep authentication in the client's protecte
 
 Sources checked 2026-11-05: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins), [Agent Plugins schema](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json), [MCP schema](https://agent-plugins.org/schemas/1.0.0/mcp.schema.json). MCP resources expose identical skill text, but automatic loading of remote skills is not assumed.
 
-For a local server, use `http://127.0.0.1:8000/mcp` with `bearer_token_env_var = "SUPPLIERMCP_TOKEN"`. For the ThinkHome HTTPS server, use a separate credential in `SUPPLIERMCP_THINKHOME_TOKEN`. Keep each client environment file outside Git, load it into the launching process, and renew static tokens before expiry. Each token must match its server's subject grant, issuer and audience.
-
-For OAuth, configure the remote MCP URL and sign in using the operator's registered client. [Dedicated login and scopes](../../docs/login.md).
+For an isolated development server, use `http://127.0.0.1:8000/mcp` with `bearer_token_env_var = "SUPPLIERMCP_TOKEN"`. For the ThinkHome HTTPS server, use a separate credential in `SUPPLIERMCP_THINKHOME_TOKEN`. Keep each client environment file outside Git, load it into the launching process, and renew static tokens before expiry. Each token must match its server's subject grant, issuer and audience.

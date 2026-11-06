@@ -49,9 +49,9 @@ Quarantined database staging is deliberately retained until an operator reviews 
 
 Source status retains separate domain outcomes and the last verified complete catalog revision. A successful stock request cannot make an unknown/partial catalog complete. Every configured but never fetched interface reduces coverage. Price evidence, stock evidence and transport fetch times are independent.
 
-## Persistent local runtime
+## Isolated local runtime
 
-The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Choose a protected operator directory for configuration: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
+ThinkHome operates the v2 services in [Portainer](portainer.md). The following procedure reproduces the standalone Compose setup used for v1 validation. It uses project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Choose a protected operator directory for configuration: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
 
 From the repository, after setting `SUPPLIERMCP_ENV_FILE` and `SUPPLIERMCP_CONTRACTS_FILE` to the protected files:
 
