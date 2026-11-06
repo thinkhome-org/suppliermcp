@@ -1,0 +1,32 @@
+name: sync-wiki
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["README.md", "docs/**", "integrations/codex/README.md", "scripts/build_wiki.py", ".github/workflows/wiki.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: wiki
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+      - run: python scripts/build_wiki.py wiki
+      - working-directory: wiki
+        run: |
+          git config user.name github-actions
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.md'
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync supplier documentation"
+            git push origin HEAD
+          fi
