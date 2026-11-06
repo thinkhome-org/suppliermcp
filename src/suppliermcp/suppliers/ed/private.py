@@ -23,35 +23,32 @@ class EdPrivateAdapter(EdPublicAdapter):
         if not self.gateway or not self.store:
             raise CatalogError("source_not_configured")
         root = fromstring(self.gateway.call("getProductCommodityList"), forbid_dtd=True)
-        codes = sorted({e.text for e in root.iter() if local(e.tag) == "CommodityCode" and e.text})
-        manifests, failures = [], ([] if codes else ["commodity_list_empty"])
-        for code in codes:
-            started_at = utcnow()
-            try:
-                data = self.gateway.call(
-                    "getProductCatalogueFullDownloadXML", onStock=False, Comodities=code
-                )
-                response = fromstring(data, forbid_dtd=True)
-                values = {local(e.tag): e.text for e in response.iter() if not len(e)}
-                if values.get("StatusCode") == "ERROR" or values.get("IsReady", "true").lower() in {
-                    "false",
-                    "0",
-                }:
-                    raise CatalogError("export_not_ready")
-                if values.get("Url"):
-                    data = self.transport.read("GET", values["Url"], endpoint="download")
+        codes = sorted(
+            {
+                e.text.strip()
+                for e in root.iter()
+                if local(e.tag) == "CommodityCode" and e.text and e.text.strip()
+            }
+        )
+        failures = [] if codes else ["commodity_list_empty"]
+
+        def chunks():
+            for code in codes:
                 manifest = BatchManifest(
                     interface=self.interface,
                     domain="catalog",
                     mode="targeted",
                     endpoint="getProductCatalogueFullDownloadXML",
-                    started_at=started_at,
+                    started_at=utcnow(),
                 )
-                self.store.save([data], manifest)
-                manifests.append(manifest)
-            except CatalogError:
-                failures.append(code)
-        return manifests, failures
+                try:
+                    yield self._fetch_manifest(
+                        manifest, {"onStock": False, "Comodities": code}, require_url=True
+                    )
+                except CatalogError:
+                    failures.append(code)
+
+        return chunks(), failures
 
     def dictionaries(self):
         from defusedxml.ElementTree import fromstring

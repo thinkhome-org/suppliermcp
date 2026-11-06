@@ -1,6 +1,7 @@
 """Source-isolated refreshes and PostgreSQL-backed scheduling."""
 
 import json
+from itertools import chain
 from pathlib import Path
 
 import procrastinate
@@ -111,7 +112,7 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
             manifests, failures = adapter.enrichment()
             if hasattr(adapter, "dictionaries"):
                 dictionaries, dictionary_failures = adapter.dictionaries()
-                manifests.extend(dictionaries)
+                manifests = chain(manifests, dictionaries)
                 failures.extend(dictionary_failures)
             for chunk in manifests:
                 try:
