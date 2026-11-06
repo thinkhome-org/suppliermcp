@@ -107,10 +107,16 @@ def validate_arguments(spec, arguments):
                     raise ValueError
             elif required:
                 raise ValueError
-        if "dateFrom" in result and date.fromisoformat(result["dateFrom"]) > date.fromisoformat(
-            result["dateTo"]
-        ):
-            raise ValueError
+        if "dateFrom" in result:
+            span = date.fromisoformat(result["dateTo"]) - date.fromisoformat(result["dateFrom"])
+            if not 0 <= span.days < 31:
+                raise ValueError
+        if "Comodities" in {f.name for f in spec.inputs} and result.get("onStock") == "false":
+            if not any(
+                result.get(k, "").strip()
+                for k in ("Comodities", "ComoditiesTree", "Producers", "Categories")
+            ):
+                raise ValueError
         if spec.mode == "delta" and datetime.fromisoformat(
             result["from"]
         ) >= datetime.fromisoformat(result["to"]):
@@ -287,7 +293,9 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
         if not stack:
             return
         f = stack[-1]
-        control = f["name"].lower() in ("url", "statuscode", "isready")
+        control = f["name"].lower() == "statuscode" or (
+            soap and spec.strategy == "download" and f["name"].lower() in {"url", "isready"}
+        )
         if control:
             if len(f["text"]) + len(value) > 8192:
                 invalid()

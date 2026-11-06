@@ -54,6 +54,7 @@ def arguments(spec):
     for k, v in {
         "transformation": "ISDOC_6" if "Invoice" in spec.name else "EDLINKOLDXML",
         "fileFormat": "XML",
+        "Comodities": "TEST",
         "dateFrom": "2026-10-26",
         "dateTo": "2026-10-27",
         "to": "2026-10-28T13:30:00+01:00",
