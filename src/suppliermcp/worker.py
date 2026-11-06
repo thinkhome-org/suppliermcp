@@ -2,7 +2,7 @@
 
 import argparse
 
-from suppliermcp.catalog.db import connect, migrate
+from suppliermcp.catalog.db import connect, migrate, require_projected_catalog
 from suppliermcp.config import Settings
 from suppliermcp.sync.jobs import create_app
 from suppliermcp.sync.publish import publish
@@ -23,6 +23,9 @@ def main():
     args = parser.parse_args()
     settings = Settings.from_env()
     app = create_app(settings)
+    if args.command != "migrate":
+        with connect(settings) as conn:
+            require_projected_catalog(conn)
     if args.command == "run":
         with app.open():
             app.run_worker()

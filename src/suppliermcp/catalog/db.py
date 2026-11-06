@@ -27,7 +27,8 @@ def migrate(conn):
 
 
 def require_projected_catalog(conn):
-    if not conn.execute(
-        "SELECT 1 FROM migrations WHERE name='010_catalog_projection.sql'"
-    ).fetchone():
-        raise CatalogError("catalog_migration_required", retryable=True)
+    if not conn.execute("SELECT 1 FROM migrations WHERE name='011_clean_catalog.sql'").fetchone():
+        raise CatalogError(
+            "catalog_migration_required",
+            "Initialize a clean v2 database and reimport through the v2 adapters. See docs/operations.md.",
+        )

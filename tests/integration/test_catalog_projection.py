@@ -57,6 +57,7 @@ def test_ed_dictionary_and_serialized_nested_xml_are_projected(conn, tmp_path):
     )
     adapter = EdPrivateAdapter()
     publish(conn, stage(conn, manifest, adapter.parse(manifest)))
+    assert conn.execute("SELECT id FROM source_items").fetchall() == [("ed:1",)]
     view = get_product(conn, "ed:1")
     assert private not in view.model_dump_json()
     assert [o.value for o in view.item.observations if o.field == "attribute:7"] == ["42"]

@@ -69,8 +69,40 @@ A failed publication keeps its staged import and raw artifact. After fixing the 
 
 Large downloads use a 300-second inactivity/read timeout (`SUPPLIERMCP_DOWNLOAD_TIMEOUT_SECONDS`, configurable up to 900), with a 10-second connection timeout. Small SOAP/status requests retain the client timeout. This avoids rejecting a valid bulk export merely because its first byte takes more than 30 seconds. Each actual 100MEGA request, including retries and redirects, rechecks its mode-specific allowed window. No request is intentionally started after the window closes.
 
-### Upgrading a v1 catalog to schema-projected imports
+### Moving a populated v1 catalog to v2
 
-Stop the old API and worker before applying migration 010, or upgrade a separate cloned stack. Migration 010 keeps normalized product identities, commercial terms, stock, prices and source timestamps available. It retains unvalidated native observations, dictionaries, relationships and derived facets in operator-only `legacy_unprojected_*` tables. The catalog API rejects reads against an unmigrated database. Existing result cursors expire at cutover. Old staged imports require a new projected import before publication.
+A v1 product, price, or dictionary entry can originate under a noncatalog XML ancestor. The stored row cannot prove where it came from. On a populated legacy database the v2 migration exits with `catalog_reprojection_required` and rolls back. The v1 stack and its data remain usable. The v2 API, readiness probe and index builder require a database initialized with `011_clean_catalog.sql`.
 
-Run `python -m suppliermcp.worker rebuild-index` after migration to populate the new Typesense alias. Run the normal verified source refreshes to restore native attributes by endpoint, within the supplier's access windows. Until these complete, status includes `legacy_native_evidence_requires_projected_refresh`. The raw import artifacts and the previous index remain available to operators under their existing retention policy.
+Build the candidate on new PostgreSQL, Typesense and artifact volumes. With the local Compose stack, choose a unique project name and a free candidate port. The example uses a private runtime environment file and a port override. Replace the two paths with your configuration files.
+
+```sh
+export SUPPLIERMCP_ENV_FILE=/absolute/path/to/runtime.env
+export SUPPLIERMCP_CONTRACTS_FILE=/absolute/path/to/source-contracts.json
+candidate_project=suppliermcp-green
+# Proceed with this project name only when this prints no existing volumes.
+docker volume ls -q --filter "label=com.docker.compose.project=$candidate_project"
+override_file=$(mktemp)
+cat > "$override_file" <<'YAML'
+services:
+  mcp:
+    image: suppliermcp:green-local
+    ports: !override ["127.0.0.1:18000:8000"]
+  worker:
+    image: suppliermcp:green-local
+YAML
+green() {
+  docker compose --project-name "$candidate_project" --env-file "$SUPPLIERMCP_ENV_FILE" \
+    -f compose.yaml -f "$override_file" "$@"
+}
+green build worker
+green up -d postgres typesense
+green run --rm worker python -m suppliermcp.worker migrate
+green run --rm worker python -m suppliermcp.worker refresh ed_public
+# Run each configured 100MEGA endpoint inside its verified window.
+green run --rm worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
+green run --rm worker python -m suppliermcp.worker rebuild-index
+green up -d mcp worker
+curl --fail http://127.0.0.1:18000/health/ready
+```
+
+For installations with eD PRIVATE enabled, run its catalog refresh as well. Check authenticated catalog status and known SKU, current offer evidence, filtered listing, and search on the candidate. Verify required endpoint coverage before changing the client URL or reverse proxy. Keep the v1 stack, database, index and artifacts during acceptance. Rolling back means pointing clients back at the original stack. A copied v1 database, an old Typesense collection or a v1 result cursor cannot establish projected provenance.

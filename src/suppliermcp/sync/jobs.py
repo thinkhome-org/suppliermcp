@@ -222,11 +222,9 @@ def create_app(settings):
         client = configured_client(settings)
         try:
             with connect(settings) as conn:
-                aliases = client.request("GET", "/aliases").json()["aliases"]
-                exists = any(a["name"] == ALIAS for a in aliases)
-                if not exists or not any(
-                    f["name"] == "unknown_facets"
-                    for f in client.request("GET", f"/collections/{ALIAS}").json()["fields"]
+                collection = client.request("GET", f"/collections/{ALIAS}", allow_missing=True)
+                if collection.status_code == 404 or not any(
+                    f["name"] == "unknown_facets" for f in collection.json()["fields"]
                 ):
                     rebuild_index(conn, client)
                 return drain_pending(conn, client)

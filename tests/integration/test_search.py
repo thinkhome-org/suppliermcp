@@ -117,6 +117,14 @@ def test_worker_upgrades_v1_index(conn, index):
         },
     )
     index.request("PUT", "/aliases/supplier_catalog", json={"collection_name": "legacy"})
+    # A failed or interrupted deployment can leave an alias whose collection is gone.
+    index.request(
+        "POST",
+        "/collections",
+        json={"name": "retired", "fields": [{"name": "text", "type": "string"}]},
+    )
+    index.request("PUT", f"/aliases/{ALIAS}", json={"collection_name": "retired"})
+    index.request("DELETE", "/collections/retired")
     settings = Settings(
         database_url=os.getenv(
             "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
@@ -125,6 +133,7 @@ def test_worker_upgrades_v1_index(conn, index):
         typesense_key="test-only",
     )
     create_app(settings).tasks["suppliermcp.index"].func()
+    assert index.request("GET", "/aliases/supplier_catalog").json()["collection_name"] == "legacy"
     fields = index.request("GET", f"/collections/{ALIAS}").json()["fields"]
     assert {"supplier", "verified", "name", "brand", "model", "code"} <= {f["name"] for f in fields}
 

@@ -12,7 +12,7 @@ import httpx
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.catalog.db import require_projected_catalog
 
-ALIAS = "supplier_catalog_projected"
+ALIAS = "supplier_catalog_clean_v2"
 SYNONYMS = json.loads(Path(__file__).with_name("synonyms.json").read_text())
 
 
@@ -35,10 +35,11 @@ class IndexClient:
     def __init__(self, http):
         self.http = http
 
-    def request(self, method, path, **kwargs):
+    def request(self, method, path, *, allow_missing=False, **kwargs):
         try:
             response = self.http.request(method, path, **kwargs)
-            response.raise_for_status()
+            if not (allow_missing and response.status_code == 404):
+                response.raise_for_status()
             return response
         except httpx.HTTPError:
             raise CatalogError(

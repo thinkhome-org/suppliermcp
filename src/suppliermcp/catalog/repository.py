@@ -22,17 +22,12 @@ def read_status(conn, enabled_interfaces=None):
         is not None
         for k in configured
     )
-    warnings = ["coverage_is_account_and_field_scoped"]
-    if conn.execute(
-        "SELECT 1 FROM endpoint_checkpoints WHERE import_scope IS NULL LIMIT 1"
-    ).fetchone():
-        warnings.append("legacy_native_evidence_requires_projected_refresh")
     return Coverage(
         interfaces=states,
         revision=rev,
         index_revision=rev if pending is None else max(0, pending - 1),
         complete=complete,
-        warnings=warnings,
+        warnings=["coverage_is_account_and_field_scoped"],
     )
 
 

@@ -82,8 +82,6 @@ def publish(conn, run_id, *, accept_reason=None):
         ).fetchone()
         if not record:
             raise CatalogError("import_not_found")
-        if record[1] == "requires_projection":
-            raise CatalogError("import_requires_projection")
         manifest = BatchManifest.model_validate(record[0])
         if record[1] in {"published", "unchanged", "superseded"}:
             return record[2]
