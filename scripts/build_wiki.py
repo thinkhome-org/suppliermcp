@@ -23,12 +23,12 @@ def build(root, destination):
     for title, source in PAGES.items():
         path = root / source
 
-        def rewrite(match):
+        def rewrite(match, directory=path.parent):
             target = match[1]
             if target.startswith("#") or urlsplit(target).scheme:
                 return match[0]
             relative, _, anchor = target.partition("#")
-            resolved = (path.parent / relative).resolve().relative_to(root)
+            resolved = (directory / relative).resolve().relative_to(root)
             return "](" + BASE + quote(str(resolved)) + ("#" + anchor if anchor else "") + ")"
 
         content = re.sub(r"\]\(([^\s)]+)\)", rewrite, path.read_text())
