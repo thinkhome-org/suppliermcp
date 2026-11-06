@@ -1,9 +1,13 @@
 """Stateless supplier reads with bounded concurrency and bounded result previews."""
 
 import base64
+import binascii
+import hashlib
+import hmac
 import json
 import logging
 import re
+import struct
 import tempfile
 import zipfile
 from contextvars import ContextVar
@@ -36,6 +40,7 @@ for _logger in ("httpx", "httpcore.connection", "httpcore.http11", "httpcore.htt
 class SupplierField(Model):
     path: str
     value: str
+    offset: int = 0
 
 
 class ReadResult(Model):
@@ -44,6 +49,7 @@ class ReadResult(Model):
     fields: list[SupplierField]
     truncated: bool
     stable_pagination: bool = False
+    next_cursor: str | None = None
 
 
 @cache
@@ -111,7 +117,7 @@ def validate_arguments(spec, arguments):
             raise ValueError
         if "WithTransform" in spec.name:
             if spec.name.startswith("getInvoice"):
-                if result.get("transformation") not in {"ISDOC_5", "ISDOC_6"}:
+                if result.get("transformation") not in {"INVOICEOLD", "ISDOC_5", "ISDOC_6"}:
                     raise ValueError
             else:
                 formats = {"EDLINKOLDXML": "XML", "EDLINKOLDCSV": "CSV", "EDLINKXLS": "XLS"}
@@ -151,28 +157,77 @@ def _soap(spec, args, credentials):
     return tostring(envelope, encoding="utf-8")
 
 
-class _Preview:
-    def __init__(self, spec, limit):
+class _Page:
+    # Two counters, a content digest and an authentication tag, without document data.
+    cursor_format = struct.Struct(">QQ32s")
+    cursor_length = 108
+
+    def __init__(self, spec, limit, identity, arguments, credentials, cursor, now, ttl):
         self.result = ReadResult(
             operation_id=spec.operation_id,
             output_schema=spec.output_schema,
             fields=[],
             truncated=False,
         )
-        self.left = limit - len(self.result.model_dump_json().encode())
+        context = json.dumps(
+            ["suppliermcp/read-page/v1", identity.principal, spec.operation_id, arguments, limit],
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+        key = json.dumps(credentials, separators=(",", ":")).encode()
+        self.key = hmac.digest(key, context, "sha256")
+        self.start, self.expected, self.expires = 0, None, now + ttl
+        if cursor is not None:
+            try:
+                if not isinstance(cursor, str) or len(cursor) != self.cursor_length:
+                    raise ValueError
+                token = base64.b64decode(cursor, altchars=b"-_", validate=True)
+                payload, tag = token[:-32], token[-32:]
+                if not hmac.compare_digest(tag, hmac.digest(self.key, payload, "sha256")):
+                    raise ValueError
+                self.start, self.expires, self.expected = self.cursor_format.unpack(payload)
+                if self.expires <= now:
+                    raise ValueError
+            except (ValueError, binascii.Error, struct.error):
+                raise CatalogError("invalid_cursor") from None
+        self.digest = hashlib.sha256()
+        self.ordinal = 0
+        self.left = limit - len(self.result.model_dump_json().encode()) - self.cursor_length
+        self.chunk_chars = max(1, min(4096, (self.left - 128) // 8))
 
-    def field(self, path, value):
+    def field(self, path, value, offset=0):
+        for at in range(0, max(1, len(value)), self.chunk_chars):
+            item = SupplierField(
+                path=path, value=value[at : at + self.chunk_chars], offset=offset + at
+            )
+            encoded = item.model_dump_json().encode()
+            self.digest.update(encoded + b"\n")
+            self.ordinal += 1
+            if self.ordinal <= self.start or self.result.truncated:
+                continue
+            cost = len(encoded) + 1
+            if self.left < cost:
+                if not self.result.fields:
+                    raise CatalogError("response_too_large")
+                self.result.truncated = True
+            else:
+                self.left -= cost
+                self.result.fields.append(item)
+
+    def finish(self):
+        digest = self.digest.digest()
+        if self.expected is not None and self.expected != digest:
+            raise CatalogError("source_snapshot_changed")
         if self.result.truncated:
-            return
-        item = SupplierField(path=path, value=value)
-        self.left -= len(item.model_dump_json().encode()) + 1
-        if self.left < 0:
-            self.result.truncated = True
-        else:
-            self.result.fields.append(item)
+            offset = self.start + len(self.result.fields)
+            payload = self.cursor_format.pack(offset, self.expires, digest)
+            self.result.next_cursor = base64.urlsafe_b64encode(
+                payload + hmac.digest(self.key, payload, "sha256")
+            ).decode()
+        return self.result
 
 
-def _xml(chunks, spec, preview, *, soap=False, export=False):
+def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
     parser = expat.ParserCreate(namespace_separator=" ")
     stack = []
     download = None
@@ -205,6 +260,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False):
         if export and not stack and name not in {"Result", "SHOP"}:
             invalid()
         if stack:
+            stack[-1]["text"] = ""
             stack[-1]["children"] += 1
         index = stack[-1]["children"] if stack else 1
         hidden = (stack and stack[-1]["hidden"]) or (
@@ -214,7 +270,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False):
             )
             or name.lower() in {"password", "login", "errortext"}
         )
-        frame = dict(name=name, children=0, text="", hidden=hidden, index=index)
+        frame = dict(name=name, children=0, text="", offset=0, hidden=hidden, index=index)
         stack.append(frame)
         if not hidden and (spec.strategy != "download" or not soap):
             for attr, value in attrs.items():
@@ -225,21 +281,24 @@ def _xml(chunks, spec, preview, *, soap=False, export=False):
                     preview.field(path() + "/@" + attr, value)
 
     def path():
-        return "/".join(f"{s['name']}[{s['index']}]" for s in stack)
+        return prefix + "/".join(f"{s['name']}[{s['index']}]" for s in stack)
 
     def chars(value):
         if not stack:
             return
         f = stack[-1]
         control = f["name"].lower() in ("url", "statuscode", "isready")
-        if control or not f["hidden"] and not preview.result.truncated:
-            if len(f["text"]) + len(value) > (8192 if control else max(preview.left, 0)):
-                if control:
-                    invalid()
-                preview.result.truncated = True
-                f["text"] = ""
-            else:
-                f["text"] += value
+        if control:
+            if len(f["text"]) + len(value) > 8192:
+                invalid()
+            f["text"] += value
+        elif not f["hidden"] and not f["children"] and not (soap and spec.strategy == "download"):
+            text = f["text"] + value
+            while len(text) > preview.chunk_chars:
+                preview.field(path(), text[: preview.chunk_chars], f["offset"])
+                f["offset"] += preview.chunk_chars
+                text = text[preview.chunk_chars :]
+            f["text"] = text
 
     def end(_):
         nonlocal download
@@ -254,8 +313,9 @@ def _xml(chunks, spec, preview, *, soap=False, export=False):
                 download = value.strip()
             if name == "isready" and value.strip().lower() not in {"true", "1"}:
                 raise CatalogError("export_not_ready", retryable=True)
-        elif not f["hidden"] and not f["children"] and value.strip():
-            preview.field(path(), value)
+        elif not f["hidden"] and not f["children"] and (f["offset"] or value.strip()):
+            if value:
+                preview.field(path(), value, f["offset"])
         stack.pop()
 
     parser.StartDoctypeDeclHandler = invalid
@@ -285,7 +345,7 @@ class OperationReader:
         )
 
     async def read_operation(
-        self, identity: Identity, operation_id: str, arguments: dict
+        self, identity: Identity, operation_id: str, arguments: dict, *, cursor: str | None = None
     ) -> ReadResult:
         spec = resolve_operation(operation_id)
         require_scope(identity, spec.scope)
@@ -294,9 +354,11 @@ class OperationReader:
         if limiter is None:
             limiter = anyio.CapacityLimiter(4)
             _read_limiter.set(limiter)
-        return await anyio.to_thread.run_sync(self._read, spec, args, limiter=limiter)
+        return await anyio.to_thread.run_sync(
+            self._read, spec, args, identity, cursor, limiter=limiter
+        )
 
-    def _read(self, spec: OperationSpec, args):
+    def _read(self, spec: OperationSpec, args, identity, cursor):
         interface = "mega" if spec.interface.startswith("mega") else spec.interface
         credentials = self.settings.credentials.get(interface)
         if not credentials:
@@ -319,6 +381,16 @@ class OperationReader:
                     self.clock(),
                 )
 
+        preview = _Page(
+            spec,
+            self.settings.max_response_bytes,
+            identity,
+            args,
+            credentials,
+            cursor,
+            int(self.clock().timestamp()),
+            self.settings.result_ttl_seconds,
+        )
         window()
         hosts = {
             httpx.URL(spec.target).host,
@@ -330,7 +402,6 @@ class OperationReader:
             auth=credentials if interface == "mega" else None,
             max_bytes=self.settings.max_download_bytes,
         )
-        preview = _Preview(spec, self.settings.max_response_bytes)
         token = _private_request.set(True)
         try:
             params = {
@@ -366,20 +437,19 @@ class OperationReader:
                         timeout=params["timeout"],
                         consume=lambda chunks: self._download(chunks, spec, preview, args),
                     )
-            return preview.result
+            return preview.finish()
         finally:
             transport.client.close()
             _private_request.reset(token)
 
     def _download(self, chunks, spec, preview, args):
-        def consume(data):
+        def consume(data, prefix=""):
             if args.get("fileFormat", "XML").upper() == "XML":
-                _xml(data, spec, preview)
+                _xml(data, spec, preview, prefix=prefix)
             else:
                 # Fixed-size independently decodable blocks preserve non-XML formats.
                 for i, chunk in enumerate(data):
-                    if not preview.result.truncated:
-                        preview.field(f"base64[{i + 1}]", base64.b64encode(chunk).decode())
+                    preview.field(f"{prefix}base64[{i + 1}]", base64.b64encode(chunk).decode())
 
         expanded = 0
 
@@ -405,9 +475,11 @@ class OperationReader:
                         or sum(e.file_size for e in entries) > self.settings.max_expanded_bytes
                     ):
                         raise CatalogError("payload_too_large")
-                    for entry in entries:
+                    for index, entry in enumerate(entries, 1):
                         if not entry.is_dir():
                             with archive.open(entry) as f:
-                                consume(bounded(iter(lambda: f.read(65536), b"")))
+                                consume(
+                                    bounded(iter(lambda: f.read(65536), b"")), f"member[{index}]/"
+                                )
             except (zipfile.BadZipFile, RuntimeError, NotImplementedError):
                 raise CatalogError("invalid_supplier_archive") from None

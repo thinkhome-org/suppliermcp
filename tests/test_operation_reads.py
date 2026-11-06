@@ -150,3 +150,76 @@ async def test_reject_wrong_envelope_dtd_and_failure_after_full_preview(tmp_path
         reader.settings.max_response_bytes = 1000
         with pytest.raises(CatalogError, match=code):
             await reader.read_operation(IDENTITY, spec.operation_id, arguments(spec))
+
+
+async def test_lossless_reader_cursor_for_long_values_and_changed_source(tmp_path):
+    spec = next(s for s in READS if s.operation_id == "mega.StoItemBase.targeted")
+    value = "\u010desk\u00e9 " * 350
+    received = []
+    calls = 0
+
+    def handler(request):
+        nonlocal calls
+        calls += 1
+        return httpx.Response(200, content=f"<Result><Item>{value}</Item></Result>".encode())
+
+    reader = make_reader(handler, spec, tmp_path)
+    reader.settings.max_response_bytes = 1000
+    args = arguments(spec)
+    page = await reader.read_operation(IDENTITY, spec.operation_id, args)
+    first = page.next_cursor
+    assert page.truncated and first
+    wrong = Identity("iss", "user", "second-client", IDENTITY.scopes)
+    for owner, arguments_to_use, token in (
+        (wrong, args, first),
+        (IDENTITY, {"code": "another"}, first),
+        (IDENTITY, args, "forged"),
+    ):
+        with pytest.raises(CatalogError, match="invalid_cursor"):
+            await reader.read_operation(owner, spec.operation_id, arguments_to_use, cursor=token)
+    assert calls == 1
+    while True:
+        assert len(page.model_dump_json().encode()) <= 1000
+        for field in page.fields:
+            assert field.offset == sum(map(len, received))
+            received.append(field.value)
+        if not page.next_cursor:
+            break
+        page = await reader.read_operation(
+            IDENTITY, spec.operation_id, args, cursor=page.next_cursor
+        )
+    assert "".join(received) == value
+    value += "CHANGED"
+    with pytest.raises(CatalogError, match="source_snapshot_changed"):
+        await reader.read_operation(IDENTITY, spec.operation_id, args, cursor=first)
+
+
+async def test_binary_transform_is_reconstructable_across_pages(tmp_path):
+    import base64
+
+    data = bytes(range(256)) * 8
+    spec = next(
+        s for s in READS if s.operation_id == "ed_public.getProductListDownloadXMLWithTransform"
+    )
+
+    def handler(request):
+        if request.method == "GET":
+            return httpx.Response(200, content=data)
+        ns = "http://www.elinkx.cz"
+        return httpx.Response(
+            200,
+            content=f'<s:Envelope xmlns:s="{SOAP}"><s:Body><{spec.name}Response xmlns="{ns}"><{spec.name}Result><Url>{spec.target}/file</Url></{spec.name}Result></{spec.name}Response></s:Body></s:Envelope>'.encode(),
+        )
+
+    reader = make_reader(handler, spec, tmp_path)
+    reader.settings.max_response_bytes = 1400
+    cursor = None
+    pieces = []
+    args = arguments(spec) | {"transformation": "EDLINKXLS", "fileFormat": "XLS"}
+    while True:
+        page = await reader.read_operation(IDENTITY, spec.operation_id, args, cursor=cursor)
+        pieces.extend(f.value for f in page.fields)
+        cursor = page.next_cursor
+        if not cursor:
+            break
+    assert base64.b64decode("".join(pieces)) == data

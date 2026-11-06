@@ -31,7 +31,8 @@ async def test_catalog_and_document_read_parity(conn, monkeypatch):
     ]
     publish(conn, stage(conn, BatchManifest(interface="ed_public", domain="catalog"), rows))
 
-    def document_reply(self, spec, arguments):
+    def document_reply(self, spec, arguments, identity, cursor):
+        assert identity.client_id == "personal" and cursor is None
         assert spec.operation_id == DOCUMENT and arguments["invoiceSymbol"] == "00017"
         return ReadResult(
             operation_id=DOCUMENT,
