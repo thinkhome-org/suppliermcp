@@ -44,6 +44,12 @@ class SupplierTransport:
             consume=lambda chunks: b"".join(chunks),
         )
 
+    def consume(self, method, url, *, endpoint, consume, **options):
+        """Consume a bounded response while its pinned connection is open."""
+        return self._request(
+            method, url, endpoint=endpoint, consume=consume, restartable=False, **options
+        )
+
     def download(self, url, store, manifest, *, endpoint="download", before_request=None):
         return self._request(
             "GET",
@@ -64,11 +70,16 @@ class SupplierTransport:
         body: bytes | None = None,
         soap_action: str | None = None,
         before_request=None,
+        content_type="text/xml; charset=utf-8",
+        restartable=True,
         timeout=httpx.USE_CLIENT_DEFAULT,
     ):
         if endpoint not in self.operations or method not in {"GET", "POST"}:
             raise CatalogError("operation_not_allowed")
-        original = httpx.URL(url)
+        try:
+            original = httpx.URL(url)
+        except (httpx.InvalidURL, ValueError):
+            raise CatalogError("unsafe_download") from None
         for attempt in range(3):
             current = original
             try:
@@ -91,7 +102,7 @@ class SupplierTransport:
                         "Connection": "close",
                     }
                     if body is not None:
-                        headers["Content-Type"] = "text/xml; charset=utf-8"
+                        headers["Content-Type"] = content_type
                     if soap_action:
                         headers["SOAPAction"] = soap_action
                     auth = self.auth if current == original else None
@@ -129,13 +140,21 @@ class SupplierTransport:
 
                         def chunks():
                             size = 0
-                            for chunk in response.iter_bytes():
+                            for chunk in response.iter_bytes(chunk_size=64 * 1024):
                                 size += len(chunk)
                                 if size > self.max_bytes:
                                     raise CatalogError("payload_too_large")
                                 yield chunk
 
-                        return consume(chunks())
+                        # A streaming consumer may already have processed part of the response.
+                        try:
+                            return consume(chunks())
+                        except httpx.TransportError:
+                            if restartable:
+                                raise
+                            raise CatalogError("supplier_unavailable", retryable=True) from None
+            except httpx.InvalidURL:
+                raise CatalogError("unsafe_download") from None
             except CatalogError:
                 raise
             except (httpx.HTTPError, OSError, ValueError, KeyError):
