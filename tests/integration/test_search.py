@@ -218,3 +218,20 @@ def test_facet_prefilter_retains_unknown_rows(conn, index):
     )
     assert [row.product_id for row in result.results] == ["mega:0"]
     assert result.unknown_total == 1
+
+
+def test_model_before_hyphen_matches_only_the_complete_model_component(conn, index):
+    rows = [
+        SourceItem(supplier="mega", source_id=str(n), sku=str(n), name=f"Radio {identifier}")
+        for n, identifier in enumerate(["RXP235-Wall", "RXP2350-Wall", "RXP236-Wall"])
+    ]
+    publish(
+        conn,
+        stage(
+            conn, BatchManifest(interface="mega", domain="catalog", artifact_sha256="hyphen"), rows
+        ),
+    )
+    rebuild_index(conn, index)
+    for term in ("RXP235", "RXP235-Wall", "RXP235Wall"):
+        assert [r.product_id for r in search(conn, index, term, [], "alice").results] == ["mega:0"]
+    assert not search(conn, index, "RXP23", [], "alice").results

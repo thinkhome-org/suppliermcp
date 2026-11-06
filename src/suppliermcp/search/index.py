@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 import secrets
 import unicodedata
 from pathlib import Path
@@ -23,7 +24,7 @@ def normalize(text):
     return " ".join(SYNONYMS.get(word, word) for word in plain.split())
 
 
-SEARCH_FIELDS = {"code": 12, "model": 10, "name": 8, "brand": 5, "text": 1}
+SEARCH_FIELDS = {"code": 12, "model": 10, "model_component": 7, "name": 8, "brand": 5, "text": 1}
 FACET_FIELDS = {"manufacturer", "stock_state", "category", "currency"}
 
 
@@ -98,11 +99,19 @@ def document(row, conn=None):
     text += " " + " ".join(
         str(o.get("value") or "") for o in data.get("observations", []) if o.get("state") == "known"
     )
+    # Typesense joins hyphenated words. Keep exact compound tokens and expose complete model parts.
+    identifiers = normalize(" ".join(data.get(k) or "" for k in ("name", "sku", "mpn")))
+    parts = [
+        part
+        for part in re.findall(r"\b([a-z0-9]+)-(?=[a-z0-9])", identifiers)
+        if not part.isalpha() and not part.isdigit()
+    ]
     return {
         "id": item_id,
         "name": normalize(data.get("name") or ""),
         "code": normalize(" ".join(data.get(k) or "" for k in ("sku", "ean"))),
         "model": normalize(data.get("mpn") or ""),
+        "model_component": " ".join(dict.fromkeys(parts)),
         "brand": normalize(data.get("manufacturer") or ""),
         "verified": [],
         "unknown_facets": sorted(FACET_FIELDS),

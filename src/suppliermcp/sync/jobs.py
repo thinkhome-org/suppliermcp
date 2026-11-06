@@ -217,14 +217,21 @@ def create_app(settings):
 
     @app.task(name="suppliermcp.index", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60))
     def index():
-        from suppliermcp.search.index import ALIAS, configured_client, drain_pending, rebuild_index
+        from suppliermcp.search.index import (
+            ALIAS,
+            SEARCH_FIELDS,
+            configured_client,
+            drain_pending,
+            rebuild_index,
+        )
 
         client = configured_client(settings)
         try:
             with connect(settings) as conn:
                 collection = client.request("GET", f"/collections/{ALIAS}", allow_missing=True)
-                if collection.status_code == 404 or not any(
-                    f["name"] == "unknown_facets" for f in collection.json()["fields"]
+                required = {*SEARCH_FIELDS, "unknown_facets", "verified", "supplier", "revision"}
+                if collection.status_code == 404 or not required.issubset(
+                    f["name"] for f in collection.json()["fields"]
                 ):
                     rebuild_index(conn, client)
                 return drain_pending(conn, client)
