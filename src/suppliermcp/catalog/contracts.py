@@ -175,7 +175,22 @@ class Coverage(Model):
     warnings: list[str] = Field(default_factory=list)
 
 
+class OfferQuote(Model):
+    item_id: str
+    requested_qty: Positive
+    orderable_qty: Positive | None = None
+    unit_net: Money | None = None
+    fees_net: Money | None = None
+    total_net: Money | None = None
+    currency: str | None = None
+    fresh: bool = False
+    evidence_at: datetime | None = None
+    shipping_included: bool = False
+    reasons: list[str] = Field(default_factory=list)
+
+
 class ProductView(Model):
+    quote: OfferQuote | None = None
     detail_continuation: dict | None = None
     product_id: str
     item: SourceItem
@@ -201,19 +216,6 @@ class LookupResult(Model):
 
 class SearchResult(Page):
     exhaustive: Literal[False] = False
-
-
-class OfferQuote(Model):
-    item_id: str
-    requested_qty: Positive
-    orderable_qty: Positive
-    unit_net: Money | None = None
-    total_net: Money | None = None
-    currency: str | None = None
-    fresh: bool = False
-    evidence_at: datetime
-    shipping_included: bool = False
-    reasons: list[str] = Field(default_factory=list)
 
 
 class Comparison(Model):

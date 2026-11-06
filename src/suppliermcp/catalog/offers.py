@@ -3,13 +3,13 @@ from decimal import ROUND_CEILING
 from suppliermcp.catalog.contracts import Comparison, OfferQuote, QuantityRequest
 
 
-def quote(offer, quantity, now):
+def quote_components(offer, quantity, now):
     quantity = QuantityRequest(quantity=quantity).quantity
     multiple = offer.order_multiple
     orderable = (
         (quantity / multiple).to_integral_value(rounding=ROUND_CEILING) * multiple
         if multiple
-        else quantity
+        else None
     )
     reasons = []
     if multiple is None:
@@ -24,14 +24,13 @@ def quote(offer, quantity, now):
     if offer.price_rule == "unknown":
         reasons.append("price_rule_unknown")
     elif offer.price_rule == "valuepack":
-        if not offer.discount_min_qty:
+        if not offer.discount_min_qty or orderable is None:
             reasons.append("discount_eligibility_unknown")
         elif orderable < offer.discount_min_qty:
             if offer.discount is None:
                 reasons.append("undiscounted_price_unknown")
             elif unit is not None:
                 unit += offer.discount
-    total = None if reasons else (unit + offer.fees_net) * orderable
     fresh = bool(
         offer.source_updated_at
         and offer.freshness_seconds
@@ -43,12 +42,19 @@ def quote(offer, quantity, now):
         requested_qty=quantity,
         orderable_qty=orderable,
         unit_net=unit,
-        total_net=total,
+        fees_net=offer.fees_net,
         currency=offer.currency,
         fresh=fresh,
         evidence_at=offer.evidence_at,
         reasons=reasons,
     )
+
+
+def quote(offer, quantity, now):
+    result = quote_components(offer, quantity, now)
+    if not result.reasons:
+        result.total_net = (result.unit_net + result.fees_net) * result.orderable_qty
+    return result
 
 
 def compare(offers, quantity, now):

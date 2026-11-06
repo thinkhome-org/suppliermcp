@@ -70,6 +70,7 @@ class IndexClient:
                 "fields": [
                     *({"name": field, "type": "string"} for field in SEARCH_FIELDS),
                     {"name": "verified", "type": "string[]", "facet": True},
+                    {"name": "unknown_facets", "type": "string[]", "facet": True},
                     {"name": "revision", "type": "int64"},
                     {"name": "supplier", "type": "string", "facet": True},
                 ],
@@ -102,6 +103,7 @@ def document(row, conn=None):
         "model": normalize(data.get("mpn") or ""),
         "brand": normalize(data.get("manufacturer") or ""),
         "verified": [],
+        "unknown_facets": sorted(FACET_FIELDS),
         "text": normalize(text),
         "revision": revision,
         "supplier": data.get("supplier", item_id.partition(":")[0]),
@@ -113,12 +115,14 @@ def documents(conn, rows):
 
     views = {v.product_id: v for v in get_products(conn, [r[0] for r in rows])}
     facets = {}
+    known_fields = {}
     for item_id, field, value in conn.execute(
         "SELECT item_id,field,value FROM catalog_values WHERE item_id=ANY(%s) "
         "AND field=ANY(%s) AND state='known'",
         (list(views), sorted(FACET_FIELDS)),
     ):
         facets.setdefault(item_id, []).append(facet_key(field, value))
+        known_fields.setdefault(item_id, set()).add(field)
     labels = dict(
         conn.execute(
             "SELECT data->>'code',data->>'label' FROM source_schema WHERE kind='parameter'"
@@ -146,6 +150,7 @@ def documents(conn, rows):
         )
         doc = document((item_id, data, revision))
         doc["verified"] = facets.get(item_id, [])
+        doc["unknown_facets"] = sorted(FACET_FIELDS - known_fields.get(item_id, set()))
         doc["text"] += " " + normalize(" ".join(extra))
         result.append(doc)
     return result

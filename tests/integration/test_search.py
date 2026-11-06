@@ -188,3 +188,24 @@ def test_model_match_outranks_description_mention(conn, index):
     rebuild_index(conn, index)
     results = search(conn, index, "M200", [], "alice").results
     assert [row.product_id for row in results] == ["mega:device", "mega:accessory"]
+
+
+def test_facet_prefilter_retains_unknown_rows(conn, index):
+    rows = [
+        SourceItem(supplier="mega", source_id=str(i), sku=str(i), name="SSD", manufacturer=brand)
+        for i, brand in enumerate(["Acme", "Other", None])
+    ]
+    publish(
+        conn,
+        stage(
+            conn,
+            BatchManifest(interface="mega", domain="catalog", artifact_sha256="unknown-facet"),
+            rows,
+        ),
+    )
+    rebuild_index(conn, index)
+    result = search(
+        conn, index, "ssd", [Filter(field="manufacturer", operator="eq", value="Acme")], "alice"
+    )
+    assert [row.product_id for row in result.results] == ["mega:0"]
+    assert result.unknown_total == 1

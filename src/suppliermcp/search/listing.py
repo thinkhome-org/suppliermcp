@@ -6,7 +6,8 @@ from decimal import Decimal
 
 from psycopg.types.json import Jsonb
 
-from suppliermcp.catalog.contracts import CatalogError, Page, utcnow
+from suppliermcp.catalog.contracts import CatalogError, OfferQuote, Page, utcnow
+from suppliermcp.catalog.offers import quote_components
 from suppliermcp.catalog.repository import get_products, read_status
 from suppliermcp.config import Settings
 
@@ -79,6 +80,7 @@ def materialize(
 
     if price_query:
         conn.execute("CREATE TEMP TABLE sorted_products_input (data jsonb) ON COMMIT DROP")
+    now = utcnow()
     count = 0
     products = iter(products)
     while batch := list(islice(products, 200)):
@@ -89,6 +91,17 @@ def materialize(
         )
         with conn.cursor().copy(f"COPY {target} FROM STDIN") as copy:
             for product in batch:
+                if price_query and price_query.quantity is not None:
+                    if product.offers:
+                        product.quote = quote_components(
+                            product.offers[0], price_query.quantity, now
+                        )
+                    else:
+                        product.quote = OfferQuote(
+                            item_id=product.product_id,
+                            requested_qty=price_query.quantity,
+                            reasons=["offer_missing"],
+                        )
                 payload = Jsonb(product.model_dump(mode="json"))
                 copy.write_row((payload,) if price_query else (result_id, count, payload))
                 count += 1
@@ -98,22 +111,29 @@ def materialize(
         conn.execute(
             f"""
             INSERT INTO query_result_rows (result_id, ordinal, data)
-            SELECT %s, row_number() OVER (ORDER BY amount {direction} NULLS LAST,
-                                                   data->>'product_id') - 1, data
+            SELECT %s, row_number() OVER (
+                ORDER BY CASE WHEN currency = %s THEN amount END {direction} NULLS LAST,
+                         data->>'product_id') - 1,
+                CASE WHEN NOT quantity_sort THEN data ELSE
+                    jsonb_set(data, '{{quote}}', data->'quote' || jsonb_build_object(
+                        'total_net', amount::text,
+                        'reasons', CASE WHEN currency <> %s THEN reasons || '"currency_mismatch"'::jsonb
+                                        ELSE reasons END)) END
             FROM sorted_products_input
-            CROSS JOIN LATERAL jsonb_to_record(data->'offers'->0) AS o(
-                unit_net numeric, fees_net numeric, currency text, order_multiple numeric,
-                price_rule text, discount_min_qty numeric, discount numeric)
-            CROSS JOIN LATERAL (SELECT ceil(%s::numeric / order_multiple) * order_multiple AS qty) q
-            CROSS JOIN LATERAL (SELECT CASE WHEN currency = %s THEN CASE
-                WHEN %s::numeric IS NULL THEN unit_net
-                WHEN price_rule = 'plain' OR (price_rule = 'valuepack' AND qty >= discount_min_qty)
-                    THEN (unit_net + fees_net) * qty
-                WHEN price_rule = 'valuepack' AND qty < discount_min_qty
-                    THEN (unit_net + discount + fees_net) * qty
-                END END AS amount) price
+            CROSS JOIN LATERAL (SELECT %s::boolean AS quantity_sort) mode
+            CROSS JOIN LATERAL (SELECT CASE WHEN quantity_sort THEN data->'quote'
+                                            ELSE data->'offers'->0 END AS info) resolved
+            CROSS JOIN LATERAL jsonb_to_record(info) AS q(
+                unit_net numeric, fees_net numeric, currency text, orderable_qty numeric, reasons jsonb)
+            CROSS JOIN LATERAL (SELECT CASE WHEN NOT quantity_sort THEN unit_net
+                WHEN reasons = '[]'::jsonb THEN (unit_net + fees_net) * orderable_qty END AS amount) price
         """,
-            (result_id, price_query.quantity, price_query.currency, price_query.quantity),
+            (
+                result_id,
+                price_query.currency,
+                price_query.currency,
+                price_query.quantity is not None,
+            ),
         )
         conn.execute("DROP TABLE sorted_products_input")
     data["count"] = count

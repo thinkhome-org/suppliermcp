@@ -37,12 +37,18 @@ def search(conn, client, text, filters, principal, settings=None):
                 clauses.append("supplier:=[" + ",".join(values) + "]")
             elif f.field in FACET_FIELDS:
                 clauses.append(
-                    "verified:=[" + ",".join(facet_key(f.field, v) for v in values) + "]"
+                    "(verified:=["
+                    + ",".join(facet_key(f.field, v) for v in values)
+                    + "] || unknown_facets:="
+                    + f.field
+                    + ")"
                 )
-        if clauses:
+        coverage = read_status(conn, settings.enabled_interfaces if settings else None)
+        if clauses and coverage.index_revision == coverage.revision:
             params["filter_by"] = " && ".join(clauses)
         ids = {}
         unknown_hits = set()
+        limited = False
         page = 1
         while True:
             data = client.request(
@@ -53,16 +59,20 @@ def search(conn, client, text, filters, principal, settings=None):
             candidates = [hit["document"]["id"] for hit in data["hits"]]
             confirmed, unknown = matching_ids(conn, query, candidate_ids=candidates, schema=schema)
             allowed = set(confirmed)
-            ids.update(dict.fromkeys(i for i in candidates if i in allowed))
+            for candidate in candidates:
+                if candidate in allowed and candidate not in ids:
+                    if len(ids) == 1000:
+                        limited = True
+                        break
+                    ids[candidate] = None
             unknown_hits.update(unknown)
             exhausted = not candidates or page * params["per_page"] >= data["found"]
-            if exhausted or len(ids) >= 1000:
+            if exhausted or (not filters and len(ids) >= 1000):
                 break
             page += 1
-        limited = not exhausted or len(ids) > 1000
-        ids = list(ids)[:1000]
+        limited |= not exhausted
+        ids = list(ids)
         products = get_products(conn, ids, include_evidence=False)
-        coverage = read_status(conn, settings.enabled_interfaces if settings else None)
         coverage.complete = False
         coverage.warnings.append("text_discovery_is_not_exhaustive")
         if coverage.index_revision < coverage.revision:
