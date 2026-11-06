@@ -1,6 +1,6 @@
 # ThinkHome Portainer deployment
 
-The production v1 Git stack `suppliermcp` follows `refs/heads/main` and reads `compose.portainer.yaml`. Keep that path pinned to the deployed v1 configuration. The candidate uses a separate stack, Compose file, volumes and tunnel origin. The production endpoint is `https://suppliermcp.thinkhome.org/mcp`.
+The production v1 Git stack `suppliermcp` follows `refs/heads/main` and reads `compose.portainer.yaml`. Keep that path pinned to the deployed v1 configuration. The candidate uses a separate stack, Compose file, volumes and tunnel origin. The v1 endpoint is `https://suppliermcp.thinkhome.org/mcp`. The deployed v2 candidate uses [SupDB MCP](https://supdb.thinkhome.org/mcp) and a [separate login realm](https://supdb-login.thinkhome.org/realms/supdb/.well-known/openid-configuration). See the [deployment and restart evidence](supplier-api/v2-acceptance.md#rc5-on-the-mac-and-portainer).
 
 ## Build and deploy the candidate
 
@@ -28,8 +28,12 @@ Portainer 2.45.1 imports physical lines and later writes their values directly i
 | `SUPPLIERMCP_SOURCE_CONTRACTS_JSON` | Verified account contract object as one JSON string, including schedules and allowed windows |
 | `SUPPLIERMCP_MEGA_LOGIN`, `SUPPLIERMCP_MEGA_PASSWORD` | 100MEGA account pair, or both empty |
 | `SUPPLIERMCP_ED_PUBLIC_LOGIN`, `SUPPLIERMCP_ED_PUBLIC_PASSWORD` | eD PUBLIC account pair, or both empty |
+| `SUPPLIERMCP_ED_PRIVATE_LOGIN`, `SUPPLIERMCP_ED_PRIVATE_PASSWORD` | eD PRIVATE account pair, or both empty |
+| `SUPPLIERMCP_OAUTH_ISSUER`, `SUPPLIERMCP_OAUTH_PUBLIC_URL` | HTTPS realm issuer and public API origin for OAuth discovery and token validation |
+| `SUPPLIERMCP_AUTH_CLIENTS` | Registered client IDs and permitted document subjects, as described in the [login guide](login.md) |
+| `SUPPLIERMCP_READ_CURSOR_KEY` | Independent base64-encoded key of at least 32 random bytes. Retain it across API restarts for supplier-read continuations. |
 
-For an account with eD PRIVATE access, supply both `SUPPLIERMCP_ED_PRIVATE_LOGIN` and `SUPPLIERMCP_ED_PRIVATE_PASSWORD` using protected Portainer variables. Enable the desired PRIVATE refresh intervals in the verified source contracts. See [dedicated login](login.md) for the personal ChatGPT OAuth setup. Keep JWT signing keys and client bearer tokens outside the application containers. Tokens require RS256, subject, expiry, issuer `suppliermcp` and audience `suppliermcp`. The public client profile uses the HTTPS URL above and a bearer token supplied through the client's protected environment.
+For an account with eD PRIVATE access, supply both `SUPPLIERMCP_ED_PRIVATE_LOGIN` and `SUPPLIERMCP_ED_PRIVATE_PASSWORD` using protected Portainer variables. Enable the desired PRIVATE refresh intervals in the verified source contracts. See [dedicated login](login.md) for the personal ChatGPT OAuth setup. Keep JWT signing keys and client bearer tokens outside the application containers. Static tokens require RS256, a subject, expiry and the issuer and audience configured through `SUPPLIERMCP_AUTH_ISSUER` and `SUPPLIERMCP_AUTH_AUDIENCE`. OAuth tokens use the dedicated realm issuer and the public MCP URL as audience.
 
 The image does not contain source credentials, source contracts or client tokens. The initial download limit is 1 GiB, expanded XML limit 2 GiB and retained-artifact budget 20 GiB. Database/index disk usage is additional; the measured full local catalog occupied many gigabytes.
 
@@ -43,7 +47,7 @@ Keep application bearer authentication enabled. Avoid an interactive browser-log
 
 ## Acceptance and operations
 
-The ThinkHome stack was installed with fresh volumes on 2026-11-05/06 in Portainer environment 3, stack 24. Its validated image is pinned to `ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23` (source commit `80bbddb`). The target pulled the image successfully, migrations exited 0, and Cloudflare created the public route and DNS record. Public liveness/readiness returned 200; missing and invalid bearer tokens returned 401; authenticated discovery returned seven tools and two resources. See [deployment evidence](portainer-deployment-2026-11-06.json) for the catalog acceptance state, which is separate from service availability.
+The original v1 stack was installed with fresh volumes on 2026-11-05/06 in Portainer environment 3, stack 24. Its validated image is pinned to `ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23` (source commit `80bbddb`). The target pulled the image successfully, migrations exited 0, and Cloudflare created the public route and DNS record. Public liveness/readiness returned 200; missing and invalid bearer tokens returned 401; authenticated discovery returned seven tools and two resources. See [deployment evidence](portainer-deployment-2026-11-06.json) for the catalog acceptance state, which is separate from service availability.
 
 Keep the target client profile and token in the operator’s protected directory. Renew a static client token before expiry with the host-only signing key. For web ChatGPT, use the scoped OAuth flow in the login guide.
 

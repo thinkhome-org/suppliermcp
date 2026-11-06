@@ -1,5 +1,11 @@
 # Dedicated SupDB login
 
+## Connect personal ChatGPT to the hosted candidate
+
+In **Plugins → Add → Add custom MCP server**, use `https://supdb.thinkhome.org/mcp` and choose OAuth. The ThinkHome personal web registration uses client ID `personal-chatgpt` with PKCE and an empty client secret. Confirm **Connect**, sign in on `supdb-login.thinkhome.org`, and select the plugin in an ordinary chat. To verify access without displaying business records, ask the chat to call `ed_private.getTransportationList` and `ed_public.getInvoiceList` for a single date, then report only the operation names and whether each succeeded. Other applications need their own registration. The operator grants them catalog access by default. See [client acceptance](supplier-api/v2-acceptance.md).
+
+## Set up a separate installation
+
 The optional `compose.identity.yaml` deploys a dedicated Keycloak and database. Set its required stack variables through Portainer. For `SUPDB_IDP_TRUSTED_PROXY_ADDRESSES`, use the trusted connector address or dedicated ingress CIDR as seen by Keycloak. Recheck the address if the connector is recreated. Store generated credentials outside Git. Publish the Keycloak login realm through a trusted HTTPS ingress to `supdb-login-origin:8080`, restrict administrative paths to operators, and back up the identity database separately. Use a permanent administrative account with MFA and retire the temporary bootstrap account after provisioning.
 
 1. Create the realm `supdb` with self-registration disabled. Create the operator user and record its immutable subject ID. Never use an email address or display name in its place.
