@@ -38,6 +38,8 @@ The image does not contain source credentials, source contracts or client tokens
 
 PostgreSQL must become healthy, then the one-shot `migrate` service must exit 0. MCP and worker start only after migrations succeed. A healthy MCP container proves liveness; `/health/ready` verifies database readiness, not catalog population.
 
+For a parallel green stack on the same Docker environment, set a **distinct** `SUPDB_ORIGIN_ALIAS` (for example `suppliermcp-green-origin`) and `SUPDB_PUBLIC_HOST` (your candidate hostname) before deploying. Use a separate stack name and stack-scoped volumes. Route only the candidate hostname to the new alias. After acceptance, change the production tunnel route to the verified green alias and include the production hostname in the green stack's host configuration. The existing blue stack and its alias remain available for rollback.
+
 Reuse the existing `cloudflare` network and connector stack. Only MCP joins that external network, under the alias `suppliermcp-origin`. PostgreSQL, Typesense and worker stay on the stack's backend network; no service publishes a host port. Configure the existing tunnel's published application route:
 
 - Hostname: `suppliermcp.thinkhome.org`

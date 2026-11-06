@@ -14,7 +14,7 @@ x-app: &app
     SUPPLIERMCP_AUTH_LEGACY_SUBJECTS: '${SUPPLIERMCP_AUTH_LEGACY_SUBJECTS:-[]}'
     SUPPLIERMCP_AUTH_ISSUER: ${SUPPLIERMCP_AUTH_ISSUER:-suppliermcp}
     SUPPLIERMCP_AUTH_AUDIENCE: ${SUPPLIERMCP_AUTH_AUDIENCE:-suppliermcp}
-    SUPPLIERMCP_ALLOWED_HOSTS: '["suppliermcp.thinkhome.org","suppliermcp-origin:8000","127.0.0.1:*","localhost:*"]'
+    SUPPLIERMCP_ALLOWED_HOSTS: '["${SUPDB_PUBLIC_HOST:-suppliermcp.thinkhome.org}","${SUPDB_ORIGIN_ALIAS:-suppliermcp-origin}:8000","127.0.0.1:*","localhost:*"]'
     SUPPLIERMCP_ALLOWED_ORIGINS: '[]'
     SUPPLIERMCP_ARTIFACT_DIR: /data/artifacts
     SUPPLIERMCP_SOURCE_CONTRACTS_PATH: /config/source-contracts.json
@@ -66,7 +66,7 @@ services:
     networks:
       backend: {}
       cloudflare:
-        aliases: [suppliermcp-origin]
+        aliases: ["${SUPDB_ORIGIN_ALIAS:-suppliermcp-origin}"]
   worker:
     <<: *app
     command: [python, -m, suppliermcp.worker, run]

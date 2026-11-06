@@ -10,7 +10,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def render(missing=None):
+def render(missing=None, extra=None):
     env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
     supplied = {
         "SUPPLIERMCP_IMAGE": "ghcr.io/thinkhome-org/suppliermcp@sha256:" + "0" * 64,
@@ -24,6 +24,7 @@ def render(missing=None):
     supplied["SUPPLIERMCP_AUTH_CLIENTS"] = '{"client-a":{}}'
     supplied["SUPPLIERMCP_ED_PRIVATE_LOGIN"] = "test-private"
     supplied["SUPPLIERMCP_ED_PRIVATE_PASSWORD"] = "test-private-password"
+    supplied.update(extra or {})
     env.update(supplied)
     if missing:
         env.pop(missing, None)
@@ -192,3 +193,18 @@ def test_portainer_env_rejects_variable_name_injection(tmp_path):
     assert result.returncode != 0
     assert not output.exists()
     assert "sensitive-test-value" not in result.stderr
+
+
+def test_green_stack_does_not_advertise_the_blue_tunnel_alias():
+    result, _ = render(
+        extra={
+            "SUPDB_ORIGIN_ALIAS": "supdb-green-origin",
+            "SUPDB_PUBLIC_HOST": "supdb-green.example.org",
+        }
+    )
+    assert result.returncode == 0
+    mcp = json.loads(result.stdout)["services"]["mcp"]
+    assert mcp["networks"]["cloudflare"]["aliases"] == ["supdb-green-origin"]
+    hosts = json.loads(mcp["environment"]["SUPPLIERMCP_ALLOWED_HOSTS"])
+    assert "supdb-green.example.org" in hosts and "supdb-green-origin:8000" in hosts
+    assert "suppliermcp.thinkhome.org" not in hosts
