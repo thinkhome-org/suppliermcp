@@ -3756,7 +3756,16 @@
         }
       ],
       "outcome": "supplier_http_5xx",
-      "scope": "catalog:read"
+      "scope": "catalog:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_reports_invalid_sql_column",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "http_get",
+          "http_post"
+        ]
+      }
     },
     "mega.X-ASM-StiRelation.full": {
       "both_scopes": false,
@@ -3841,7 +3850,16 @@
         }
       ],
       "outcome": "supplier_http_5xx",
-      "scope": "catalog:read"
+      "scope": "catalog:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_reports_invalid_sql_column",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "http_get",
+          "http_post"
+        ]
+      }
     },
     "mega.X-ASM-StiRelation_El.full": {
       "both_scopes": false,
@@ -5739,7 +5757,17 @@
         }
       ],
       "outcome": "supplier_soap_server_sql_fault",
-      "scope": "documents:read"
+      "scope": "documents:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_reports_unknown_order",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "soap",
+          "http_get",
+          "http_post"
+        ]
+      }
     },
     "mega_order.GetStatusListAppendReady": {
       "both_scopes": false,
@@ -5897,7 +5925,17 @@
         }
       ],
       "outcome": "supplier_soap_server_application_fault",
-      "scope": "documents:read"
+      "scope": "documents:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_denies_access_citing_missing_parameter",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "soap",
+          "http_get",
+          "http_post"
+        ]
+      }
     },
     "mega_order.GetXCompanyListChanged": {
       "both_scopes": false,
@@ -5921,7 +5959,17 @@
         }
       ],
       "outcome": "supplier_soap_server_application_fault",
-      "scope": "documents:read"
+      "scope": "documents:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_denies_access_citing_missing_parameter",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "soap",
+          "http_get",
+          "http_post"
+        ]
+      }
     },
     "mega_order.GetXCompanyListId": {
       "both_scopes": false,
@@ -5945,7 +5993,17 @@
         }
       ],
       "outcome": "supplier_soap_server_application_fault",
-      "scope": "documents:read"
+      "scope": "documents:read",
+      "supplier_diagnostic": {
+        "finding": "supplier_denies_access_citing_missing_parameter",
+        "http_status": 500,
+        "observed_at": "2026-11-06T16:05:33+00:00",
+        "protocols": [
+          "soap",
+          "http_get",
+          "http_post"
+        ]
+      }
     }
   }
 }
