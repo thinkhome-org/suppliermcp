@@ -1333,12 +1333,14 @@
     },
     "mega.OrderDelivMode_El.full": {
       "both_scopes": false,
+      "catalog_projection": false,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:42:13+00:00",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:03+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -1350,9 +1352,20 @@
           "observed_at": "2026-11-06T15:20:49+00:00",
           "outcome": "supplier_unavailable",
           "scope": "documents:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:42:13+00:00",
+          "outcome": "payload_too_large",
+          "scope": "documents:read"
         }
       ],
-      "outcome": "payload_too_large",
+      "outcome": "verified_nonempty",
       "scope": "documents:read"
     },
     "mega.OrderDelivMode_El.targeted": {
@@ -1747,13 +1760,28 @@
     },
     "mega.StiPacking_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:22:17+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:43:14+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:22:17+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StiPacking_El.targeted": {
@@ -1914,13 +1942,39 @@
     },
     "mega.StiRelation_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:22:29+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:45:06+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:22:29+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:43:14+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StiRelation_El.targeted": {
@@ -1977,13 +2031,28 @@
     },
     "mega.StoItemActive_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:22:45+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:43:33+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:22:45+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemActive_El.targeted": {
@@ -2112,13 +2181,28 @@
     },
     "mega.StoItemEAN_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:22:49+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:43:33+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:22:49+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemEAN_El.targeted": {
@@ -2355,13 +2439,28 @@
     },
     "mega.StoItemList_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:23:34+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:43:38+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:23:34+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemList_El.targeted": {
@@ -2418,13 +2517,39 @@
     },
     "mega.StoItemNode_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:23:41+00:00",
-      "outcome": "supplier_unavailable",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:45:37+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:23:41+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:43:38+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemNode_El.targeted": {
@@ -2507,13 +2632,28 @@
     },
     "mega.StoItemPriceEU_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:24:21+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:00+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:24:21+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemPriceEU_El.targeted": {
@@ -2756,13 +2896,28 @@
     },
     "mega.StoItemQtyFreeBO_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:24:51+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:00+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:24:51+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFreeBO_El.targeted": {
@@ -2897,13 +3052,28 @@
     },
     "mega.StoItemQtyFreeExQudT_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:25:31+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:09+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:25:31+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFreeExQudT_El.targeted": {
@@ -2921,13 +3091,28 @@
     },
     "mega.StoItemQtyFreeExQud_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:25:08+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:09+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:25:08+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFreeExQud_El.targeted": {
@@ -2945,13 +3130,28 @@
     },
     "mega.StoItemQtyFreeEx_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:24:56+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:47+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:24:56+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFreeEx_El.targeted": {
@@ -2969,13 +3169,28 @@
     },
     "mega.StoItemQtyFree_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:24:40+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:44:47+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:24:40+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.StoItemQtyFree_El.targeted": {
@@ -3006,10 +3221,23 @@
       "both_scopes": false,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:25:31+00:00",
+      "observed_at": "2026-11-06T15:44:54+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:25:31+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
+        }
+      ],
       "outcome": "supplier_unavailable",
       "scope": "catalog:read"
     },
@@ -3042,10 +3270,23 @@
       "both_scopes": false,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:26:11+00:00",
+      "observed_at": "2026-11-06T15:44:54+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:26:11+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
+        }
+      ],
       "outcome": "supplier_unavailable",
       "scope": "catalog:read"
     },
@@ -3150,12 +3391,14 @@
     },
     "mega.X-100M.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:37:38+00:00",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:45:59+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -3167,9 +3410,20 @@
           "observed_at": "2026-11-06T15:26:52+00:00",
           "outcome": "supplier_unavailable",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:37:38+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "payload_too_large",
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.X-100M.targeted": {
@@ -3286,13 +3540,28 @@
     },
     "mega.X-ASM-CpsStiVal_El.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 2097152,
-      "max_expanded_bytes": 8388608,
+      "max_download_bytes": 67108864,
+      "max_expanded_bytes": 134217728,
       "mode": "full",
-      "observed_at": "2026-11-06T15:28:11+00:00",
-      "outcome": "payload_too_large",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:47:58+00:00",
+      "other_attempts": [
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 2097152,
+          "max_expanded_bytes": 8388608,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:28:11+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
+        }
+      ],
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.X-ASM-CpsStiVal_El.targeted": {
@@ -3312,10 +3581,10 @@
       "both_scopes": false,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "observed_at": "2026-11-06T15:33:20+00:00",
+      "observed_at": "2026-11-06T15:48:18+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -3327,9 +3596,20 @@
           "observed_at": "2026-11-06T15:28:48+00:00",
           "outcome": "supplier_unavailable",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "delta",
+          "observed_at": "2026-11-06T15:33:20+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "supplier_unavailable",
+      "outcome": "supplier_http_5xx",
       "scope": "catalog:read"
     },
     "mega.X-ASM-StiRelation.full": {
@@ -3375,10 +3655,10 @@
       "both_scopes": false,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "delta",
-      "observed_at": "2026-11-06T15:34:22+00:00",
+      "observed_at": "2026-11-06T15:48:24+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -3390,9 +3670,20 @@
           "observed_at": "2026-11-06T15:28:48+00:00",
           "outcome": "supplier_unavailable",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "delta",
+          "observed_at": "2026-11-06T15:34:22+00:00",
+          "outcome": "supplier_unavailable",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "supplier_unavailable",
+      "outcome": "supplier_http_5xx",
       "scope": "catalog:read"
     },
     "mega.X-ASM-StiRelation_El.full": {
@@ -3484,12 +3775,14 @@
     },
     "mega.X-CpsStiVal.full": {
       "both_scopes": false,
+      "catalog_projection": true,
       "input": "generated_read_only",
       "interface": "mega",
-      "max_download_bytes": 67108864,
-      "max_expanded_bytes": 134217728,
+      "max_download_bytes": 1073741824,
+      "max_expanded_bytes": 2147483648,
       "mode": "full",
-      "observed_at": "2026-11-06T15:38:07+00:00",
+      "more_pages": true,
+      "observed_at": "2026-11-06T15:48:30+00:00",
       "other_attempts": [
         {
           "both_scopes": false,
@@ -3501,9 +3794,20 @@
           "observed_at": "2026-11-06T15:28:55+00:00",
           "outcome": "supplier_unavailable",
           "scope": "catalog:read"
+        },
+        {
+          "both_scopes": false,
+          "input": "generated_read_only",
+          "interface": "mega",
+          "max_download_bytes": 67108864,
+          "max_expanded_bytes": 134217728,
+          "mode": "full",
+          "observed_at": "2026-11-06T15:38:07+00:00",
+          "outcome": "payload_too_large",
+          "scope": "catalog:read"
         }
       ],
-      "outcome": "payload_too_large",
+      "outcome": "verified_nonempty",
       "scope": "catalog:read"
     },
     "mega.X-CpsStiVal.targeted": {
