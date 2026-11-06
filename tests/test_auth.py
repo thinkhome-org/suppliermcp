@@ -93,3 +93,30 @@ async def test_verified_registration_and_scope_matrix():
         with pytest.raises(AccessDenied) as err:
             await identity(patch, key)
         assert (err.value.status_code, str(err.value)) == (401, "unauthorized")
+
+
+async def test_remote_oauth_discovery_keeps_existing_catalog_clients():
+    import httpx
+    from fastmcp import FastMCP
+
+    from suppliermcp.mcp.auth import server_auth
+
+    private, public = keys()
+    settings = Settings(
+        auth_public_key=public,
+        auth_legacy_subjects=["alice"],
+        oauth_issuer="https://login.example.org/realms/supdb",
+        oauth_public_url="https://mcp.example.org",
+    )
+    auth = server_auth(settings)
+    app = FastMCP("test", auth=auth).http_app(path="/mcp")
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="https://mcp.example.org"
+    ) as client:
+        metadata = (await client.get("/.well-known/oauth-protected-resource/mcp")).json()
+    assert metadata["resource"] == "https://mcp.example.org/mcp"
+    assert metadata["authorization_servers"] == ["https://login.example.org/realms/supdb"]
+    assert set(metadata["scopes_supported"]) == {"catalog:read", "documents:read"}
+    claims = {"iss": "suppliermcp", "aud": "suppliermcp", "sub": "alice", "exp": time.time() + 60}
+    token = await auth.verify_token(jwt.encode(claims, private, algorithm="RS256"))
+    assert token.scopes == ["catalog:read"]

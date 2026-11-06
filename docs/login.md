@@ -1,0 +1,14 @@
+# Dedicated SupDB login
+
+The optional `compose.identity.yaml` deploys a dedicated Keycloak and database. Set its four required stack variables through Portainer. Store generated credentials outside Git. Publish the Keycloak login realm through a trusted HTTPS ingress to `supdb-login-origin:8080`, restrict administrative paths to operators, and back up the identity database separately. Use a permanent administrative account with MFA and retire the temporary bootstrap account after provisioning.
+
+1. Create the realm `supdb` with self-registration disabled. Create the operator user and record its immutable subject ID. Never use an email address or display name in its place.
+2. Create OIDC clients for the personal Codex and ChatGPT integrations. Enable the authorization-code flow with PKCE S256. Register each exact HTTPS callback displayed by its client (or the exact configured loopback callback for Codex). Disable implicit flow, password grants and wildcard redirection. Keep any confidential client secret in the client and issuer.
+3. Create the optional client scopes `catalog:read` and `documents:read`. Assign both to the two personal clients; assign catalog only to each ordinary client. Configure an audience mapper on access tokens for the full public MCP resource URL ending in `/mcp`. The API checks the signed issuer, audience, expiration, subject, client ID or authorized party, and scopes.
+4. Set `SUPPLIERMCP_OAUTH_ISSUER` to the HTTPS realm URL ending in `/realms/supdb` and `SUPPLIERMCP_OAUTH_PUBLIC_URL` to the HTTPS API origin. The server discovers signing keys at the realm's Keycloak certificates endpoint. The static issuer used for previous Codex bearer tokens stays separately configured.
+5. In `SUPPLIERMCP_AUTH_CLIENTS`, register each client ID. Set `document_subjects` to the operator's verified subject on each personal client. Use an empty object for ordinary clients. Registering an ID in Keycloak alone grants no access. Before switching v1, explicitly list approved legacy subjects for catalog-only access.
+6. At `/.well-known/oauth-protected-resource/mcp` check the resource URL, issuer and both scopes. Connect Codex via remote HTTP and complete its OAuth login. In personal ChatGPT add the remote MCP URL and select OAuth, then complete the login in the browser. Check both catalog and document reads in each client. Repeat the document request with a catalog-only client and confirm denial.
+
+A successful metadata request alone proves discovery only. Record the actual client/account acceptance without posting tokens, subjects or supplier payloads.
+
+[Keycloak container guide](https://www.keycloak.org/server/containers) · [OpenAI app authentication](https://developers.openai.com/apps-sdk/build/auth/)

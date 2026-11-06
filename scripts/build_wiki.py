@@ -9,6 +9,7 @@ PAGES = {
     "Home": "README.md",
     "Operations": "docs/operations.md",
     "Portainer": "docs/portainer.md",
+    "Login": "docs/login.md",
     "Compatibility": "docs/compatibility.md",
     "Validation": "docs/validation.md",
     "Supplier-contracts": "docs/supplier-contracts.md",

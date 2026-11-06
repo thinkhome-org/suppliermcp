@@ -27,6 +27,8 @@ class Settings(Model):
     source_contracts_path: Path | None = None
     allowed_hosts: list[str] = Field(default_factory=lambda: ["127.0.0.1:*", "localhost:*"])
     allowed_origins: list[str] = Field(default_factory=list)
+    oauth_issuer: str = ""
+    oauth_public_url: str = ""
     auth_public_key: str = ""
     auth_issuer: str = "suppliermcp"
     auth_audience: str = "suppliermcp"
