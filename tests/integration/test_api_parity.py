@@ -135,6 +135,15 @@ async def test_every_reviewed_operation_is_discoverable_and_validated():
                 found.extend(row["operation_id"] for row in page["operations"])
                 offset = page["next_offset"]
             assert len(found) == len(expected) and set(found) == expected
+            needle = "ED_PUBLIC.getInvoiceDetail"
+            selected = (await http.get("operations", params={"query": needle})).json()
+            assert (
+                selected
+                == (await mcp.call_tool("list_operations", {"query": needle})).structured_content
+            )
+            assert {row["operation_id"] for row in selected["operations"]} == {
+                name for name in expected if needle.casefold() in name.casefold()
+            }
             for name in found:
                 arguments = {"unexpected_secret": "sensitive-value"}
                 response = await http.post(f"operations/{name}/read", json=arguments)

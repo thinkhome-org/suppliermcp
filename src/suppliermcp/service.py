@@ -83,14 +83,20 @@ class CatalogService:
             return ErrorResult(error=CatalogError("internal_error").as_dict())
 
     @validate_call
-    async def list_operations(self, offset: Annotated[int, Field(ge=0)] = 0) -> dict:
-        """Discover permitted supplier reads and their inputs. Continue with next_offset."""
+    async def list_operations(
+        self,
+        offset: Annotated[int, Field(ge=0)] = 0,
+        query: Annotated[str, Field(max_length=128)] = "",
+    ) -> dict:
+        """Find permitted supplier reads and inputs. Filter by part of the operation ID (e.g. invoice, ed_private or StoItem). Continue with next_offset."""
         if not self.identity.scopes.intersection({"catalog:read", "documents:read"}):
             require_scope(self.identity, "catalog:read")
         specs = [
             spec
             for spec in operation_inventory()
-            if spec.effect == "read" and spec.scope in self.identity.scopes
+            if spec.effect == "read"
+            and spec.scope in self.identity.scopes
+            and query.casefold() in spec.operation_id.casefold()
         ]
         rows = []
         page = {"operations": rows, "next_offset": None}

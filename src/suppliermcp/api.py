@@ -43,8 +43,12 @@ def create_api(settings):
         return JSONResponse({"error": CatalogError("invalid_arguments").as_dict()}, status_code=422)
 
     @app.get("/operations")
-    async def list_operations(service: service_parameter, offset: Annotated[int, Query(ge=0)] = 0):
-        return await service.list_operations(offset)
+    async def list_operations(
+        service: service_parameter,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        query: Annotated[str, Query(max_length=128)] = "",
+    ):
+        return await service.list_operations(offset, query)
 
     @app.post("/operations/{operation_id}/read")
     async def read_operation(
