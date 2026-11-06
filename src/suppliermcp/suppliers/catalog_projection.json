@@ -1,0 +1,478 @@
+{
+  "ed_private": {
+    "ArrayOfProduct": [{"Product": "Product"}, []],
+    "ArrayOfProductCategory": [{"ProductCategory": "ProductCategory"}, []],
+    "ArrayOfProductCategoryAttribute": [{"ProductCategoryAttribute": "ProductCategoryAttribute"}, []],
+    "ArrayOfProductCategoryAttributeValue": [{"ProductCategoryAttributeValue": "ProductCategoryAttributeValue"}, []],
+    "ArrayOfProductCategoryImage": [{"ProductCategoryImage": "ProductCategoryImage"}, []],
+    "ArrayOfProductCommodity": [{"ProductCommodity": "ProductCommodity"}, []],
+    "ArrayOfProductComplete": [{"ProductComplete": "ProductComplete"}, []],
+    "ArrayOfProductImage": [{"ProductImage": "ProductImage"}, []],
+    "ArrayOfProductIndexItem": [{"ProductIndexItem": "ProductIndexItem"}, []],
+    "ArrayOfProductInformation": [{"ProductInformation": "ProductInformation"}, []],
+    "ArrayOfProductLogisticData": [{"ProductLogisticData": "ProductLogisticData"}, []],
+    "ArrayOfProductNavigatorData": [{"ProductNavigatorData": "ProductNavigatorData"}, []],
+    "ArrayOfProductProducer": [{"ProductProducer": "ProductProducer"}, []],
+    "ArrayOfProductRealationChild": [{"ProductRealationChild": "ProductRealationChild"}, []],
+    "ArrayOfProductRealationParent": [{"ProductRealationParent": "ProductRealationParent"}, []],
+    "ArrayOfProductShort": [{"ProductShort": "ProductShort"}, []],
+    "ArrayOfProductSimple": [{"ProductSimple": "ProductSimple"}, []],
+    "ArrayOfProductSuperCategory": [{"ProductSuperCategory": "ProductSuperCategory"}, []],
+    "ArrayOfTransportation": [{"Transportation": "Transportation"}, []],
+    "Product": [{"AuthorFee": "$", "Code": "$", "CommodityCode": "$", "CommodityName": "$", "DealerPrice": "$", "Description": "$", "DescriptionShort": "$", "EANCode": "$", "EndUserPrice": "$", "GarbageFee": "$", "ImageUrl": "$", "MultipleQuantity": "$", "Name": "$", "NameB2C": "$", "OnStock": "$", "OnStockText": "$", "PartNumber": "$", "PriceCurrency": "$", "ProId": "$", "ProducerName": "$", "RateOfDutyCode": "$", "ValuePack": "$", "ValuePackQty": "$", "Vat": "$", "Warranty": "$", "YourPrice": "$", "YourPriceWithFees": "$"}, []],
+    "ProductCategory": [{"CategoryCode": "$", "CategoryName": "$", "ImageList": "ArrayOfProductCategoryImage", "ProductAttributeList": "ArrayOfProductCategoryAttribute"}, []],
+    "ProductCategoryAttribute": [{"AttributeCode": "$", "AttributeName": "$", "FilterOperator": "$", "IsPrimary": "$"}, []],
+    "ProductCategoryAttributeValue": [{"AttributeCode": "$", "Value": "$", "ValueCode": "$", "ValueSort": "$"}, []],
+    "ProductCategoryImage": [{"URL": "$"}, []],
+    "ProductCommodity": [{"CommodityCode": "$", "CommodityName": "$", "CommodityParentCode": "$"}, []],
+    "ProductComplete": [{"AuthorFee": "$", "B2C": "$", "B2FPrice": "$", "CategoryCode": "$", "Code": "$", "CommodityCode": "$", "CommodityName": "$", "DateAvailible": "$", "DealerPrice": "$", "DealerPrice1": "$", "Description": "$", "DescriptionShort": "$", "EANCode": "$", "EndUserPrice": "$", "ExtInfoCodes": "ArrayOfProductInformation", "GarbageFee": "$", "ImageList": "ArrayOfProductImage", "ImageUrl": "$", "ImgCount": "$", "ImgLastChanged": "$", "IndexCode1": "$", "IndexCode2": "$", "IndexImplicit1": "$", "IndexImplicit2": "$", "IndexOrder1": "$", "IndexOrder2": "$", "IndexSort1": "$", "IndexSort2": "$", "InfoCode": "$", "IsPremium": "$", "IsTop": "$", "LogisticDataList": "ArrayOfProductLogisticData", "MultipleQuantity": "$", "Name": "$", "NameB2C": "$", "OnStock": "$", "OnStockCount": "$", "OnStockText": "$", "PartNumber": "$", "PartNumber2": "$", "PriceCurrency": "$", "ProId": "$", "ProducerCode": "$", "ProducerName": "$", "ProductNavigatorDataList": "ArrayOfProductNavigatorData", "RCCode": "$", "RCStatus": "$", "RateOfDutyCode": "$", "Unit": "$", "ValuePack": "$", "ValuePackQty": "$", "Vat": "$", "Warranty": "$", "WarrantyTerm": "$", "WarrantyUnit": "$", "YourPrice": "$", "YourPriceWithFees": "$"}, []],
+    "ProductImage": [{"URL": "$"}, []],
+    "ProductIndexItem": [{"CommodityCode": "$", "IndexCode": "$", "IndexCodeName": "$", "IndexLevel": "$", "IndexName": "$", "IndexOrder": "$", "IndexSort": "$", "IndexSortCode": "$", "ProductIndexList": "ArrayOfProductIndexItem"}, []],
+    "ProductInformation": [{"InfoCode": "$", "InfoName": "$"}, []],
+    "ProductLogisticData": [{"count": "$", "height": "$", "length": "$", "typ": "$", "weight": "$", "width": "$"}, []],
+    "ProductNavigatorData": [{"AttributeCode": "$", "ValueCode": "$"}, []],
+    "ProductProducer": [{"ProducerCode": "$", "ProducerId": "$", "ProducerName": "$"}, []],
+    "ProductRealationChild": [{"Code": "$", "ProId": "$", "Qty": "$", "RelTypeId": "$", "RelTypeName": "$"}, []],
+    "ProductRealationParent": [{"Childs": "ArrayOfProductRealationChild", "Code": "$", "ProId": "$"}, []],
+    "ProductShort": [{"AuthorFee": "$", "Code": "$", "DateAvailible": "$", "GarbageFee": "$", "OnStockCount": "$", "PartNumber": "$", "PriceCurrency": "$", "ProId": "$", "ValuePack": "$", "ValuePackQty": "$", "YourPrice": "$", "YourPriceWithFees": "$"}, []],
+    "ProductSimple": [{"AuthorFee": "$", "Code": "$", "DateAvailible": "$", "GarbageFee": "$", "Name": "$", "OnStockCount": "$", "PartNumber": "$", "PriceCurrency": "$", "ProId": "$", "ProducerName": "$", "ValuePack": "$", "ValuePackQty": "$", "YourPrice": "$", "YourPriceWithFees": "$"}, []],
+    "ProductSuperCategory": [{"ParentSuperCategoryCode": "$", "ProductCategoryList": "ArrayOfProductCategory", "SuperCategoryCode": "$", "SuperCategoryName": "$"}, []],
+    "RequestProductListStatus": [{"fileName": "$", "isReady": "$", "url": "$"}, []],
+    "ResponseProductCategoryAttributeList": [{"ProductCategoryAttributeList": "ArrayOfProductCategoryAttribute"}, []],
+    "ResponseProductCategoryAttributeValueList": [{"ProductCategoryAttributeValueList": "ArrayOfProductCategoryAttributeValue"}, []],
+    "ResponseProductCategoryList": [{"ProductCategoryList": "ArrayOfProductCategory"}, []],
+    "ResponseProductCommodityList": [{"ProductCommodityList": "ArrayOfProductCommodity"}, []],
+    "ResponseProductComplete": [{"Count": "$", "GeneratedDate": "$", "ProductComplete": "ProductComplete"}, []],
+    "ResponseProductIndexTree": [{"ProductIndexRoot": "ProductIndexItem"}, []],
+    "ResponseProductInformationList": [{"ProductInformationList": "ArrayOfProductInformation"}, []],
+    "ResponseProductListStatus": [{"ProductListStatus": "RequestProductListStatus"}, []],
+    "ResponseProductNavigator": [{"ProductCategoryAttributeList": "ArrayOfProductCategoryAttribute", "ProductCategoryAttributeValueList": "ArrayOfProductCategoryAttributeValue", "ProductCategoryList": "ArrayOfProductCategory", "ProductSuperCategoryList": "ArrayOfProductSuperCategory"}, []],
+    "ResponseProductProducerList": [{"ProductProducerList": "ArrayOfProductProducer"}, []],
+    "ResponseProductRelationList": [{"Count": "$", "GeneratedDate": "$", "ProductRelationList": "ArrayOfProductRealationParent"}, []],
+    "ResponseProductSuperCategoryList": [{"ProductSuperCategoryList": "ArrayOfProductSuperCategory"}, []],
+    "ResponseTransportationList": [{"TransportationList": "ArrayOfTransportation"}, []],
+    "Transportation": [{"Code": "$", "Name": "$", "TypeCode": "$"}, []]
+  },
+  "ed_public": {
+    "ArrayOfProduct": [{"Product": "Product"}, []],
+    "ITEM": [{"AO": "$", "DEALER": "$", "DPH": "$", "ENDUSER": "$", "KOD": "$", "KOMODITA": "$", "NAZEV": "$", "PARTNO": "$", "SKLADEM": "$", "SNC": "$", "STATUS": "$", "SUMAPOPLATKY": "$", "VASECENA": "$", "ZARUKA": "$"}, []],
+    "ITEMS": [{"ITEM": "ITEM"}, []],
+    "PRICELIST": [{"ITEMS": "ITEMS"}, ["dateFrom", "count"]],
+    "Product": [{"AuthorFee": "$", "Code": "$", "CommodityCode": "$", "CommodityName": "$", "DealerPrice": "$", "Description": "$", "DescriptionShort": "$", "EANCode": "$", "EndUserPrice": "$", "GarbageFee": "$", "ImageUrl": "$", "MultipleQuantity": "$", "Name": "$", "NameB2C": "$", "OnStock": "$", "OnStockText": "$", "PartNumber": "$", "PriceCurrency": "$", "ProId": "$", "ProducerName": "$", "RateOfDutyCode": "$", "ValuePack": "$", "ValuePackQty": "$", "Vat": "$", "Warranty": "$", "YourPrice": "$", "YourPriceWithFees": "$"}, []],
+    "RequestProductListStatus": [{"fileName": "$", "isReady": "$", "url": "$"}, []],
+    "ResponseProductList": [{"Count": "$", "GeneratedDate": "$", "ProductList": "ArrayOfProduct"}, []],
+    "ResponseProductListStatus": [{"ProductListStatus": "RequestProductListStatus"}, []]
+  },
+  "mega.AttCpsSti": {
+    "AttSti": [{}, ["Id", "CpaId", "CpaCode", "CpaGrp", "Name", "Tag", "File", "Url", "Size", "Sort"]],
+    "Result": [{"AttSti": "AttSti"}, []]
+  },
+  "mega.AttCpsSti_El": {
+    "AttSti": [{"CpaCode": "$", "CpaGrp": "$", "CpaId": "$", "File": "$", "Id": "$", "Name": "$", "Size": "$", "Sort": "$", "Tag": "$", "Url": "$"}, []],
+    "Result": [{"AttSti": "AttSti"}, []]
+  },
+  "mega.AttSti": {
+    "AttSti": [{}, ["Id", "StiId", "StiCode", "StiCode2", "StiPartNo", "StiPartNo2", "StiEAN", "StiEAN2", "Name", "Tag", "File", "Url", "Size", "Sort", "WsFullInfo"]],
+    "Result": [{"AttSti": "AttSti"}, []]
+  },
+  "mega.AttSti_El": {
+    "AttSti": [{"File": "$", "Id": "$", "Name": "$", "Size": "$", "Sort": "$", "StiCode": "$", "StiCode2": "$", "StiEAN": "$", "StiEAN2": "$", "StiId": "$", "StiPartNo": "$", "StiPartNo2": "$", "Tag": "$", "Url": "$", "WsFullInfo": "$"}, []],
+    "Result": [{"AttSti": "AttSti"}, []]
+  },
+  "mega.Config": {
+    "Config": [{}, ["ModId", "ModName", "StiIdP", "StiCodeP", "StiNameP", "CocId", "CocName", "CocTitle", "CocSort", "CocNotPack", "CofId", "CofNameEmpty", "CofMandat", "CofQtyList", "CofQtyD", "CofDefault", "StiId", "StiCode", "StiName", "SipPriceOrd", "CslId"]],
+    "Result": [{"Config": "Config"}, []]
+  },
+  "mega.Config_El": {
+    "Config": [{"CocId": "$", "CocName": "$", "CocNotPack": "$", "CocSort": "$", "CocTitle": "$", "CofDefault": "$", "CofId": "$", "CofMandat": "$", "CofNameEmpty": "$", "CofQtyD": "$", "CofQtyList": "$", "CslId": "$", "ModId": "$", "ModName": "$", "SipPriceOrd": "$", "StiCode": "$", "StiCodeP": "$", "StiId": "$", "StiIdP": "$", "StiName": "$", "StiNameP": "$"}, []],
+    "Result": [{"Config": "Config"}, []]
+  },
+  "mega.CpsSti": {
+    "Result": [{}, []]
+  },
+  "mega.CpsStiVal": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{}, ["Id", "StiId", "StiCode", "StiCode2", "StiPartNo", "StiPartNo2", "StiEAN", "StiEAN2", "CpaId", "Code", "Grp", "Name", "NameAdd", "Single", "Ord", "Value", "ValueAdd", "Measure", "CprOrd"]]
+  },
+  "mega.CpsStiVal_El": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{"Code": "$", "CpaId": "$", "CprOrd": "$", "Grp": "$", "Id": "$", "Measure": "$", "Name": "$", "NameAdd": "$", "Ord": "$", "Single": "$", "StiCode": "$", "StiCode2": "$", "StiEAN": "$", "StiEAN2": "$", "StiId": "$", "StiPartNo": "$", "StiPartNo2": "$", "Value": "$", "ValueAdd": "$"}, []]
+  },
+  "mega.Queue": {
+    "Queue": [{}, ["Id", "Qty", "DateShip", "QudCode", "QudName", "OisId", "OisName", "OriQty", "OriBlock", "QriQtyBacklog", "OrdId", "OrdCode", "OrdCodeO", "StiId", "StiCode", "StiPartNo", "StiPLName"]],
+    "Result": [{"Queue": "Queue"}, []]
+  },
+  "mega.Queue_El": {
+    "Queue": [{"DateShip": "$", "Id": "$", "OisId": "$", "OisName": "$", "OrdCode": "$", "OrdCodeO": "$", "OrdId": "$", "OriBlock": "$", "OriQty": "$", "QriQtyBacklog": "$", "Qty": "$", "QudCode": "$", "QudName": "$", "StiCode": "$", "StiId": "$", "StiPLName": "$", "StiPartNo": "$"}, []],
+    "Result": [{"Queue": "Queue"}, []]
+  },
+  "mega.SCategorySys": {
+    "Result": [{"SCategory": "SCategory"}, []],
+    "SCategory": [{}, ["Id", "Code", "Name", "Note"]]
+  },
+  "mega.SCategorySys_El": {
+    "Result": [{"SCategory": "SCategory"}, []],
+    "SCategory": [{"Code": "$", "Id": "$", "Name": "$", "Note": "$"}, []]
+  },
+  "mega.SPresentTree": {
+    "Result": [{"SPresentTree": "SPresentTree"}, ["UrlBase", "UrlBaseImg"]],
+    "SPresentTree": [{"StoItem": "StoItem"}, ["Id", "IdP", "ImgSize", "Name", "NameAdd", "Note", "Sort", "StrWWW", "Tag"]],
+    "StoItem": [{}, ["Code", "Id"]]
+  },
+  "mega.SPresentTreeType": {
+    "Item": [{}, ["Type", "Id", "Name", "NameE"]],
+    "Result": [{"Item": "Item"}, []]
+  },
+  "mega.SPresentTreeType_El": {
+    "Item": [{"Id": "$", "Name": "$", "NameE": "$", "Type": "$"}, []],
+    "Result": [{"Item": "Item"}, []]
+  },
+  "mega.SPresentTree_El": {
+    "Result": [{"SPresentTree": "SPresentTree", "UrlBase": "$", "UrlBaseImg": "$"}, []],
+    "SPresentTree": [{"Id": "$", "IdP": "$", "ImgSize": "$", "Name": "$", "NameAdd": "$", "Note": "$", "Sort": "$", "StoItem": "StoItem", "StrWWW": "$", "Tag": "$"}, []],
+    "StoItem": [{"Code": "$", "Id": "$"}, []]
+  },
+  "mega.StiPacking": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StiPacking": [{"Wrap": "Wrap"}, ["Id", "StiId", "EAN", "PatUsdId", "PatId", "PatCode", "PatName", "PauUsdId", "PauId", "PauCode", "PauName", "Qty", "Length", "Height", "Width", "Volume", "Weight", "WeightW"]],
+    "StoItem": [{"StiPacking": "StiPacking"}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2"]],
+    "Wrap": [{}, ["Id", "Weight", "WrtId", "WrtCode", "WrtName"]]
+  },
+  "mega.StiPacking_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StiPacking": [{"EAN": "$", "Height": "$", "Id": "$", "Length": "$", "PatCode": "$", "PatId": "$", "PatName": "$", "PatUsdId": "$", "PauCode": "$", "PauId": "$", "PauName": "$", "PauUsdId": "$", "Qty": "$", "StiId": "$", "Volume": "$", "Weight": "$", "WeightW": "$", "Width": "$", "Wrap": "Wrap"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "StiPacking": "StiPacking"}, []],
+    "Wrap": [{"Id": "$", "Weight": "$", "WrtCode": "$", "WrtId": "$", "WrtName": "$"}, []]
+  },
+  "mega.StiRelation": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{}, ["Id", "SreId", "SreName", "StiId", "StiCode", "StiIdR", "StiCodeR", "Sort"]]
+  },
+  "mega.StiRelationCO": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{}, ["Id", "StiId", "StiCode", "StiIdR", "StiCodeR", "Sort", "QtyDef", "QtyMax", "MQtyMin", "GrpCode", "Gift", "Prc"]]
+  },
+  "mega.StiRelationCO_El": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{"Gift": "$", "GrpCode": "$", "Id": "$", "MQtyMin": "$", "Prc": "$", "QtyDef": "$", "QtyMax": "$", "Sort": "$", "StiCode": "$", "StiCodeR": "$", "StiId": "$", "StiIdR": "$"}, []]
+  },
+  "mega.StiRelation_El": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{"Id": "$", "Sort": "$", "SreId": "$", "SreName": "$", "StiCode": "$", "StiCodeR": "$", "StiId": "$", "StiIdR": "$"}, []]
+  },
+  "mega.StoItemActive": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "StiCode2", "PartNo", "PartNo2", "EAN", "EAN2"]]
+  },
+  "mega.StoItemActive_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "StiCode2": "$"}, []]
+  },
+  "mega.StoItemBase": {
+    "ImgGal": [{}, ["Id", "Name", "Tag", "Sort", "Size"]],
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseThumbnail", "UrlBaseImg", "UrlBaseEnlargement", "UrlBaseImgGalery", "CouCode", "TaxRateLow", "TaxRateHigh"]],
+    "StoItem": [{"ImgGal": "ImgGal"}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "Name", "NameAdd", "NameE", "NameDoc", "NameShort", "NameSeo", "ManName", "CouCode", "UrlExt", "PriceEU", "PriceB2CMin", "PriceDea", "PriceOrd", "PriceRef", "PriceRefInfo", "RefProName", "RefCode", "PriceRef2", "PriceRef2Info", "RefProName2", "RefCode2", "WeightRef", "MeasureRef2", "TaxRate", "TatCodeE", "CutCode", "QtyFreeIs", "QtyFree", "QtyPack", "WarDur", "WarDurEU", "SNTrack", "NonDivQty", "Weight", "XXL", "XXS", "ScaId", "ThumbnailIs", "ThumbnailSize", "ImgIs", "ImgSize", "EnlargementIs", "EnlargementSize", "SisName", "SitId", "NonMater", "SttId", "NoteShort", "StiDemIdDis", "EprelId", "Note"]]
+  },
+  "mega.StoItemBase_El": {
+    "ImgGal": [{"Id": "$", "Name": "$", "Size": "$", "Sort": "$", "Tag": "$"}, []],
+    "Result": [{"CouCode": "$", "StoItem": "StoItem", "TaxRateHigh": "$", "TaxRateLow": "$", "UrlBase": "$", "UrlBaseEnlargement": "$", "UrlBaseImg": "$", "UrlBaseImgGalery": "$", "UrlBaseThumbnail": "$"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "CouCode": "$", "CutCode": "$", "EAN": "$", "EAN2": "$", "EnlargementIs": "$", "EnlargementSize": "$", "EprelId": "$", "Id": "$", "ImgGal": "ImgGal", "ImgIs": "$", "ImgSize": "$", "ManName": "$", "MeasureRef2": "$", "Name": "$", "NameAdd": "$", "NameDoc": "$", "NameE": "$", "NameSeo": "$", "NameShort": "$", "NonDivQty": "$", "NonMater": "$", "Note": "$", "NoteShort": "$", "PartNo": "$", "PartNo2": "$", "PriceB2CMin": "$", "PriceDea": "$", "PriceEU": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$", "PriceRef2Info": "$", "PriceRefInfo": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyPack": "$", "RefCode": "$", "RefCode2": "$", "RefProName": "$", "RefProName2": "$", "SNTrack": "$", "ScaId": "$", "SisName": "$", "SitId": "$", "StiDemIdDis": "$", "SttId": "$", "TatCodeE": "$", "TaxRate": "$", "ThumbnailIs": "$", "ThumbnailSize": "$", "UrlExt": "$", "WarDur": "$", "WarDurEU": "$", "Weight": "$", "WeightRef": "$", "XXL": "$", "XXS": "$"}, []]
+  },
+  "mega.StoItemEAN": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2"]]
+  },
+  "mega.StoItemEAN_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$"}, []]
+  },
+  "mega.StoItemEPREL": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "Name", "EprelId"]]
+  },
+  "mega.StoItemEPREL_El": {
+    "Result": [{"StoItem": "StoItem", "UrlBase": "$"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EprelId": "$", "Id": "$", "Name": "$", "PartNo": "$", "PartNo2": "$"}, []]
+  },
+  "mega.StoItemGPSR": {
+    "Manufacturer": [{}, ["Id", "Name"]],
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Manufacturer": "Manufacturer"}, ["Code", "EAN", "EAN2", "Id", "Name", "PartNo"]]
+  },
+  "mega.StoItemHook": {
+    "Result": [{"StoItemHook": "StoItemHook"}, []],
+    "StoItemHook": [{}, ["Id", "IdMaster", "CodeMaster", "IdSlave", "CodeSlave", "NameSlave", "PriceSlave"]]
+  },
+  "mega.StoItemHook_El": {
+    "Result": [{"StoItemHook": "StoItemHook"}, []],
+    "StoItemHook": [{"CodeMaster": "$", "CodeSlave": "$", "Id": "$", "IdMaster": "$", "IdSlave": "$", "NameSlave": "$", "PriceSlave": "$"}, []]
+  },
+  "mega.StoItemList": {
+    "Item": [{}, ["StiId", "StiCode", "StiCode2", "StiPartNo", "StiPartNo2", "StiEAN", "StiEAN2"]],
+    "Result": [{"Item": "Item"}, []]
+  },
+  "mega.StoItemList_El": {
+    "Item": [{"StiCode": "$", "StiCode2": "$", "StiEAN": "$", "StiEAN2": "$", "StiId": "$", "StiPartNo": "$", "StiPartNo2": "$"}, []],
+    "Result": [{"Item": "Item"}, []]
+  },
+  "mega.StoItemNode": {
+    "Node": [{}, ["Id", "Name"]],
+    "NodeAssign": [{"Node": "Node"}, ["Id"]],
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"NodeAssign": "NodeAssign"}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2"]]
+  },
+  "mega.StoItemNode_El": {
+    "Node": [{"Id": "$", "Name": "$"}, []],
+    "NodeAssign": [{"Id": "$", "Node": "Node"}, []],
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "NodeAssign": "NodeAssign", "PartNo": "$", "PartNo2": "$"}, []]
+  },
+  "mega.StoItemPriceEU": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "PriceEU"]]
+  },
+  "mega.StoItemPriceEU_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "PriceEU": "$"}, []]
+  },
+  "mega.StoItemPriceOrd": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "PriceOrd", "PriceEU", "PriceRef", "PriceRefInfo", "PriceRef2", "PriceRef2Info", "TaxRate", "PriceFullIs", "PriceList", "Price0", "Price1", "Price2", "Price3", "Price4", "Price5", "PriceB2CMin"]]
+  },
+  "mega.StoItemPriceOrdCur": {
+    "Result": [{"StoItem": "StoItem"}, ["CurCode"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "PriceOrd", "PriceRef", "PriceRefInfo", "PriceRef2", "PriceRef2Info"]]
+  },
+  "mega.StoItemPriceOrdCur_El": {
+    "Result": [{"CurCode": "$", "StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$", "PriceRef2Info": "$", "PriceRefInfo": "$"}, []]
+  },
+  "mega.StoItemPriceOrd_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "Price0": "$", "Price1": "$", "Price2": "$", "Price3": "$", "Price4": "$", "Price5": "$", "PriceB2CMin": "$", "PriceEU": "$", "PriceFullIs": "$", "PriceList": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$", "PriceRef2Info": "$", "PriceRefInfo": "$", "TaxRate": "$"}, []]
+  },
+  "mega.StoItemQtyFree": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "QtyFreeIs", "QtyFree"]]
+  },
+  "mega.StoItemQtyFreeBO": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "QtyFreeIs", "QtyFree"]]
+  },
+  "mega.StoItemQtyFreeBO_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "QtyFree": "$", "QtyFreeIs": "$"}, []]
+  },
+  "mega.StoItemQtyFreeEx": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "QtyFreeIs", "QtyFree", "Avail", "DateNextShip", "QtyNextShipIs", "QtyNextShip", "DateNextShipFree", "QtyNextShipFreeIs", "QtyNextShipFree"]]
+  },
+  "mega.StoItemQtyFreeExQud": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "QudId", "QudCode", "QtyFreeIs", "QtyFree", "Avail", "DateNextShip", "QtyNextShipIs", "QtyNextShip", "DateNextShipFree", "QtyNextShipFreeIs", "QtyNextShipFree"]]
+  },
+  "mega.StoItemQtyFreeExQudT": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "QudId", "QudCode", "QtyFreeIs", "QtyFree", "Avail", "DateNextShip", "QtyNextShipIs", "QtyNextShip", "DateNextShipFree", "QtyNextShipFreeIs", "QtyNextShipFree"]]
+  },
+  "mega.StoItemQtyFreeExQudT_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Avail": "$", "Code": "$", "Code2": "$", "DateNextShip": "$", "DateNextShipFree": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyNextShip": "$", "QtyNextShipFree": "$", "QtyNextShipFreeIs": "$", "QtyNextShipIs": "$", "QudCode": "$", "QudId": "$"}, []]
+  },
+  "mega.StoItemQtyFreeExQud_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Avail": "$", "Code": "$", "Code2": "$", "DateNextShip": "$", "DateNextShipFree": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyNextShip": "$", "QtyNextShipFree": "$", "QtyNextShipFreeIs": "$", "QtyNextShipIs": "$", "QudCode": "$", "QudId": "$"}, []]
+  },
+  "mega.StoItemQtyFreeEx_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Avail": "$", "Code": "$", "Code2": "$", "DateNextShip": "$", "DateNextShipFree": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyNextShip": "$", "QtyNextShipFree": "$", "QtyNextShipFreeIs": "$", "QtyNextShipIs": "$"}, []]
+  },
+  "mega.StoItemQtyFree_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "EAN2": "$", "Id": "$", "PartNo": "$", "PartNo2": "$", "QtyFree": "$", "QtyFreeIs": "$"}, []]
+  },
+  "mega.StoItemShop_El": {
+    "CATEGORIES": [{"CATEGORY": "CATEGORY", "DEFAULT_CATEGORY": "DEFAULT_CATEGORY"}, []],
+    "CATEGORY": [{}, ["id"]],
+    "DEFAULT_CATEGORY": [{}, ["id"]],
+    "FLAGS": [{"ACTION": "$", "NEW": "$", "TIP": "$"}, []],
+    "IMAGES": [{"IMAGE": "$"}, []],
+    "LOGISTIC": [{"DEPTH": "$", "HEIGHT": "$", "WEIGHT": "$", "WIDTH": "$"}, []],
+    "SHOP": [{"SHOPITEM": "SHOPITEM"}, []],
+    "SHOPITEM": [{"AVAILABILITY": "$", "AVAILABILITY_OUT_OF_STOCK": "$", "CATEGORIES": "CATEGORIES", "CODE": "$", "CURRENCY": "$", "DESCRIPTION": "$", "EAN": "$", "FEE": "$", "FEE2": "$", "FLAGS": "FLAGS", "IMAGES": "IMAGES", "ITEM_TYPE": "$", "LOGISTIC": "LOGISTIC", "MANUFACTURER": "$", "NAME": "$", "PART_NUMBER": "$", "PRICE": "$", "PRICE_MIN": "$", "PRICE_VAT": "$", "PURCHASE_PRICE": "$", "PURCHASE_PRICE_VAT": "$", "RECYCLING_FEE": "$", "SHORT_DESCRIPTION": "$", "STANDARD_PRICE": "$", "STOCK": "STOCK", "TEXT_PROPERTIES": "TEXT_PROPERTIES", "UNIT": "$", "VAT": "$", "WARRANTY": "$"}, ["id"]],
+    "STOCK": [{"AMOUNT": "$"}, []],
+    "TEXT_PROPERTIES": [{"TEXT_PROPERTY": "TEXT_PROPERTY"}, []],
+    "TEXT_PROPERTY": [{"NAME": "$", "VALUE": "$"}, []]
+  },
+  "mega.StoItemShoptet_El": {
+    "CATEGORIES": [{"CATEGORY": "$"}, []],
+    "FLAGS": [{"ACTION": "$", "NEW": "$", "TIP": "$"}, []],
+    "IMAGES": [{"IMAGE": "$"}, []],
+    "LOGISTIC": [{"DEPTH": "$", "HEIGHT": "$", "WEIGHT": "$", "WIDTH": "$"}, []],
+    "SHOP": [{"SHOPITEM": "SHOPITEM"}, []],
+    "SHOPITEM": [{"AVAILABILITY": "$", "AVAILABILITY_OUT_OF_STOCK": "$", "CATEGORIES": "CATEGORIES", "CODE": "$", "CURRENCY": "$", "DESCRIPTION": "$", "EAN": "$", "FLAGS": "FLAGS", "IMAGES": "IMAGES", "ITEM_TYPE": "$", "LOGISTIC": "LOGISTIC", "MANUFACTURER": "$", "NAME": "$", "PART_NUMBER": "$", "PRICE": "$", "PRICE_VAT": "$", "PURCHASE_PRICE": "$", "RECYCLING_FEE": "$", "SHORT_DESCRIPTION": "$", "STANDARD_PRICE": "$", "STOCK": "STOCK", "TEXT_PROPERTIES": "TEXT_PROPERTIES", "UNIT": "$", "VAT": "$", "WARRANTY": "$"}, []],
+    "STOCK": [{"AMOUNT": "$"}, []],
+    "TEXT_PROPERTIES": [{"TEXT_PROPERTY": "TEXT_PROPERTY"}, []],
+    "TEXT_PROPERTY": [{"NAME": "$", "VALUE": "$"}, []]
+  },
+  "mega.StoItemSiv": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseImg"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "Name", "ManName", "SisName", "SiuCode", "UrlSuffix", "UrlExt", "QtyFreeIs", "QtyFree", "PriceEU", "PriceOrd", "PriceRef", "PriceRefInfo", "PriceRef2", "PriceRef2Info", "WarDur", "ImgSize", "SitId", "NonMater", "CutCode", "Weight", "XXL", "XXS"]]
+  },
+  "mega.StoItemSiv_El": {
+    "Result": [{"StoItem": "StoItem", "UrlBase": "$", "UrlBaseImg": "$"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "CutCode": "$", "EAN": "$", "EAN2": "$", "Id": "$", "ImgSize": "$", "ManName": "$", "Name": "$", "NonMater": "$", "PartNo": "$", "PartNo2": "$", "PriceEU": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$", "PriceRef2Info": "$", "PriceRefInfo": "$", "QtyFree": "$", "QtyFreeIs": "$", "SisName": "$", "SitId": "$", "SiuCode": "$", "UrlExt": "$", "UrlSuffix": "$", "WarDur": "$", "Weight": "$", "XXL": "$", "XXS": "$"}, []]
+  },
+  "mega.StrStiSync": {
+    "ImgGal": [{}, ["Id", "Name", "Tag", "Sort", "Size"]],
+    "Result": [{"SPresentTree": "SPresentTree"}, ["UrlBase", "UrlBaseImg", "UrlBaseThumbnail", "UrlBaseEnlargement", "UrlBaseImgGalery", "CouCode", "TaxRateLow", "TaxRateHigh"]],
+    "SPresentTree": [{"StoItem": "StoItem"}, ["Id", "IdP", "Sort", "Name"]],
+    "StoItem": [{"ImgGal": "ImgGal"}, ["Id", "Code", "PartNo", "Name", "NameE", "NameAdd", "NameMan", "WarDur", "CutCode", "QtyPack", "Weight", "CouCode", "TaxRate", "RefProName", "RefCode", "RefProName2", "RefCode2", "WeightRef", "MeasureRef2", "ImgSize", "ThumbnailSize", "EnlargementSize", "NoteShort", "Note"]]
+  },
+  "mega.StrStiSync_El": {
+    "ImgGal": [{"Id": "$", "Name": "$", "Size": "$", "Sort": "$", "Tag": "$"}, []],
+    "Result": [{"CouCode": "$", "SPresentTree": "SPresentTree", "TaxRateHigh": "$", "TaxRateLow": "$", "UrlBase": "$", "UrlBaseEnlargement": "$", "UrlBaseImg": "$", "UrlBaseImgGalery": "$", "UrlBaseThumbnail": "$"}, []],
+    "SPresentTree": [{"Id": "$", "IdP": "$", "Name": "$", "Sort": "$", "StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "CouCode": "$", "CutCode": "$", "EnlargementSize": "$", "Id": "$", "ImgGal": "ImgGal", "ImgSize": "$", "MeasureRef2": "$", "Name": "$", "NameAdd": "$", "NameE": "$", "NameMan": "$", "Note": "$", "NoteShort": "$", "PartNo": "$", "QtyPack": "$", "RefCode": "$", "RefCode2": "$", "RefProName": "$", "RefProName2": "$", "TaxRate": "$", "ThumbnailSize": "$", "WarDur": "$", "Weight": "$", "WeightRef": "$"}, []]
+  },
+  "mega.X-100M": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseImg", "UrlBaseThumbnail"]],
+    "SPresentTree": [{}, ["SptStrId", "SptStiId", "Level0", "Level1", "Level2", "Level3", "Level4", "Level5", "Level6"]],
+    "StoItem": [{"SPresentTree": "SPresentTree"}, ["Id", "Code", "PartNo", "StoCode1", "StoCode2", "Name", "ShortName", "ShortNameAdd", "ManName", "Prc", "PriceEU", "PrcMin", "PrcWithRef", "TaxRate", "CutCode", "RefPrc", "RefProName", "RefCode", "RefPrc2", "RefProName2", "RefCode2", "QtyFreeIs", "QtyFree", "QtyNextShipIs", "QtyNextShip", "DateNextShip", "WarDur", "Weight", "ImgSize", "ThumbnailSize", "ShortNote", "Note"]]
+  },
+  "mega.X-100M_El": {
+    "Result": [{"StoItem": "StoItem", "UrlBase": "$", "UrlBaseImg": "$", "UrlBaseThumbnail": "$"}, []],
+    "SPresentTree": [{"Level0": "$", "Level1": "$", "Level2": "$", "Level3": "$", "Level4": "$", "Level5": "$", "Level6": "$", "SptStiId": "$", "SptStrId": "$"}, []],
+    "StoItem": [{"Code": "$", "CutCode": "$", "DateNextShip": "$", "Id": "$", "ImgSize": "$", "ManName": "$", "Name": "$", "Note": "$", "PartNo": "$", "Prc": "$", "PrcMin": "$", "PrcWithRef": "$", "PriceEU": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyNextShip": "$", "QtyNextShipIs": "$", "RefCode": "$", "RefCode2": "$", "RefPrc": "$", "RefPrc2": "$", "RefProName": "$", "RefProName2": "$", "SPresentTree": "SPresentTree", "ShortName": "$", "ShortNameAdd": "$", "ShortNote": "$", "StoCode1": "$", "StoCode2": "$", "TaxRate": "$", "ThumbnailSize": "$", "WarDur": "$", "Weight": "$"}, []]
+  },
+  "mega.X-ASM-CpsStiVal": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{}, ["Id", "StiId", "StiCode", "StiCode2", "StiPartNo", "StiPartNo2", "StiEAN", "StiEAN2", "CpaId", "Code", "Grp", "Name", "NameAdd", "Single", "Ord", "Value", "ValueAdd", "Measure", "CprOrd"]]
+  },
+  "mega.X-ASM-CpsStiVal_El": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{"Code": "$", "CpaId": "$", "CprOrd": "$", "Grp": "$", "Id": "$", "Measure": "$", "Name": "$", "NameAdd": "$", "Ord": "$", "Single": "$", "StiCode": "$", "StiCode2": "$", "StiEAN": "$", "StiEAN2": "$", "StiId": "$", "StiPartNo": "$", "StiPartNo2": "$", "Value": "$", "ValueAdd": "$"}, []]
+  },
+  "mega.X-ASM-StiRelation": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{}, ["Id", "SreId", "SreName", "StiId", "StiCode", "StiIdR", "StiCodeR"]]
+  },
+  "mega.X-ASM-StiRelation_El": {
+    "Result": [{"StiRelation": "StiRelation"}, []],
+    "StiRelation": [{"Id": "$", "SreId": "$", "SreName": "$", "StiCode": "$", "StiCodeR": "$", "StiId": "$", "StiIdR": "$"}, []]
+  },
+  "mega.X-ASM-StoItemSiv": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseImg"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "Name", "ManName", "SisName", "SiuCode", "UrlSuffix", "UrlExt", "QtyIs", "QtyFree", "PriceEU", "PriceOrd", "PriceRef", "PriceRef2", "WarDur", "ImgSize", "SitId", "NonMater", "CutCode", "Weight"]]
+  },
+  "mega.X-ASM-StoItemSiv_El": {
+    "Result": [{"StoItem": "StoItem", "UrlBase": "$", "UrlBaseImg": "$"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "CutCode": "$", "EAN": "$", "EAN2": "$", "Id": "$", "ImgSize": "$", "ManName": "$", "Name": "$", "NonMater": "$", "PartNo": "$", "PartNo2": "$", "PriceEU": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$", "QtyFree": "$", "QtyIs": "$", "SisName": "$", "SitId": "$", "SiuCode": "$", "UrlExt": "$", "UrlSuffix": "$", "WarDur": "$", "Weight": "$"}, []]
+  },
+  "mega.X-CpsStiVal": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{}, ["Id", "StiId", "StiCode", "CpaId", "Code", "Grp", "Name", "NameAdd", "Category", "Single", "Ord", "Value", "Measure"]]
+  },
+  "mega.X-CpsStiVal_El": {
+    "Result": [{"Row": "Row"}, []],
+    "Row": [{"Category": "$", "Code": "$", "CpaId": "$", "Grp": "$", "Id": "$", "Measure": "$", "Name": "$", "NameAdd": "$", "Ord": "$", "Single": "$", "StiCode": "$", "StiId": "$", "Value": "$"}, []]
+  },
+  "mega.X-Cybex": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseImg", "UrlBaseThumbnail"]],
+    "SPresentTree": [{}, ["SptStrId", "SptStiId", "Level0", "Level1", "Level2", "Level3", "Level4", "Level5", "Level6"]],
+    "StoItem": [{"SPresentTree": "SPresentTree"}, ["Id", "Code", "PartNo", "StoCode1", "StoCode2", "Name", "ManName", "Prc", "PrcList", "TaxRate", "CutCode", "RefPrc", "RefProName", "RefCode", "RefPrc2", "RefProName2", "RefCode2", "QtyFreeIs", "QtyFree", "QtyNextShipIs", "QtyNextShip", "DateNextShip", "WarDur", "Weight", "ImgSize", "ThumbnailSize"]]
+  },
+  "mega.X-Cybex_El": {
+    "Result": [{"StoItem": "StoItem", "UrlBase": "$", "UrlBaseImg": "$", "UrlBaseThumbnail": "$"}, []],
+    "SPresentTree": [{"Level0": "$", "Level1": "$", "Level2": "$", "Level3": "$", "Level4": "$", "Level5": "$", "Level6": "$", "SptStiId": "$", "SptStrId": "$"}, []],
+    "StoItem": [{"Code": "$", "CutCode": "$", "DateNextShip": "$", "Id": "$", "ImgSize": "$", "ManName": "$", "Name": "$", "PartNo": "$", "Prc": "$", "PrcList": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyNextShip": "$", "QtyNextShipIs": "$", "RefCode": "$", "RefCode2": "$", "RefPrc": "$", "RefPrc2": "$", "RefProName": "$", "RefProName2": "$", "SPresentTree": "SPresentTree", "StoCode1": "$", "StoCode2": "$", "TaxRate": "$", "ThumbnailSize": "$", "WarDur": "$", "Weight": "$"}, []]
+  },
+  "mega.X-EAN": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Kod", "PartNo", "EAN"]]
+  },
+  "mega.X-EAN_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"EAN": "$", "Id": "$", "Kod": "$", "PartNo": "$"}, []]
+  },
+  "mega.X-EnterpriceB2C": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["StiId", "StiCode"]]
+  },
+  "mega.X-EnterpriceB2C_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"StiCode": "$", "StiId": "$"}, []]
+  },
+  "mega.X-HalshopDayOffer": {
+    "ConParSet": [{}, ["StiId", "StiCode", "CpsTag", "CpsTagI", "CpsTagD"]],
+    "Result": [{"ConParSet": "ConParSet"}, []]
+  },
+  "mega.X-HalshopDayOffer_El": {
+    "ConParSet": [{"CpsTag": "$", "CpsTagD": "$", "CpsTagI": "$", "StiCode": "$", "StiId": "$"}, []],
+    "Result": [{"ConParSet": "ConParSet"}, []]
+  },
+  "mega.X-LMStiPacking": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Kod", "Hloubka", "Sirka", "Vyska", "Vaha", "ObjemCmKr", "IdBaleni", "TypBaleni"]]
+  },
+  "mega.X-LMStiPacking_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Hloubka": "$", "Id": "$", "IdBaleni": "$", "Kod": "$", "ObjemCmKr": "$", "Sirka": "$", "TypBaleni": "$", "Vaha": "$", "Vyska": "$"}, []]
+  },
+  "mega.X-Retail": {
+    "Result": [{"StoItem": "StoItem"}, ["CurCode"]],
+    "StoItem": [{}, ["Id", "Code", "PartNo", "Name", "EAN", "Type", "Manufacturer", "SubType", "PriceOrd", "PriceRef", "PriceRef2", "PriceOrdWithRef", "PriceEndUser", "TaxRate", "Currency", "Unit", "TurnOver", "QtyFree", "Avail", "Warranty", "Dimensions", "WeightWithCover", "WeigthOfCover", "WeightWithoutCover", "Length", "Width", "Height", "LengthOfCardboard", "WidthOfCardboard", "HeightOfCardboard", "QtyOfCardboard", "WeightOfCardboard", "Country", "CustomTarif", "ProductManager"]]
+  },
+  "mega.X-Retail_El": {
+    "Result": [{"CurCode": "$", "StoItem": "StoItem"}, []],
+    "StoItem": [{"Avail": "$", "Code": "$", "Country": "$", "Currency": "$", "CustomTarif": "$", "Dimensions": "$", "EAN": "$", "Height": "$", "HeightOfCardboard": "$", "Id": "$", "Length": "$", "LengthOfCardboard": "$", "Manufacturer": "$", "Name": "$", "PartNo": "$", "PriceEndUser": "$", "PriceOrd": "$", "PriceOrdWithRef": "$", "PriceRef": "$", "PriceRef2": "$", "ProductManager": "$", "QtyFree": "$", "QtyOfCardboard": "$", "SubType": "$", "TaxRate": "$", "TurnOver": "$", "Type": "$", "Unit": "$", "Warranty": "$", "WeightOfCardboard": "$", "WeightWithCover": "$", "WeightWithoutCover": "$", "WeigthOfCover": "$", "Width": "$", "WidthOfCardboard": "$"}, []]
+  },
+  "mega.X-StoItemClass": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Kod", "Id_Trida", "Nazev_Trida"]]
+  },
+  "mega.X-StoItemClass_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Id_Trida": "$", "Kod": "$", "Nazev_Trida": "$"}, []]
+  },
+  "mega.X-StoItemPack": {
+    "Result": [{"StoItemPack": "StoItemPack"}, []],
+    "StoItemPack": [{}, ["Rt", "SikId", "SikStiIdPack", "SikStiId", "SikQty", "SikRate", "SikSort", "SikPrc", "SikCocId", "SikCop", "SikSer", "SikVer", "SikGift", "SikC", "SikU"]]
+  },
+  "mega.X-StoItemPack_El": {
+    "Result": [{"StoItemPack": "StoItemPack"}, []],
+    "StoItemPack": [{"Rt": "$", "SikC": "$", "SikCocId": "$", "SikCop": "$", "SikGift": "$", "SikId": "$", "SikPrc": "$", "SikQty": "$", "SikRate": "$", "SikSer": "$", "SikSort": "$", "SikStiId": "$", "SikStiIdPack": "$", "SikU": "$", "SikVer": "$"}, []]
+  },
+  "mega.X-StoItemPriceEU": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{}, ["Id", "Code", "SipPriceEU", "PriceRecommended", "PriceMin"]]
+  },
+  "mega.X-StoItemPriceEU_El": {
+    "Result": [{"StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Id": "$", "PriceMin": "$", "PriceRecommended": "$", "SipPriceEU": "$"}, []]
+  },
+  "mega.X-StoItemPriceOrdCur": {
+    "Result": [{"StoItem": "StoItem"}, ["CurCode"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "Name", "EAN", "PriceOrd", "PriceRef", "PriceRef2"]]
+  },
+  "mega.X-StoItemPriceOrdCur_El": {
+    "Result": [{"CurCode": "$", "StoItem": "StoItem"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "EAN": "$", "Id": "$", "Name": "$", "PriceOrd": "$", "PriceRef": "$", "PriceRef2": "$"}, []]
+  },
+  "mega.X-StoItemVariant": {
+    "ConParSet": [{}, ["SivStiIdS", "SivValueS", "SivStiIdM", "SivStiName"]],
+    "Result": [{"ConParSet": "ConParSet"}, []]
+  },
+  "mega.X-StoItemVariant_El": {
+    "ConParSet": [{"SivStiIdM": "$", "SivStiIdS": "$", "SivStiName": "$", "SivValueS": "$"}, []],
+    "Result": [{"ConParSet": "ConParSet"}, []]
+  },
+  "mega.X-StoItemWoutNote": {
+    "Result": [{"StoItem": "StoItem"}, ["UrlBase", "UrlBaseThumbnail", "UrlBaseImg", "UrlBaseEnlargement", "UrlBaseImgGalery", "CouCode", "TaxRateLow", "TaxRateHigh"]],
+    "StoItem": [{}, ["Id", "Code", "Code2", "PartNo", "PartNo2", "EAN", "EAN2", "Name", "NameAdd", "NameE", "ManName", "CouCode", "UrlExt", "PriceEU", "PriceDea", "PriceRef", "RefProName", "RefCode", "PriceRef2", "RefProName2", "RefCode2", "WeightRef", "MeasureRef2", "TaxRate", "CutCode", "QtyFreeIs", "QtyFree", "QtyPack", "WarDur", "WarDurEU", "SNTrack", "NonDivQty", "Weight"]]
+  },
+  "mega.X-StoItemWoutNote_El": {
+    "Result": [{"CouCode": "$", "StoItem": "StoItem", "TaxRateHigh": "$", "TaxRateLow": "$", "UrlBase": "$", "UrlBaseEnlargement": "$", "UrlBaseImg": "$", "UrlBaseImgGalery": "$", "UrlBaseThumbnail": "$"}, []],
+    "StoItem": [{"Code": "$", "Code2": "$", "CouCode": "$", "CutCode": "$", "EAN": "$", "EAN2": "$", "Id": "$", "ManName": "$", "MeasureRef2": "$", "Name": "$", "NameAdd": "$", "NameE": "$", "NonDivQty": "$", "PartNo": "$", "PartNo2": "$", "PriceDea": "$", "PriceEU": "$", "PriceRef": "$", "PriceRef2": "$", "QtyFree": "$", "QtyFreeIs": "$", "QtyPack": "$", "RefCode": "$", "RefCode2": "$", "RefProName": "$", "RefProName2": "$", "SNTrack": "$", "TaxRate": "$", "UrlExt": "$", "WarDur": "$", "WarDurEU": "$", "Weight": "$", "WeightRef": "$"}, []]
+  }
+}

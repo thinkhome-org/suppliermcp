@@ -17,6 +17,7 @@ from importlib.resources import files
 from urllib.parse import urlencode
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.parsers import expat
+from zoneinfo import ZoneInfo
 
 import anyio
 import httpx
@@ -25,7 +26,8 @@ from anyio.lowlevel import RunVar
 from suppliermcp.access import Identity, require_scope
 from suppliermcp.catalog.contracts import CatalogError, Model, utcnow
 from suppliermcp.config import Settings
-from suppliermcp.suppliers.mega.capabilities import require_window
+from suppliermcp.suppliers.catalog_projection import catalog_projection
+from suppliermcp.suppliers.mega.capabilities import require_window, verified_export_window
 from suppliermcp.suppliers.registry import OperationSpec, resolve_operation
 from suppliermcp.suppliers.transport import SupplierTransport
 
@@ -50,6 +52,7 @@ class ReadResult(Model):
     truncated: bool
     stable_pagination: bool = False
     next_cursor: str | None = None
+    catalog_projection: bool = False
 
 
 @cache
@@ -88,7 +91,7 @@ def _argument(kind, value):
     raise ValueError
 
 
-def validate_arguments(spec, arguments):
+def validate_arguments(spec, arguments, now):
     try:
         if not isinstance(arguments, dict) or arguments.keys() - {f.name for f in spec.inputs}:
             raise ValueError
@@ -96,11 +99,7 @@ def validate_arguments(spec, arguments):
             raise ValueError
         result = {}
         for field in spec.inputs:
-            required = (
-                field.required
-                or field.name.endswith("Symbol")
-                or field.name in {"dateFrom", "dateTo"}
-            )
+            required = field.required or field.name.endswith("Symbol")
             if field.name in arguments:
                 result[field.name] = _argument(field.xsd_type, arguments[field.name])
                 if required and result[field.name] == "":
@@ -108,6 +107,9 @@ def validate_arguments(spec, arguments):
             elif required:
                 raise ValueError
         if "dateFrom" in result:
+            result.setdefault(
+                "dateTo", now.astimezone(ZoneInfo("Europe/Prague")).date().isoformat()
+            )
             span = date.fromisoformat(result["dateTo"]) - date.fromisoformat(result["dateFrom"])
             if not 0 <= span.days < 31:
                 raise ValueError
@@ -174,9 +176,18 @@ class _Page:
             output_schema=spec.output_schema,
             fields=[],
             truncated=False,
+            catalog_projection=spec.scope == "catalog:read"
+            and "documents:read" not in identity.scopes,
         )
         context = json.dumps(
-            ["suppliermcp/read-page/v1", identity.principal, spec.operation_id, arguments, limit],
+            [
+                "suppliermcp/read-page/v1",
+                identity.principal,
+                self.result.catalog_projection,
+                spec.operation_id,
+                arguments,
+                limit,
+            ],
             sort_keys=True,
             separators=(",", ":"),
         ).encode()
@@ -276,10 +287,30 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
             )
             or name.lower() in {"password", "login", "errortext"}
         )
-        frame = dict(name=name, children=0, text="", offset=0, hidden=hidden, index=index)
+        project = preview.result.catalog_projection and not (soap and spec.strategy == "download")
+        node = None
+        if project:
+            qualified = f"{{{ns}}}{name}" if ns else name
+            if not stack:
+                node = catalog_projection(spec.interface, spec.name, qualified)
+            elif stack[-1]["node"] is not None:
+                node = stack[-1]["node"].child(qualified)
+        frame = dict(
+            name=name,
+            children=0,
+            text="",
+            offset=0,
+            hidden=hidden,
+            index=index,
+            node=node,
+            allow_text=not project or (node is not None and node.text),
+        )
+
         stack.append(frame)
         if not hidden and (spec.strategy != "download" or not soap):
             for attr, value in attrs.items():
+                if project and (node is None or not node.allows_attribute(attr)):
+                    continue
                 attr = attr.rsplit(" ", 1)[-1]
                 if attr.lower() not in {"login", "password"} and not (
                     spec.scope == "catalog:read" and attr.lower() == "addressid"
@@ -300,7 +331,12 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
             if len(f["text"]) + len(value) > 8192:
                 invalid()
             f["text"] += value
-        elif not f["hidden"] and not f["children"] and not (soap and spec.strategy == "download"):
+        elif (
+            f["allow_text"]
+            and not f["hidden"]
+            and not f["children"]
+            and not (soap and spec.strategy == "download")
+        ):
             text = f["text"] + value
             while len(text) > preview.chunk_chars:
                 preview.field(path(), text[: preview.chunk_chars], f["offset"])
@@ -321,7 +357,12 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
                 download = value.strip()
             if name == "isready" and value.strip().lower() not in {"true", "1"}:
                 raise CatalogError("export_not_ready", retryable=True)
-        elif not f["hidden"] and not f["children"] and (f["offset"] or value.strip()):
+        elif (
+            f["allow_text"]
+            and not f["hidden"]
+            and not f["children"]
+            and (f["offset"] or value.strip())
+        ):
             if value:
                 preview.field(path(), value, f["offset"])
         stack.pop()
@@ -357,7 +398,7 @@ class OperationReader:
     ) -> ReadResult:
         spec = resolve_operation(operation_id)
         require_scope(identity, spec.scope)
-        args = validate_arguments(spec, arguments)
+        args = validate_arguments(spec, arguments, self.clock())
         limiter = _read_limiter.get(None)
         if limiter is None:
             limiter = anyio.CapacityLimiter(4)
@@ -375,19 +416,8 @@ class OperationReader:
 
         def window():
             if spec.interface == "mega":
-                contract = self.contracts.get("mega", {}).get("exports", {}).get(spec.name)
-                require_window(
-                    contract
-                    if contract is not None
-                    else {
-                        "modes": [spec.mode],
-                        "days": spec.days,
-                        "hours": spec.hours,
-                        "timezone": "Europe/Prague",
-                    },
-                    spec.mode,
-                    self.clock(),
-                )
+                contract = self.contracts.get("mega", {}).get("exports", {}).get(spec.name, {})
+                require_window(verified_export_window(spec, contract), spec.mode, self.clock())
 
         preview = _Page(
             spec,
@@ -399,6 +429,15 @@ class OperationReader:
             int(self.clock().timestamp()),
             self.settings.result_ttl_seconds,
         )
+        if preview.result.catalog_projection:
+            if spec.interface == "mega":
+                catalog_projection(
+                    "mega",
+                    spec.name,
+                    "SHOP" if spec.name in {"StoItemShop_El", "StoItemShoptet_El"} else "Result",
+                )
+            elif args.get("fileFormat", "XML") != "XML":
+                raise CatalogError("catalog_projection_unavailable")
         window()
         hosts = {
             httpx.URL(spec.target).host,

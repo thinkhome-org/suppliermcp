@@ -36,8 +36,22 @@ def make_reader(handler, spec, tmp_path):
     if spec.days:
         from zoneinfo import ZoneInfo
 
-        now = datetime(2026, 11, 2 + spec.days[0], spec.hours[0], tzinfo=ZoneInfo("Europe/Prague"))
-    return OperationReader(settings, transport_factory=factory, clock=lambda: now)
+        now = datetime(2026, 11, 1 + spec.days[0], spec.hours[0], tzinfo=ZoneInfo("Europe/Prague"))
+    reader = OperationReader(settings, transport_factory=factory, clock=lambda: now)
+    if spec.interface == "mega":
+        reader.contracts = {
+            "mega": {
+                "exports": {
+                    spec.name: {
+                        "modes": [spec.mode],
+                        "days": [d - 1 for d in spec.days],
+                        "hours": spec.hours,
+                        "timezone": "Europe/Prague",
+                    }
+                }
+            }
+        }
+    return reader
 
 
 def arguments(spec):
@@ -224,3 +238,38 @@ async def test_binary_transform_is_reconstructable_across_pages(tmp_path):
         if not cursor:
             break
     assert base64.b64decode("".join(pieces)) == data
+
+
+async def test_catalog_projection_blocks_unknown_children_attributes_and_oversized_text(tmp_path):
+    spec = next(s for s in READS if s.operation_id == "mega.StoItemBase.targeted")
+    poison = "UNREVIEWED_ADDRESS"
+    xml = f'<Result><StoItem Code="001" Name="SSD" Address="{poison}"><ShipTo><StoItem Code="{poison}"/><Name>{poison * 300}</Name></ShipTo></StoItem><StoItem Address="{poison}">{poison * 300}</StoItem></Result>'.encode()
+    reader = make_reader(lambda _: httpx.Response(200, content=xml), spec, tmp_path)
+    owner = Identity("iss", "user", "catalog", frozenset({"catalog:read"}))
+    page = await reader.read_operation(owner, spec.operation_id, arguments(spec))
+    assert page.catalog_projection
+    assert [f.value for f in page.fields] == ["001", "SSD"]
+    assert not page.truncated
+    reader.contracts = {}
+    with pytest.raises(CatalogError, match="capability_not_verified"):
+        await reader.read_operation(owner, spec.operation_id, arguments(spec))
+
+
+async def test_unknown_export_and_binary_projection_fail_closed_before_network(tmp_path):
+    owner = Identity("iss", "user", "catalog", frozenset({"catalog:read"}))
+    for name in ("mega.X-HOG.targeted", "ed_public.getProductListDownloadXMLWithTransform"):
+        spec = next(s for s in READS if s.operation_id == name)
+        reader = make_reader(lambda _: pytest.fail("unexpected request"), spec, tmp_path)
+        args = arguments(spec)
+        if "Transform" in name:
+            args.update(transformation="EDLINKXLS", fileFormat="XLS")
+        with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
+            await reader.read_operation(owner, name, args)
+
+
+def test_ed_end_date_defaults_to_today_in_prague():
+    from suppliermcp.suppliers.reads import validate_arguments
+
+    spec = next(s for s in READS if s.operation_id == "ed_public.getInvoiceList")
+    now = datetime(2026, 11, 5, 23, 30, tzinfo=UTC)
+    assert validate_arguments(spec, {"dateFrom": "2026-11-01"}, now)["dateTo"] == "2026-11-06"

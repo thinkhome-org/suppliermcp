@@ -184,3 +184,33 @@ async def test_remote_continuations_reach_shared_reader(monkeypatch):
                 "read_operation", {"operation_id": DOCUMENT, "arguments": args, "cursor": "opaque"}
             )
             assert result.structured_content == response.json()
+
+
+async def test_catalog_only_supplier_fields_across_remote_interfaces(monkeypatch):
+    spec_id = "ed_private.getProductDetail"
+    xml = b"""<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>
+        <getProductDetailResponse xmlns="http://www.elinkx.cz"><getProductDetailResult>
+          <ProductComplete><Code>001</Code><Name>Memory</Name><ShipTo Address="PRIVATE"><Name>PRIVATE</Name></ShipTo></ProductComplete>
+          <AddressId>PRIVATE</AddressId>
+        </getProductDetailResult></getProductDetailResponse></s:Body></s:Envelope>"""
+
+    def consume(self, method, url, *, consume, **kwargs):
+        return consume([xml])
+
+    monkeypatch.setattr("suppliermcp.suppliers.transport.SupplierTransport.consume", consume)
+    with running_server(
+        auth_clients=CLIENTS, credentials={"ed_private": ("login", "password")}
+    ) as (url, sign):
+        token = sign(client_id="registered", scope="catalog:read")
+        args = {"code": "001"}
+        async with httpx.AsyncClient(headers=auth(token)) as http, Client(url, auth=token) as mcp:
+            response = await http.post(
+                url.removesuffix("/mcp") + f"/v2/operations/{spec_id}/read", json=args
+            )
+            assert response.status_code == 200 and "PRIVATE" not in response.text
+            result = response.json()
+            assert [f["value"] for f in result["fields"]] == ["001", "Memory"]
+            tool = await mcp.call_tool(
+                "read_operation", {"operation_id": spec_id, "arguments": args}
+            )
+            assert tool.structured_content == result
