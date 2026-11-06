@@ -45,3 +45,5 @@ docker compose up -d mcp worker
 Only `127.0.0.1:8000` is published. Connect to `http://127.0.0.1:8000/mcp` with a valid bearer token. Issuance, tunnel and deployment are outside this repository's setup. [Codex setup and optional skills](integrations/codex/README.md).
 
 See [supplier contracts](docs/supplier-contracts.md), [approved design](docs/superpowers/specs/2026-11-05-suppliermcp-v1-design.md) and [compatibility](docs/compatibility.md). Live-account acceptance and real-catalog relevance remain required before production use.
+
+Copyright © ThinkHome s.r.o. All rights reserved.
