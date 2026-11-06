@@ -249,7 +249,6 @@ def catalog_schema_page(conn, category, cursor, principal, settings):
         }
         offset = 0
         with conn.transaction():
-            conn.execute("DELETE FROM query_results WHERE expires_at<now()")
             conn.execute(
                 "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
                 (result_id, principal, "schema", expires, Jsonb(data)),

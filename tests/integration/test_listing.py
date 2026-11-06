@@ -223,3 +223,16 @@ def test_configured_page_and_result_limits(conn):
     with pytest.raises(CatalogError) as error:
         start_listing(conn, CatalogQuery(), "alice", settings=Settings(max_result_rows=10))
     assert error.value.code == "result_too_large"
+
+
+def test_listing_does_not_wait_for_worker_expiration_cleanup(conn):
+    import psycopg
+
+    seed(conn)
+    conn.execute(
+        "INSERT INTO query_results VALUES ('expired','user','old',now()-interval '1 hour','{}')"
+    )
+    with psycopg.connect(conn.info.dsn, password=conn.info.password) as cleaner:
+        cleaner.execute("DELETE FROM query_results WHERE id='expired'")
+        conn.execute("SET lock_timeout = '500ms'")
+        assert start_listing(conn, CatalogQuery(), "user").total == 25

@@ -72,7 +72,6 @@ def _snapshot(conn, records, product_id, section, principal, settings, kind="det
         "page_size": settings.page_size,
         "max_response_bytes": settings.max_response_bytes,
     }
-    conn.execute("DELETE FROM query_results WHERE expires_at<now()")
     conn.execute(
         "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
         (result_id, principal, kind, expires, Jsonb(data)),

@@ -9,6 +9,17 @@ Seven tools: `lookup_products`, `search_products`, `list_products`, `get_product
 - Quantity-aware net offer comparison, known fees included; no shipping calculation or basket optimization.
 - No writes to suppliers; no order, invoice, delivery or claim access.
 
+## Connect Codex
+
+Download the native Codex ZIP from the [v1.0.0 release](https://github.com/thinkhome-org/suppliermcp/releases/tag/v1.0.0), extract it, and run the following commands from its marketplace root:
+
+```sh
+codex plugin marketplace add "$PWD"
+codex plugin add suppliermcp@thinkhome-suppliermcp
+```
+
+Set `SUPPLIERMCP_THINKHOME_TOKEN` in the environment that launches Codex, then restart Codex. Ask the server operator for a client token. You can test the connection by asking Codex to search for an SSD separately at eD and 100MEGA. For your own server, follow the Docker instructions below and [build the plugin for your MCP URL](integrations/codex/README.md).
+
 ## Local development
 
 ```sh

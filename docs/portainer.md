@@ -69,3 +69,5 @@ uv run python scripts/portainer_smoke.py
 The smoke creates its own randomly named project/network, generates ephemeral test credentials, makes no supplier requests, reproduces the Portainer UI/backend environment path, verifies mounted configuration, literal special characters and authenticated access, and removes only its own disposable volumes.
 
 Sources: [Portainer Git stacks and variables](https://docs.portainer.io/user/docker/stacks/add), [Docker Compose configs](https://docs.docker.com/reference/compose-file/configs/), [Cloudflare application routes](https://developers.cloudflare.com/tunnel/get-started/).
+
+When upgrading an existing index, the worker automatically rebuilds collections that lack the supplier filter field. Let that rebuild finish before starting another. A rebuild temporarily holds two copies. Check available RAM, the active Typesense alias, its supplier facet, the document count against active PostgreSQL products and the catalog/index revisions. Retire obsolete generated collections only after verifying the replacement and checking every alias.

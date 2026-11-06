@@ -59,7 +59,6 @@ def materialize(
         "unknown_total": unknown_total,
         "coverage": coverage.model_dump(mode="json"),
     }
-    conn.execute("DELETE FROM query_results WHERE expires_at < now()")
     conn.execute(
         "INSERT INTO query_results VALUES (%s,%s,%s,%s,%s)",
         (result_id, principal, query_hash, expires, Jsonb(data)),
