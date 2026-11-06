@@ -4,6 +4,8 @@ on:
     branches: ['**']
   pull_request:
   workflow_call:
+permissions:
+  contents: read
 jobs:
   tests:
     runs-on: ubuntu-latest

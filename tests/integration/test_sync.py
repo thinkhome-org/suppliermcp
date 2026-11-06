@@ -125,7 +125,12 @@ def test_soap_gateway_sends_only_allowed_reads():
             assert method == "POST"
             assert kwargs["endpoint"] == "getProductDetail"
             assert b"<code>001</code>" in kwargs["body"]
-            assert b"http://www.elinkx.cz" in kwargs["body"]
+            from defusedxml.ElementTree import fromstring
+
+            assert (
+                fromstring(kwargs["body"]).find(".//{http://www.elinkx.cz}getProductDetail")
+                is not None
+            )
             return b"<Response/>"
 
     g = EdGateway(Transport(), "https://example/service.asmx", "login", "password")
