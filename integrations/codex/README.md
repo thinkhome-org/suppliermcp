@@ -1,6 +1,6 @@
 # Codex connection
 
-The server uses Streamable HTTP with a signed RS256 bearer token. Supply a token from your identity issuer in `SUPPLIERMCP_TOKEN`; never commit tokens. Copy the example TOML into the desired isolated Codex profile after review. The ThinkHome deployment uses `https://suppliermcp.thinkhome.org/mcp` through the existing Cloudflare connector; see [Portainer deployment](../../docs/portainer.md).
+The server uses Streamable HTTP with a signed RS256 bearer token. Supply a token from your identity issuer in `SUPPLIERMCP_TOKEN`; never commit tokens. Copy the example TOML into the desired isolated Codex profile after review. The ThinkHome deployment uses `https://supdb.thinkhome.org/mcp` through the existing Cloudflare connector; see [Portainer deployment](../../docs/portainer.md).
 
 Tools work without skills. To package the two optional canonical skills:
 

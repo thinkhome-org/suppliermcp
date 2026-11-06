@@ -1181,7 +1181,7 @@ wheels = [
 
 [[package]]
 name = "suppliermcp"
-version = "2.0.0rc3"
+version = "2.0.0rc4"
 source = { editable = "." }
 dependencies = [
     { name = "defusedxml" },
