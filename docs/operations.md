@@ -36,7 +36,7 @@ A failed refresh keeps prior prices and marks refresh failure. Re-downloading un
 
 ## Search limits
 
-Discovery scans at most 1,000 candidates and reports the limit, indexing lag, and non-exhaustiveness. Use exact/list tools when Typesense is unavailable. Lists materialize at most 100,000 rows; larger results return exact count and inclusive/exclusive source-ID partitions. Pages last 30 minutes, hold at most 20 rows, and reduce rows to respect response size. Request cursors without changed filters; another identity cannot reuse them. Oversized individual products return a visible size error, never silent description truncation.
+Discovery returns at most 1,000 confirmed ranked matches. With filters, it can scan further candidates to verify eligibility and count unknowns. It reports truncation and index lag. Use exact/list tools when Typesense is unavailable. Lists materialize at most 100,000 rows; larger results return exact count and inclusive/exclusive source-ID partitions. Pages last 30 minutes, hold at most 20 rows, and reduce rows to respect response size. Request cursors without changed filters; another identity cannot reuse them. Oversized individual products return a visible size error, never silent description truncation.
 
 Only verified common fields support numeric filters. Native unmapped fields remain source-scoped text. Category-specific mappings must be verified before enabling category schema. The committed map starts empty: no invented RAM/capacity/category facts.
 
@@ -51,14 +51,14 @@ Source status retains separate domain outcomes and the last verified complete ca
 
 ## Persistent local runtime
 
-The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Its protected configuration is in `/Users/samuel/.local/share/suppliermcp-live/`: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
+The live account uses Compose project `suppliermcp-live` and dedicated named volumes, separately from `suppliermcp-test`. Choose a protected operator directory for configuration: `runtime.env` holds supplier/database credentials and the public verifier key; `source-contracts.json` holds verified account method windows and schedules; `signing-key.pem` and `client.env` are host-only signing/client credentials. The private key is never mounted into either application container. Do not commit or print these files.
 
-From the repository:
+From the repository, after setting `SUPPLIERMCP_ENV_FILE` and `SUPPLIERMCP_CONTRACTS_FILE` to the protected files:
 
 ```sh
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env up -d --build
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh ed_public
-docker compose --project-name suppliermcp-live --env-file /Users/samuel/.local/share/suppliermcp-live/runtime.env exec worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" up -d --build
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" exec worker python -m suppliermcp.worker refresh ed_public
+docker compose --project-name suppliermcp-live --env-file "$SUPPLIERMCP_ENV_FILE" exec worker python -m suppliermcp.worker refresh mega --endpoint StoItemBase
 ```
 
 The last command is permitted only within the verified full-export window. Outside it, the scheduler records `outside_supplier_window` and `next_allowed_at`. Do not bypass windows by looping targeted reads. One canonical representation per scheduled family is used; equivalent `_El` variants remain available for explicit product-only probes. PUBLIC catalog refreshes hourly; 100MEGA baseline daily, prices/stock hourly, selected enrichment daily. eD PRIVATE is disabled until separately configured. The initial budget is 1 GiB compressed/downloaded, 2 GiB expanded and 20 GiB retained artifacts, rather than assuming one account's measured export size is a universal maximum.

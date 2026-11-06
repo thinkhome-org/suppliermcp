@@ -52,7 +52,7 @@ Keep application bearer authentication enabled. Avoid an interactive browser-log
 
 The ThinkHome stack was installed with fresh volumes on 2026-11-05/06 in Portainer environment 3, stack 24. Its validated image is pinned to `ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23` (source commit `80bbddb`). The target pulled the image successfully, migrations exited 0, and Cloudflare created the public route and DNS record. Public liveness/readiness returned 200; missing and invalid bearer tokens returned 401; authenticated discovery returned seven tools and two resources. See [deployment evidence](portainer-deployment-2026-11-06.json) for the catalog acceptance state, which is separate from service availability.
 
-The protected target client profile is `/Users/samuel/.local/share/suppliermcp-thinkhome/codex.toml`, with its token in the sibling `client.env`. These files are local operator artifacts, not repository content. The initial client token lasts 30 days; renew it with the host-only signing key before expiry.
+Keep the target client profile and token in the operator’s protected directory. Renew a static client token before expiry with the host-only signing key. For web ChatGPT, use the scoped OAuth flow in the login guide.
 
 Verify unauthorized `/mcp` access returns 401. On a v2 candidate, authenticated clients should discover the seven catalog tools plus `list_operations` and `read_operation`. Check the two skill resources as well. Run `scripts/live_verify.py --url https://suppliermcp.thinkhome.org/mcp --report /protected/path/report.json` with `SUPPLIERMCP_TOKEN` supplied privately. Inspect the report's checks, not merely process exit status.
 
