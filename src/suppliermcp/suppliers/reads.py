@@ -35,6 +35,7 @@ from suppliermcp.suppliers.mega.capabilities import (
 )
 from suppliermcp.suppliers.registry import OperationSpec, resolve_operation
 from suppliermcp.suppliers.transport import SupplierTransport
+from suppliermcp.sync.artifacts import bounded_archive
 
 _PROCESS_CURSOR_KEY = secrets.token_bytes(32)
 _read_limiter = RunVar("supplier_read_capacity")
@@ -532,14 +533,8 @@ class OperationReader:
             for chunk in chunks:
                 buffer.write(chunk)
             try:
-                with zipfile.ZipFile(buffer) as archive:
-                    entries = archive.infolist()
-                    if (
-                        len(entries) > 100
-                        or sum(e.file_size for e in entries) > self.settings.max_expanded_bytes
-                    ):
-                        raise CatalogError("payload_too_large")
-                    for index, entry in enumerate(entries, 1):
+                with bounded_archive(buffer, self.settings.max_expanded_bytes) as archive:
+                    for index, entry in enumerate(archive.infolist(), 1):
                         if not entry.is_dir():
                             with archive.open(entry) as f:
                                 consume(

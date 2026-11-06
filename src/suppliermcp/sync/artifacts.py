@@ -149,17 +149,29 @@ def _elements(source, on_root=None, projection=None, validate_element=None):
             stack[-1].remove(element)
 
 
+@contextmanager
+def bounded_archive(stream, max_expanded):
+    # CPython reads ZIP64 end records here without allocating the central directory.
+    end = zipfile._EndRecData(stream)
+    if end is None:
+        raise zipfile.BadZipFile()
+    if end[zipfile._ECD_ENTRIES_TOTAL] > 100 or end[zipfile._ECD_SIZE] > 512 * 1024:
+        raise CatalogError("payload_too_large")
+    with zipfile.ZipFile(stream) as archive:
+        entries = archive.infolist()
+        if len(entries) > 100 or sum(e.file_size for e in entries) > max_expanded:
+            raise CatalogError("payload_too_large")
+        yield archive
+
+
 def parse_xml(
     path: Path, max_expanded=1024**3, on_root=None, projection=None, validate_element=None
 ):
     """Yield complete end elements; callers may clear processed record elements."""
     try:
         if zipfile.is_zipfile(path):
-            with zipfile.ZipFile(path) as archive:
-                entries = archive.infolist()
-                if len(entries) > 100 or sum(e.file_size for e in entries) > max_expanded:
-                    raise CatalogError("payload_too_large")
-                for entry in entries:
+            with path.open("rb") as stream, bounded_archive(stream, max_expanded) as archive:
+                for entry in archive.infolist():
                     member = PurePosixPath(entry.filename)
                     if member.is_absolute() or ".." in member.parts or "\\" in entry.filename:
                         raise CatalogError("unsafe_archive")
