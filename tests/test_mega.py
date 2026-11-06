@@ -70,7 +70,7 @@ def test_unknown_window_prevents_network_call():
 def test_missing_identity_and_invalid_schema(tmp_path):
     with pytest.raises(CatalogError, match="missing_product_identity"):
         parse(tmp_path, '<Result><StoItem Name="Broken"/></Result>')
-    with pytest.raises(CatalogError, match="unexpected_export_root"):
+    with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
         parse(tmp_path, "<html><body>Error</body></html>")
 
 

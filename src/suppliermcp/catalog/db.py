@@ -24,3 +24,10 @@ def migrate(conn):
             if not conn.execute("SELECT 1 FROM migrations WHERE name=%s", (path.name,)).fetchone():
                 conn.execute(path.read_text())
                 conn.execute("INSERT INTO migrations VALUES (%s)", (path.name,))
+
+
+def require_projected_catalog(conn):
+    if not conn.execute(
+        "SELECT 1 FROM migrations WHERE name='010_catalog_projection.sql'"
+    ).fetchone():
+        raise CatalogError("catalog_migration_required", retryable=True)

@@ -25,7 +25,7 @@ from suppliermcp.catalog.contracts import (
     SearchResult,
     utcnow,
 )
-from suppliermcp.catalog.db import connect
+from suppliermcp.catalog.db import connect, require_projected_catalog
 from suppliermcp.catalog.matching import match_items
 from suppliermcp.catalog.offers import compare
 from suppliermcp.search.discovery import search
@@ -70,6 +70,7 @@ class CatalogService:
 
         def run():
             with connect(self.settings) as conn:
+                require_projected_catalog(conn)
                 return self._bounded(operation(conn))
 
         try:

@@ -4,7 +4,7 @@ from fastmcp import FastMCP
 from starlette.responses import JSONResponse
 
 from suppliermcp.api import create_api
-from suppliermcp.catalog.db import connect
+from suppliermcp.catalog.db import connect, require_projected_catalog
 from suppliermcp.config import Settings
 
 from . import resources, tools
@@ -31,7 +31,7 @@ def create_server(settings):
     async def ready(request):
         try:
             with connect(settings) as conn:
-                conn.execute("SELECT 1 FROM source_items LIMIT 1")
+                require_projected_catalog(conn)
             return JSONResponse({"ready": True})
         except Exception:
             return JSONResponse({"ready": False}, status_code=503)

@@ -10,8 +10,9 @@ from urllib.parse import quote
 import httpx
 
 from suppliermcp.catalog.contracts import CatalogError
+from suppliermcp.catalog.db import require_projected_catalog
 
-ALIAS = "supplier_catalog"
+ALIAS = "supplier_catalog_projected"
 SYNONYMS = json.loads(Path(__file__).with_name("synonyms.json").read_text())
 
 
@@ -159,6 +160,7 @@ def documents(conn, rows):
 def drain_outbox(conn, client):
     count = 0
     with conn.transaction():
+        require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         # Share the publication lane so a snapshot cannot overtake a newer publication.
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
@@ -201,6 +203,7 @@ def drain_outbox(conn, client):
 def rebuild_index(conn, client):
     name = "catalog_" + secrets.token_hex(8)
     with conn.transaction():
+        require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
         client.create(name)

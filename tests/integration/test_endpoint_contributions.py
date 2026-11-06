@@ -129,10 +129,13 @@ def test_migration_preserves_legacy_evidence(conn):
             "INSERT INTO observations VALUES ('mega:7','mega','base','Name','{\"value\":\"Original\"}')"
         )
         migrate(conn)
-        assert conn.execute("SELECT data,value_key FROM observations").fetchone() == (
+        assert conn.execute(
+            "SELECT data,value_key FROM legacy_unprojected_observations"
+        ).fetchone() == (
             {"value": "Original"},
             "",
         )
+        assert not conn.execute("SELECT 1 FROM observations").fetchall()
         conn.execute("SET LOCAL search_path TO public")
         conn.execute("DROP SCHEMA legacy_upgrade CASCADE")
 
@@ -271,8 +274,33 @@ def test_v1_checkpoint_upgrade_preserves_id_and_revalidates_scope(conn):
         conn.execute(
             "INSERT INTO endpoint_checkpoints VALUES ('mega','schema','A',now() - interval '1 day','same',1,NULL)"
         )
+        from suppliermcp.catalog.contracts import Offer
+        from suppliermcp.catalog.db import require_projected_catalog
+
+        offer = Offer(item_id=old.item_id, unit_net="10", observations=old.observations)
+        conn.execute(
+            "INSERT INTO current_offers VALUES (%s,'mega','price',%s,'A')",
+            (old.item_id, Jsonb(offer.model_dump(mode="json"))),
+        )
+        conn.execute(
+            "INSERT INTO query_results VALUES ('old','alice','detail',now()+interval '1 hour','{}')"
+        )
+        conn.execute("INSERT INTO query_cursors VALUES ('history','old',0)")
+        pending = stage(conn, BatchManifest(interface="mega", domain="catalog"), [old])
+        with pytest.raises(CatalogError, match="catalog_migration_required"):
+            require_projected_catalog(conn)
         conn.execute("SELECT setval('catalog_revision',1)")
         migrate(conn)
+        require_projected_catalog(conn)
+        assert not conn.execute("SELECT 1 FROM query_cursors WHERE id='history'").fetchone()
+        with pytest.raises(CatalogError, match="import_requires_projection"):
+            publish(conn, pending)
+        # Existing typed identity remains queryable while old embedded evidence is quarantined.
+        core = get_product(conn, old.item_id)
+        assert core.item.sku == old.sku and core.item.name == old.name
+        assert not core.item.observations
+        assert core.offers[0].unit_net == 10 and not core.offers[0].observations
+        assert conn.execute("SELECT observations FROM legacy_unprojected_embedded").fetchone()[0]
         assert put(conn, "A", [product("A", ["blue"])], artifact_sha256="same") > 1
         assert conn.execute("SELECT id FROM source_items").fetchall() == [(old.item_id,)]
         assert {o.value for o in get_product(conn, old.item_id).item.observations} == {"blue"}

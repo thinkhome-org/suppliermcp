@@ -10,7 +10,7 @@ from suppliermcp.catalog.contracts import (
     Offer,
     SourceItem,
 )
-from suppliermcp.suppliers.offer_contract import apply_contract
+from suppliermcp.suppliers.offer_contract import apply_contract, import_projection
 from suppliermcp.sync.artifacts import parse_xml
 
 from .capabilities import require_window
@@ -104,13 +104,16 @@ class MegaAdapter:
         root_container = []
 
         def remember_root(root):
+            root_values.clear()
             root_values.update(root.attrib)
-            root_container.append(root)
+            export_values.clear()
+            root_container[:] = [root]
 
         for element in parse_xml(
             Path(manifest.path),
             max_expanded=self.max_expanded_bytes,
             on_root=remember_root,
+            projection=lambda name: import_projection(manifest, name, offer_contract),
         ):
             tag = element.tag.rsplit("}", 1)[-1]
             if tag == offer_contract.get("export_timestamp_field"):

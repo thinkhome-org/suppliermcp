@@ -5,7 +5,7 @@ import pytest
 
 from suppliermcp.catalog.contracts import BatchManifest, CatalogError, Filter, SourceItem
 from suppliermcp.search.discovery import search
-from suppliermcp.search.index import IndexClient, drain_outbox, rebuild_index
+from suppliermcp.search.index import ALIAS, IndexClient, drain_outbox, rebuild_index
 from suppliermcp.sync.publish import publish, stage
 
 
@@ -125,7 +125,7 @@ def test_worker_upgrades_v1_index(conn, index):
         typesense_key="test-only",
     )
     create_app(settings).tasks["suppliermcp.index"].func()
-    fields = index.request("GET", "/collections/supplier_catalog").json()["fields"]
+    fields = index.request("GET", f"/collections/{ALIAS}").json()["fields"]
     assert {"supplier", "verified", "name", "brand", "model", "code"} <= {f["name"] for f in fields}
 
 
@@ -145,7 +145,7 @@ def test_numeric_filter_returns_only_match_at_original_position_1001(conn, index
     rebuild_index(conn, index)
     page = index.request(
         "GET",
-        "/collections/supplier_catalog/documents/search",
+        f"/collections/{ALIAS}/documents/search",
         params={"q": "ssd", "query_by": "text", "per_page": 250, "page": 5},
     ).json()
     last = page["hits"][0]["document"]["id"]
