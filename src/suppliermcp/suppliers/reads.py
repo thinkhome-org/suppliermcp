@@ -7,6 +7,7 @@ import hmac
 import json
 import logging
 import re
+import secrets
 import struct
 import tempfile
 import zipfile
@@ -35,6 +36,7 @@ from suppliermcp.suppliers.mega.capabilities import (
 from suppliermcp.suppliers.registry import OperationSpec, resolve_operation
 from suppliermcp.suppliers.transport import SupplierTransport
 
+_PROCESS_CURSOR_KEY = secrets.token_bytes(32)
 _read_limiter = RunVar("supplier_read_capacity")
 SOAP = "http://schemas.xmlsoap.org/soap/envelope/"
 _private_request = ContextVar("supplier_request", default=False)
@@ -174,7 +176,9 @@ class _Page:
     cursor_format = struct.Struct(">QQ32s")
     cursor_length = 108
 
-    def __init__(self, spec, limit, identity, arguments, credentials, cursor, now, ttl):
+    def __init__(
+        self, spec, limit, identity, arguments, credentials, cursor, now, ttl, signing_key
+    ):
         self.result = ReadResult(
             operation_id=spec.operation_id,
             output_schema=spec.output_schema,
@@ -196,7 +200,8 @@ class _Page:
             separators=(",", ":"),
         ).encode()
         key = json.dumps(credentials, separators=(",", ":")).encode()
-        self.key = hmac.digest(key, context, "sha256")
+        account_key = hmac.digest(signing_key, key, "sha256")
+        self.key = hmac.digest(account_key, context, "sha256")
         self.start, self.expected, self.expires = 0, None, now + ttl
         if cursor is not None:
             try:
@@ -391,6 +396,11 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
 class OperationReader:
     def __init__(self, settings: Settings, *, transport_factory=SupplierTransport, clock=utcnow):
         self.settings, self.factory, self.clock = settings, transport_factory, clock
+        self.signing_key = (
+            base64.b64decode(settings.read_cursor_key.get_secret_value(), validate=True)
+            if settings.read_cursor_key is not None
+            else _PROCESS_CURSOR_KEY
+        )
         self.contracts = (
             json.loads(settings.source_contracts_path.read_text())
             if settings.source_contracts_path
@@ -434,6 +444,7 @@ class OperationReader:
             cursor,
             int(self.clock().timestamp()),
             self.settings.result_ttl_seconds,
+            self.signing_key,
         )
         if preview.result.catalog_projection:
             if spec.interface == "mega":

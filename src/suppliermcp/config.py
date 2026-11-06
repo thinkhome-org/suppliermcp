@@ -1,9 +1,11 @@
 """Server-only configuration. Supplier interfaces may be independently absent."""
 
+import base64
+import binascii
 import os
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from pydantic import ConfigDict, Field, SecretStr, field_validator
 
 from suppliermcp.catalog.contracts import Model
 
@@ -13,6 +15,23 @@ class ClientRegistration(Model):
 
 
 class Settings(Model):
+    model_config = ConfigDict(hide_input_in_errors=True)
+    read_cursor_key: SecretStr | None = Field(default=None, repr=False, exclude=True)
+
+    @field_validator("read_cursor_key")
+    @classmethod
+    def validate_read_cursor_key(cls, value):
+        if value is not None:
+            try:
+                decoded = base64.b64decode(value.get_secret_value(), validate=True)
+                if len(decoded) < 32:
+                    raise ValueError
+            except (ValueError, binascii.Error):
+                raise ValueError(
+                    "read_cursor_key requires at least 32 bytes encoded as base64"
+                ) from None
+        return value
+
     auth_clients: dict[str, ClientRegistration] = Field(default_factory=dict)
     auth_legacy_subjects: set[str] = Field(default_factory=set)
     credentials: dict[str, tuple[SecretStr, SecretStr]] = Field(
@@ -61,6 +80,8 @@ class Settings(Model):
             if name == "credentials":
                 continue
             value = os.getenv("SUPPLIERMCP_" + name.upper())
+            if name == "read_cursor_key" and not value:
+                continue
             if value is not None:
                 if name in {
                     "allowed_hosts",

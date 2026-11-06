@@ -275,3 +275,50 @@ def test_ed_end_date_defaults_to_today_in_prague():
     spec = next(s for s in READS if s.operation_id == "ed_public.getInvoiceList")
     now = datetime(2026, 11, 5, 23, 30, tzinfo=UTC)
     assert validate_arguments(spec, {"dateFrom": "2026-11-01"}, now)["dateTo"] == "2026-11-06"
+
+
+async def test_continuations_need_independent_operator_key_and_original_credentials(tmp_path):
+    import base64
+    import secrets
+
+    from pydantic import SecretStr, ValidationError
+
+    spec = next(s for s in READS if s.operation_id == "mega.StoItemBase.targeted")
+    with pytest.raises(ValidationError, match="at least 32 bytes") as error:
+        Settings(read_cursor_key="short-secret")
+    assert "short-secret" not in str(error.value)
+    supplier = make_reader(
+        lambda _: httpx.Response(
+            200, content=b"<Result><Item>" + b"x" * 3000 + b"</Item></Result>"
+        ),
+        spec,
+        tmp_path,
+    )
+    key = SecretStr(base64.b64encode(secrets.token_bytes(32)).decode())
+
+    def replica(signing, credentials=None):
+        settings = supplier.settings.model_copy(
+            update={"read_cursor_key": signing, "max_response_bytes": 1000}
+        )
+        if credentials:
+            settings.credentials = credentials
+        reader = OperationReader(settings, transport_factory=supplier.factory, clock=supplier.clock)
+        reader.contracts = supplier.contracts
+        return reader
+
+    page = await replica(key).read_operation(IDENTITY, spec.operation_id, arguments(spec))
+    cursor = page.next_cursor
+    assert (
+        cursor
+        and (
+            await replica(key).read_operation(
+                IDENTITY, spec.operation_id, arguments(spec), cursor=cursor
+            )
+        ).fields
+    )
+    for other in (
+        replica(None),
+        replica(key, {"mega": (SecretStr("login"), SecretStr("rotated-password"))}),
+    ):
+        with pytest.raises(CatalogError, match="invalid_cursor"):
+            await other.read_operation(IDENTITY, spec.operation_id, arguments(spec), cursor=cursor)
