@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}.wiki
+          ref: master
           path: wiki
       - run: python scripts/build_wiki.py wiki
       - working-directory: wiki
