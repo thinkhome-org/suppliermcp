@@ -342,3 +342,56 @@ async def test_continuations_need_independent_operator_key_and_original_credenti
     ):
         with pytest.raises(CatalogError, match="invalid_cursor"):
             await other.read_operation(IDENTITY, spec.operation_id, arguments(spec), cursor=cursor)
+
+
+async def test_other_reviewed_elinkx_service_reuses_wrapped_reads(monkeypatch, tmp_path):
+    import json
+    from dataclasses import replace
+    from xml.etree.ElementTree import fromstring
+
+    from suppliermcp.suppliers import registry
+
+    profile = replace(
+        registry.SERVICES["ed_public"],
+        supplier="fixture",
+        account="fixture_account",
+        host="fixture.example",
+    )
+    monkeypatch.setattr(registry, "SERVICES", {"fixture_service": profile})
+    (tmp_path / "operation_contracts.json").write_text(
+        json.dumps(
+            {
+                "fixture_service": {
+                    "namespace": "urn:fixture",
+                    "operations": {
+                        "GetItem": ["read", "documents:read", [], "Item", "fixture WSDL"]
+                    },
+                }
+            }
+        )
+    )
+    monkeypatch.setattr(registry, "files", lambda _: tmp_path)
+    monkeypatch.setattr(registry, "_registry", registry._registry.__wrapped__)
+    spec = registry.resolve_operation("fixture_service.GetItem")
+
+    def response(request):
+        assert request.headers["host"] == "fixture.example"
+        assert request.url.path == "/service.asmx"
+        assert request.headers["soapaction"] == '"urn:fixture/GetItem"'
+        assert "authorization" not in request.headers
+        operation = fromstring(request.content).find(f"{{{SOAP}}}Body/{{urn:fixture}}GetItem")
+        assert operation.findtext("{urn:fixture}login") == "fixture-login"
+        return httpx.Response(
+            200,
+            content=f'<s:Envelope xmlns:s="{SOAP}"><s:Body>'
+            '<GetItemResponse xmlns="urn:fixture"><GetItemResult>ok</GetItemResult>'
+            "</GetItemResponse></s:Body></s:Envelope>".encode(),
+        )
+
+    reader = make_reader(response, spec, tmp_path)
+    reader.settings = Settings(
+        credentials={"fixture_account": ("fixture-login", "fixture-password")}
+    )
+    result = await reader.read_operation(IDENTITY, spec.operation_id, {})
+    assert [field.value for field in result.fields] == ["ok"]
+    assert account_binding("login", profile) != account_binding("login")

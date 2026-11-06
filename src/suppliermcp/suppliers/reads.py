@@ -161,7 +161,7 @@ def _soap(spec, args, credentials):
     envelope = Element("soap:Envelope", {"xmlns:soap": SOAP})
     body = SubElement(envelope, "soap:Body")
     namespace = spec.action.removesuffix(spec.name)
-    if spec.interface.startswith("ed_"):
+    if spec.profile.binding == "wrapped":
         parent = SubElement(body, spec.name, {"xmlns": namespace.rstrip("/")})
         args = {"login": credentials[0], "password": credentials[1], **args}
     else:
@@ -279,7 +279,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
         if soap:
             expected = [(SOAP, "Envelope"), (SOAP, "Body")]
             operation_ns = spec.action.removesuffix(spec.name)
-            if spec.interface.startswith("ed_"):
+            if spec.profile.binding == "wrapped":
                 operation_ns = operation_ns.rstrip("/")
                 expected.append((operation_ns, spec.name + "Response"))
             expected.append((operation_ns, spec.name + "Result"))
@@ -404,7 +404,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
         parser.Parse(b"", True)
     except (expat.ExpatError, LookupError):
         raise CatalogError("invalid_supplier_xml") from None
-    if soap and not result_seen and not (body_seen and spec.interface == "mega_order"):
+    if soap and not result_seen and not (body_seen and spec.profile.empty_body):
         invalid()
     return download
 
@@ -438,17 +438,17 @@ class OperationReader:
         )
 
     def _read(self, spec: OperationSpec, args, identity, cursor):
-        interface = "mega" if spec.interface.startswith("mega") else spec.interface
+        interface = spec.profile.account
         credentials = self.settings.credentials.get(interface)
         if not credentials:
             raise CatalogError("source_not_configured")
         credentials = tuple(v.get_secret_value() for v in credentials)
 
         def window():
-            if spec.interface == "mega":
-                contract = account_exports(self.contracts.get("mega", {}), credentials[0]).get(
-                    spec.name, {}
-                )
+            if spec.profile.binding == "export":
+                contract = account_exports(
+                    self.contracts.get(interface, {}), credentials[0], spec.profile
+                ).get(spec.name, {})
                 require_window(verified_export_window(spec, contract), spec.mode, self.clock())
 
         preview = _Page(
@@ -463,9 +463,9 @@ class OperationReader:
             self.signing_key,
         )
         if preview.result.catalog_projection:
-            if spec.interface == "mega" and spec.name not in _EMPTY_HOG:
+            if spec.profile.binding == "export" and spec.name not in _EMPTY_HOG:
                 catalog_projection(
-                    "mega",
+                    spec.interface,
                     spec.name,
                     "SHOP" if spec.name in {"StoItemShop_El", "StoItemShoptet_El"} else "Result",
                 )
@@ -473,13 +473,13 @@ class OperationReader:
                 table_projection(args)
         window()
         hosts = {
-            httpx.URL(spec.target).host,
+            spec.profile.host,
             *self.contracts.get(interface, {}).get("download_hosts", []),
         }
         transport = self.factory(
             hosts,
             {spec.operation_id, "download"},
-            auth=credentials if interface == "mega" else None,
+            auth=credentials if spec.profile.family == "i6ws" else None,
             max_bytes=self.settings.max_download_bytes,
         )
         token = _private_request.set(True)
@@ -489,7 +489,7 @@ class OperationReader:
                 "before_request": window,
                 "timeout": httpx.Timeout(self.settings.download_timeout_seconds, connect=10),
             }
-            if spec.interface == "mega":
+            if spec.profile.binding == "export":
                 transport.consume(
                     "POST",
                     spec.target,

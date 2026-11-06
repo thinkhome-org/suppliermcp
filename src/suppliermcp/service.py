@@ -102,7 +102,14 @@ class CatalogService:
         rows = []
         page = {"operations": rows, "next_offset": None}
         for index, spec in enumerate(specs[offset : offset + self.settings.page_size], offset):
-            rows.append(asdict(spec))
+            rows.append(
+                asdict(spec)
+                | {
+                    "supplier": spec.profile.supplier,
+                    "family": spec.profile.family,
+                    "account": spec.profile.account,
+                }
+            )
             page["next_offset"] = index + 1 if index + 1 < len(specs) else None
             if len(to_json(page)) > self.settings.max_response_bytes:
                 rows.pop()

@@ -14,6 +14,7 @@ from suppliermcp.suppliers.ed.private import EdPrivateAdapter
 from suppliermcp.suppliers.ed.public import EdPublicAdapter
 from suppliermcp.suppliers.mega.adapter import MegaAdapter
 from suppliermcp.suppliers.mega.capabilities import account_exports
+from suppliermcp.suppliers.profiles import SERVICES
 from suppliermcp.suppliers.transport import SupplierTransport
 from suppliermcp.sync.artifacts import ArtifactStore
 
@@ -33,23 +34,25 @@ def build_adapters(settings):
     for interface, (login, password) in settings.credentials.items():
         options = contracts.get(interface, {})
         store = ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget)
+        if interface not in {"ed_public", "ed_private", "mega"}:
+            continue  # Direct reads can be enabled before a catalog adapter exists.
+        profile = SERVICES[interface]
         if interface == "mega":
             transport = SupplierTransport(
-                {"i6ws.100mega.cz"},
+                {profile.host},
                 {"GetResult", "GetResultByCode", "GetResultByFromTo"},
                 auth=(login.get_secret_value(), password.get_secret_value()),
             )
             adapters[interface] = MegaAdapter(
-                transport, store, account_exports(options, login.get_secret_value())
+                transport, store, account_exports(options, login.get_secret_value(), profile)
             )
         else:
-            host = ("public" if interface == "ed_public" else "private") + "-ws-cz.elinkx.biz"
             transport = SupplierTransport(
-                {host, *options.get("download_hosts", [])}, READS | {"download"}
+                {profile.host, *options.get("download_hosts", [])}, READS | {"download"}
             )
             gateway = EdGateway(
                 transport,
-                "https://" + host + "/service.asmx",
+                profile.url,
                 login.get_secret_value(),
                 password.get_secret_value(),
             )
@@ -250,7 +253,7 @@ def create_app(settings):
             conn.execute("DELETE FROM query_results WHERE expires_at < now()")
             ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
             adapters = build_adapters(settings)
-            for interface in settings.enabled_interfaces:
+            for interface, adapter in adapters.items():
                 options = contracts.get(interface, {})
                 schedules = [
                     (domain, None, interval)
@@ -263,7 +266,6 @@ def create_app(settings):
                 for domain, endpoint, interval in schedules:
                     if domain not in {"catalog", "price", "stock", "schema"} or interval < 60:
                         continue
-                    adapter = adapters[interface]
                     source_endpoint = endpoint or getattr(
                         adapter, "endpoints", getattr(adapter, "methods", {})
                     ).get(domain, domain)

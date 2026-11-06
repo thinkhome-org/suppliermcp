@@ -8,6 +8,7 @@ from types import MappingProxyType
 from typing import Literal
 
 from suppliermcp.catalog.contracts import CatalogError
+from suppliermcp.suppliers.profiles import SERVICES
 
 Scope = Literal["catalog:read", "documents:read"]
 
@@ -36,6 +37,10 @@ class OperationSpec:
     days: tuple[int, ...] = ()
     hours: tuple[int, ...] = ()
 
+    @property
+    def profile(self):
+        return SERVICES[self.interface]
+
 
 _EXPORT_METHODS = {
     "full": ("GetResult", ()),
@@ -53,13 +58,38 @@ _EXPORT_METHODS = {
 @cache
 def _registry():
     contracts = json.loads(files(__package__).joinpath("operation_contracts.json").read_text())
-    mega = contracts.pop("mega")
     specs = {}
     for interface, service in contracts.items():
+        profile = SERVICES[interface]
+        if profile.binding == "export":
+            for name, (scope, evidence, windows) in service["exports"].items():
+                for (mode, (method, fields)), window in zip(
+                    _EXPORT_METHODS.items(), windows, strict=True
+                ):
+                    days, hours = service["windows"][window]
+                    operation_id = f"{interface}.{name}.{mode}"
+                    effect = "read" if scope and days and hours else "blocked"
+                    specs[operation_id] = OperationSpec(
+                        operation_id,
+                        interface,
+                        name,
+                        mode,
+                        effect,
+                        scope,
+                        f"{profile.url}/{method}",
+                        "",
+                        fields,
+                        f"{name}_Schema",
+                        evidence,
+                        "stream",
+                        tuple(days),
+                        tuple(hours),
+                    )
+            continue
         for name, (effect, scope, fields, output, evidence) in service["operations"].items():
             operation_id = f"{interface}.{name}"
             strategy = (
-                "download" if interface.startswith("ed_") and "Download" in name else "bounded"
+                "download" if profile.binding == "wrapped" and "Download" in name else "bounded"
             )
             specs[operation_id] = OperationSpec(
                 operation_id,
@@ -68,33 +98,12 @@ def _registry():
                 "soap",
                 effect,
                 scope,
-                service["target"],
+                profile.url,
                 service["namespace"].rstrip("/") + "/" + name,
                 tuple(InputField(*field) for field in fields),
                 output,
                 evidence,
                 strategy,
-            )
-    for name, (scope, evidence, windows) in mega["exports"].items():
-        for (mode, (method, fields)), window in zip(_EXPORT_METHODS.items(), windows, strict=True):
-            days, hours = mega["windows"][window]
-            operation_id = f"mega.{name}.{mode}"
-            effect = "read" if scope and days and hours else "blocked"
-            specs[operation_id] = OperationSpec(
-                operation_id,
-                "mega",
-                name,
-                mode,
-                effect,
-                scope,
-                f"https://i6ws.100mega.cz/Default.asmx/{method}",
-                "",
-                fields,
-                f"{name}_Schema",
-                evidence,
-                "stream",
-                tuple(days),
-                tuple(hours),
             )
     return MappingProxyType(specs)
 

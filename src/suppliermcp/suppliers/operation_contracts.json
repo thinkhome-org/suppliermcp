@@ -1,6 +1,5 @@
 {
   "ed_public": {
-    "target": "https://public-ws-cz.elinkx.biz/service.asmx",
     "namespace": "http://www.elinkx.cz",
     "operations": {
       "getAuthTokenEshop": ["blocked", null, [["idEshop", "int", true], ["loginEshop", "string", false], ["passwordEshop", "string", false]], "ResponseAuthenticationData", "ed_public WSDL: Get authentication data for eshop."],
@@ -25,7 +24,6 @@
     }
   },
   "ed_private": {
-    "target": "https://private-ws-cz.elinkx.biz/service.asmx",
     "namespace": "http://www.elinkx.cz",
     "operations": {
       "changeDocument": ["write", null, [["docChangeDefinition", "DocumentChangeDefinition", false]], "ResponseChangeDocument", "ed_private WSDL: Makes changes to the document."],
@@ -63,7 +61,6 @@
     }
   },
   "mega_order": {
-    "target": "https://i6ws.100mega.cz/Order.asmx",
     "namespace": "http://www.cybersoft.cz/I6/Web/WebService/Order/",
     "operations": {
       "AppendNoteIntText": ["write", null, [["OrderId", "int", true], ["OrderNoteText", "string", true]], "OrderInfo", "mega_order WSDL: Append text into internal Note of existing order."],
@@ -98,7 +95,6 @@
     }
   },
   "mega_default": {
-    "target": "https://i6ws.100mega.cz/Default.asmx",
     "namespace": "http://www.cybersoft.cz/I6/Web/WebService/",
     "operations": {
       "GetResult": ["blocked", null, [["resultType", "string", false]], "any", "mega_default WSDL: Raw resultType selection is prohibited; use the named export and mode."],

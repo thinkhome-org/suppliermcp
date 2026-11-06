@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from defusedxml.ElementTree import fromstring
 
 from suppliermcp.catalog.contracts import CatalogError, utcnow
+from suppliermcp.suppliers.profiles import SERVICES
 
 
 def parse_capabilities(data: bytes) -> dict:
@@ -54,14 +55,14 @@ def parse_capabilities(data: bytes) -> dict:
         raise CatalogError("invalid_capabilities") from None
 
 
-def account_binding(login):
-    return hashlib.sha256(("i6ws.100mega.cz\0" + login).encode()).hexdigest()
+def account_binding(login, profile=SERVICES["mega"]):
+    return hashlib.sha256((profile.host + "\0" + login).encode()).hexdigest()
 
 
-def account_exports(options, login):
+def account_exports(options, login, profile=SERVICES["mega"]):
     return (
         options.get("exports", {})
-        if options.get("account_login_sha256") == account_binding(login)
+        if options.get("account_login_sha256") == account_binding(login, profile)
         else {}
     )
 
@@ -114,14 +115,15 @@ def refresh_account_contracts(settings, previous):
     """Replace the authenticated account's capabilities while keeping its offer mappings."""
     from suppliermcp.suppliers.transport import SupplierTransport
 
-    credentials = settings.credentials.get("mega")
+    profile = SERVICES["mega"]
+    credentials = settings.credentials.get(profile.account)
     if not credentials:
         raise CatalogError("source_not_configured")
     binding = account_binding(credentials[0].get_secret_value())
     if previous.get("mega", {}).get("account_login_sha256", binding) != binding:
         raise CatalogError("account_contract_mismatch")
     transport = SupplierTransport(
-        {"i6ws.100mega.cz"},
+        {profile.host},
         {"capabilities"},
         auth=tuple(v.get_secret_value() for v in credentials),
         max_bytes=4 * 1024**2,
@@ -129,7 +131,7 @@ def refresh_account_contracts(settings, previous):
     try:
         current = parse_capabilities(
             transport.read(
-                "GET", "https://i6ws.100mega.cz/ResultTypeInfo.ashx", endpoint="capabilities"
+                "GET", f"https://{profile.host}/ResultTypeInfo.ashx", endpoint="capabilities"
             )
         )
     finally:

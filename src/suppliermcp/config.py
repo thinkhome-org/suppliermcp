@@ -8,6 +8,7 @@ from pathlib import Path
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 
 from suppliermcp.catalog.contracts import Model
+from suppliermcp.suppliers.profiles import SERVICES
 
 
 class ClientRegistration(Model):
@@ -68,7 +69,7 @@ class Settings(Model):
     @classmethod
     def from_env(cls):
         credentials = {}
-        for interface in ["ed_public", "ed_private", "mega"]:
+        for interface in dict.fromkeys(profile.account for profile in SERVICES.values()):
             prefix = f"SUPPLIERMCP_{interface.upper()}"
             login, password = os.getenv(prefix + "_LOGIN"), os.getenv(prefix + "_PASSWORD")
             if bool(login) != bool(password):

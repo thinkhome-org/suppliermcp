@@ -11,6 +11,7 @@ from suppliermcp.catalog.contracts import (
     SourceItem,
 )
 from suppliermcp.suppliers.offer_contract import apply_contract, import_projection
+from suppliermcp.suppliers.profiles import SERVICES
 from suppliermcp.suppliers.registry import resolve_operation
 from suppliermcp.sync.artifacts import parse_xml
 
@@ -26,7 +27,11 @@ class MegaAdapter:
     endpoints = {"catalog": "StoItemBase", "stock": "StoItemQtyFree", "price": "StoItemPriceOrd"}
 
     def __init__(
-        self, transport=None, store=None, contracts=None, base_url="https://i6ws.100mega.cz"
+        self,
+        transport=None,
+        store=None,
+        contracts=None,
+        base_url="https://" + SERVICES["mega"].host,
     ):
         self.transport, self.store = transport, store
         self.contracts, self.base_url = contracts or {}, base_url
@@ -95,7 +100,7 @@ class MegaAdapter:
             delta_to=to_time,
         )
         self.transport.download(
-            f"{self.base_url}/Default.asmx/{method}?{urlencode(params)}",
+            f"{self.base_url}{SERVICES['mega'].path}/{method}?{urlencode(params)}",
             self.store,
             manifest,
             endpoint=method,
