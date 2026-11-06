@@ -25,6 +25,8 @@ jobs:
           version: '0.9.9'
           python-version: '3.12'
       - run: uv sync --locked
+      - name: Verify the dedicated login stack
+        run: uv run python scripts/identity_smoke.py
       - name: Build version-matched release assets
         run: |
           set -eu

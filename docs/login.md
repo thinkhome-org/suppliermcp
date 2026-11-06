@@ -12,3 +12,5 @@ The optional `compose.identity.yaml` deploys a dedicated Keycloak and database. 
 A successful metadata request alone proves discovery only. Record the actual client/account acceptance without posting tokens, subjects or supplier payloads.
 
 [Keycloak container guide](https://www.keycloak.org/server/containers) · [OpenAI app authentication](https://developers.openai.com/apps-sdk/build/auth/)
+
+Run `uv run python scripts/identity_smoke.py` to test the pinned production Compose definition with disposable credentials, PostgreSQL and an isolated loopback port. It verifies the configured issuer, S256 support and realm persistence after restarting both services. The release workflow runs the same check before building release assets.
