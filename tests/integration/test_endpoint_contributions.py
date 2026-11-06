@@ -188,3 +188,35 @@ def test_shop_facts_join_only_existing_supplier_sku(conn):
     record.values["sku"] = "unknown"
     with pytest.raises(CatalogError, match="unresolved_product_reference"):
         put(conn, "shop", [record])
+
+
+def test_class_export_keeps_unmatched_sku_until_catalog_catches_up(conn):
+    from suppliermcp.catalog.contracts import SchemaRecord
+
+    endpoint = "X-StoItemClass"
+    put(conn, "base", [product("base", [])])
+    rows = [
+        SchemaRecord(
+            interface="mega",
+            kind="product_facts",
+            values={
+                "supplier": "mega",
+                "sku": sku,
+                "observations": [
+                    Observation(
+                        interface="mega", endpoint=endpoint, field="class", value="A"
+                    ).model_dump(mode="json")
+                ],
+            },
+        )
+        for sku in ("001", "002")
+    ]
+    options = dict(replace_scope="endpoint", artifact_sha256="a" * 64)
+    put(conn, endpoint, rows, **options)
+    assert get_product(conn, "mega:1").item.observations[0].value == "A"
+    query = "SELECT data->>'sku' FROM source_schema WHERE kind='unmatched_product_class'"
+    assert conn.execute(query).fetchall() == [("002",)]
+    put(conn, "base", [product("base", [], id="2")])
+    put(conn, endpoint, rows, **options)
+    assert get_product(conn, "mega:2").item.observations[0].value == "A"
+    assert conn.execute(query).fetchall() == []

@@ -14,6 +14,14 @@ from suppliermcp.catalog.contracts import (
 )
 
 
+def _class_export(manifest):
+    return (
+        manifest.interface == "mega"
+        and manifest.mode == "full"
+        and manifest.endpoint.removesuffix("_El") == "X-StoItemClass"
+    )
+
+
 def stage(conn, manifest, rows):
     run_id = uuid4()
     with conn.transaction():
@@ -43,6 +51,14 @@ def stage(conn, manifest, rows):
             AND s.sku=t.data->'values'->>'sku'""",
             (run_id,),
         )
+        if _class_export(manifest):
+            # Supplier class lists can include SKUs outside the active account catalog.
+            conn.execute(
+                """UPDATE staging SET data=jsonb_set(data,'{kind}','"unmatched_product_class"')
+                WHERE run_id=%s AND kind='SchemaRecord' AND data->>'kind'='product_facts'
+                AND data->'values'->>'item_id' IS NULL""",
+                (run_id,),
+            )
         if conn.execute(
             "SELECT 1 FROM staging WHERE run_id=%s AND kind='SchemaRecord' AND data->>'kind'='product_facts' AND data->'values'->>'item_id' IS NULL LIMIT 1",
             (run_id,),
@@ -101,7 +117,12 @@ def publish(conn, run_id, *, accept_reason=None):
             )
             conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
             return checkpoint[2]
-        if checkpoint and manifest.artifact_sha256 and manifest.artifact_sha256 == checkpoint[1]:
+        if (
+            checkpoint
+            and manifest.artifact_sha256
+            and manifest.artifact_sha256 == checkpoint[1]
+            and not _class_export(manifest)
+        ):
             scope = " AND item_id=ANY(%s)" if manifest.mode == "targeted" else ""
             args = (manifest.interface, manifest.endpoint) + ((replace_ids,) if scope else ())
             conn.execute(
