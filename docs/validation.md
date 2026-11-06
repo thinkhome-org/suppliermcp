@@ -4,7 +4,7 @@ For v2, see the [candidate acceptance and outstanding cases](supplier-api/v2-acc
 
 ## Live acceptance on 2026-11-05
 
-The protected local project is `suppliermcp-live`, with authenticated MCP at `http://127.0.0.1:8000/mcp`. Machine-readable, payload-free evidence is in [live-validation-2026-11-05.json](live-validation-2026-11-05.json). The first snapshot below precedes the night-window follow-up. Counts are measured snapshots, not a promise that a changing supplier catalog is constant.
+The protected local project used in this v1 check was `suppliermcp-live`, with authenticated MCP at `http://127.0.0.1:8000/mcp`. Machine-readable, payload-free evidence is in [live-validation-2026-11-05.json](live-validation-2026-11-05.json). The first snapshot below precedes the night-window follow-up. Counts are measured snapshots, not a promise that a changing supplier catalog is constant.
 
 - **eD PUBLIC:** the documented ZIP was downloaded and all **124,532 products** were parsed, published, indexed and enumerated through MCP. The previously measured ZIP was 47,069,717 bytes, expanded XML 619,833,546 bytes. PUBLIC exposes 28 product fields; PRIVATE-only data is not invented.
 - **100MEGA:** the full permitted stock export published **33,432 products**. A permitted targeted read of one real SKU additionally published `StoItemPriceOrdCur`, `CpsStiVal`, `StoItemEAN`, `StiPacking`, `StiRelation` and `AttSti`; that product had a price/currency, 727 observations and 16 directed relationships. Those targeted checks alone do **not** establish full baseline/price/parameter coverage. The initial snapshot preceded the verified night window, starting **21:00 Europe/Prague**; later full-export results are recorded below.
