@@ -220,3 +220,61 @@ def test_class_export_keeps_unmatched_sku_until_catalog_catches_up(conn):
     put(conn, endpoint, rows, **options)
     assert get_product(conn, "mega:2").item.observations[0].value == "A"
     assert conn.execute(query).fetchall() == []
+
+
+def test_identical_empty_targeted_responses_replace_each_requested_sku(conn):
+    put(conn, "A", [product("A", ["red"]), product("A", ["blue"], id="2")])
+    for sku in ["001", "002"]:
+        put(
+            conn,
+            "A",
+            [],
+            requested_skus=[sku],
+            replace_scope="items",
+            mode="targeted",
+            artifact_sha256="same-empty-body",
+        )
+    assert not get_product(conn, "mega:2").item.observations
+
+
+def test_replaying_unchanged_run_keeps_original_revision(conn):
+    first = put(conn, "A", [product("A", ["red"])], artifact_sha256="first")
+    run_id = stage(
+        conn,
+        BatchManifest(interface="mega", domain="schema", endpoint="A", artifact_sha256="first"),
+        [product("A", ["red"])],
+    )
+    assert publish(conn, run_id) == first
+    put(conn, "A", [product("A", ["blue"])], artifact_sha256="next")
+    assert publish(conn, run_id) == first
+
+
+def test_v1_checkpoint_upgrade_preserves_id_and_revalidates_scope(conn):
+    from pathlib import Path
+
+    from psycopg.types.json import Jsonb
+
+    from suppliermcp.catalog.db import migrate
+
+    with conn.transaction():
+        conn.execute("CREATE SCHEMA v1_upgrade")
+        conn.execute("SET LOCAL search_path TO v1_upgrade")
+        conn.execute("CREATE TABLE migrations(name text PRIMARY KEY)")
+        for path in sorted(Path("migrations").glob("00[1-8]*.sql")):
+            conn.execute(path.read_text())
+            conn.execute("INSERT INTO migrations VALUES (%s)", (path.name,))
+        old = product("A", ["red"])
+        conn.execute(
+            "INSERT INTO source_items VALUES (%s,%s,true,1)",
+            (old.item_id, Jsonb(old.model_dump(mode="json"))),
+        )
+        conn.execute(
+            "INSERT INTO endpoint_checkpoints VALUES ('mega','schema','A',now() - interval '1 day','same',1,NULL)"
+        )
+        conn.execute("SELECT setval('catalog_revision',1)")
+        migrate(conn)
+        assert put(conn, "A", [product("A", ["blue"])], artifact_sha256="same") > 1
+        assert conn.execute("SELECT id FROM source_items").fetchall() == [(old.item_id,)]
+        assert {o.value for o in get_product(conn, old.item_id).item.observations} == {"blue"}
+        conn.execute("SET LOCAL search_path TO public")
+        conn.execute("DROP SCHEMA v1_upgrade CASCADE")

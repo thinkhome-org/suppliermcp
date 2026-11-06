@@ -67,11 +67,26 @@ def run_export_refresh(conn, adapter, endpoint, codes=None):
 
 
 def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
-    now, manifest = utcnow(), None
-    revision = None
     source_endpoint = endpoint or getattr(
         adapter, "endpoints", getattr(adapter, "methods", {})
     ).get(domain, domain)
+    if codes and adapter.interface == "ed_private":
+        source_endpoint = "getProductDetail"
+    # Each installation has one configured account per interface.
+    lock_key = f"suppliermcp.refresh:{adapter.interface}:{source_endpoint}"
+    if not conn.execute(
+        "SELECT pg_try_advisory_lock(hashtextextended(%s, 0))", (lock_key,)
+    ).fetchone()[0]:
+        raise CatalogError("refresh_in_progress", retryable=True)
+    try:
+        return _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint)
+    finally:
+        conn.execute("SELECT pg_advisory_unlock(hashtextextended(%s, 0))", (lock_key,))
+
+
+def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
+    now, manifest = utcnow(), None
+    revision = None
     outcome = "refresh_failed"
     try:
         manifest = (

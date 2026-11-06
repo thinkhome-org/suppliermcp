@@ -83,10 +83,10 @@ def publish(conn, run_id, *, accept_reason=None):
         if not record:
             raise CatalogError("import_not_found")
         manifest = BatchManifest.model_validate(record[0])
-        if record[1] == "published":
+        if record[1] in {"published", "unchanged", "superseded"}:
             return record[2]
         checkpoint = conn.execute(
-            "SELECT started_at,artifact_sha256,revision FROM endpoint_checkpoints WHERE interface=%s AND domain=%s AND endpoint=%s",
+            "SELECT started_at,artifact_sha256,revision,import_scope FROM endpoint_checkpoints WHERE interface=%s AND domain=%s AND endpoint=%s",
             (manifest.interface, manifest.domain, manifest.endpoint),
         ).fetchone()
         identities = [
@@ -117,8 +117,20 @@ def publish(conn, run_id, *, accept_reason=None):
             )
             conn.execute("DELETE FROM staging WHERE run_id=%s", (run_id,))
             return checkpoint[2]
+        scope_fields = {
+            "mode",
+            "requested_skus",
+            "replace_scope",
+            "authoritative_identity",
+            "complete",
+            "stock_only",
+            "delta_from",
+            "delta_to",
+        }
+        import_scope = manifest.model_dump(mode="json", include=scope_fields)
         if (
             checkpoint
+            and import_scope == checkpoint[3]
             and manifest.artifact_sha256
             and manifest.artifact_sha256 == checkpoint[1]
             and not _class_export(manifest)
@@ -370,7 +382,7 @@ def publish(conn, run_id, *, accept_reason=None):
                 )
             cursor.close()
             conn.execute(
-                "INSERT INTO endpoint_checkpoints VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain,endpoint) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,endpoint_checkpoints.delta_to)",
+                "INSERT INTO endpoint_checkpoints VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain,endpoint) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,endpoint_checkpoints.delta_to),import_scope=EXCLUDED.import_scope",
                 (
                     manifest.interface,
                     manifest.domain,
@@ -379,6 +391,7 @@ def publish(conn, run_id, *, accept_reason=None):
                     manifest.artifact_sha256,
                     revision,
                     manifest.delta_to,
+                    Jsonb(import_scope),
                 ),
             )
             conn.execute(
