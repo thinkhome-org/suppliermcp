@@ -31,12 +31,11 @@ def source_contracts(settings):
 
 def build_adapters(settings):
     adapters, contracts = {}, source_contracts(settings)
-    for interface, (login, password) in settings.credentials.items():
+    for interface in settings.enabled_interfaces:
         options = contracts.get(interface, {})
         store = ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget)
-        if interface not in {"ed_public", "ed_private", "mega"}:
-            continue  # Direct reads can be enabled before a catalog adapter exists.
         profile = SERVICES[interface]
+        login, password = settings.credentials[profile.account]
         if interface == "mega":
             transport = SupplierTransport(
                 {profile.host},

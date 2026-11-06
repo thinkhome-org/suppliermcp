@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import ConfigDict, Field, SecretStr, field_validator
 
 from suppliermcp.catalog.contracts import Model
-from suppliermcp.suppliers.profiles import SERVICES
+from suppliermcp.suppliers.profiles import CATALOG_INTERFACES, SERVICES
 
 
 class ClientRegistration(Model):
@@ -64,7 +64,7 @@ class Settings(Model):
 
     @property
     def enabled_interfaces(self) -> list[str]:
-        return list(self.credentials)
+        return [name for name in CATALOG_INTERFACES if SERVICES[name].account in self.credentials]
 
     @classmethod
     def from_env(cls):

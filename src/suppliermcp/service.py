@@ -33,6 +33,7 @@ from suppliermcp.search.exact import lookup
 from suppliermcp.search.index import configured_client
 from suppliermcp.search.listing import next_page, start_listing
 from suppliermcp.search.schema import catalog_schema_page
+from suppliermcp.suppliers.profiles import SERVICES
 from suppliermcp.suppliers.reads import OperationReader, ReadResult
 from suppliermcp.suppliers.registry import operation_inventory
 
@@ -266,19 +267,20 @@ class CatalogService:
                     if refresh:
                         from suppliermcp.sync.jobs import schedule_refresh
 
-                        for interface in self.settings.enabled_interfaces:
-                            if (interface == "mega") == (product.item.supplier == "mega"):
-                                try:
-                                    schedule_refresh(
-                                        interface,
-                                        "price",
-                                        [product.item.sku],
-                                        settings=self.settings,
-                                    )
-                                    result.warnings.append("refresh_pending")
-                                except Exception:
-                                    result.warnings.append("refresh_unavailable")
-                        if not self.settings.enabled_interfaces:
+                        interfaces = [
+                            name
+                            for name in self.settings.enabled_interfaces
+                            if SERVICES[name].supplier == product.item.supplier
+                        ]
+                        for interface in interfaces:
+                            try:
+                                schedule_refresh(
+                                    interface, "price", [product.item.sku], settings=self.settings
+                                )
+                                result.warnings.append("refresh_pending")
+                            except Exception:
+                                result.warnings.append("refresh_unavailable")
+                        if not interfaces:
                             result.warnings.append("refresh_unavailable")
                     result.product_id = product_id
                     results.append(result)
@@ -299,12 +301,6 @@ class CatalogService:
         """Report configured/disabled sources, refresh failures and database/index revisions."""
 
         def operation(conn):
-            status = repository.read_status(conn, self.settings.enabled_interfaces)
-            for interface in ["ed_public", "ed_private", "mega"]:
-                state = status.interfaces.setdefault(interface, {"outcome": "not_fetched"})
-                state["configured"] = interface in self.settings.enabled_interfaces
-                if not state["configured"]:
-                    state["outcome"] = "disabled"
-            return status
+            return repository.read_status(conn, self.settings.enabled_interfaces)
 
         return await self._catalog(operation)

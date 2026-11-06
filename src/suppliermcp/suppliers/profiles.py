@@ -20,6 +20,9 @@ class ServiceProfile:
         return f"https://{self.host}{self.path}"
 
 
+# Interfaces with a reviewed catalog adapter. Other services support direct reads only.
+CATALOG_INTERFACES = ("ed_public", "ed_private", "mega")
+
 _MEGA_HOST = "i6ws.100mega.cz"
 SERVICES = MappingProxyType(
     {
