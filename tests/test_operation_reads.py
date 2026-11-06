@@ -257,16 +257,36 @@ async def test_catalog_projection_blocks_unknown_children_attributes_and_oversiz
         await reader.read_operation(owner, spec.operation_id, arguments(spec))
 
 
-async def test_unknown_export_and_binary_projection_fail_closed_before_network(tmp_path):
+async def test_binary_projection_fails_closed_without_linux_limits(tmp_path, monkeypatch):
+    monkeypatch.setattr("sys.platform", "darwin")
     owner = Identity("iss", "user", "catalog", frozenset({"catalog:read"}))
-    for name in ("mega.X-HOG.targeted", "ed_public.getProductListDownloadXMLWithTransform"):
-        spec = next(s for s in READS if s.operation_id == name)
-        reader = make_reader(lambda _: pytest.fail("unexpected request"), spec, tmp_path)
-        args = arguments(spec)
-        if "Transform" in name:
-            args.update(transformation="EDLINKXLS", fileFormat="XLS")
+    name = "ed_public.getProductListDownloadXMLWithTransform"
+    spec = next(s for s in READS if s.operation_id == name)
+    reader = make_reader(lambda _: pytest.fail("unexpected request"), spec, tmp_path)
+    args = arguments(spec) | {"transformation": "EDLINKXLS", "fileFormat": "XLS"}
+    with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
+        await reader.read_operation(owner, name, args)
+
+
+@pytest.mark.parametrize(
+    "body,allowed",
+    [
+        (b"<Result><StoItem><SPresentTree/></StoItem></Result>", True),
+        (b"<Result><StoItem Code='X'/></Result>", False),
+        (b"<Result><StoItem><Unknown/></StoItem></Result>", False),
+        (b"<Result>customer</Result>", False),
+    ],
+)
+async def test_empty_hog_only(tmp_path, body, allowed):
+    owner = Identity("iss", "user", "catalog", frozenset({"catalog:read"}))
+    spec = next(s for s in READS if s.operation_id == "mega.X-HOG.targeted")
+    reader = make_reader(lambda _: httpx.Response(200, content=body), spec, tmp_path)
+    if allowed:
+        page = await reader.read_operation(owner, spec.operation_id, arguments(spec))
+        assert page.catalog_projection and page.fields == []
+    else:
         with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
-            await reader.read_operation(owner, name, args)
+            await reader.read_operation(owner, spec.operation_id, arguments(spec))
 
 
 def test_ed_end_date_defaults_to_today_in_prague():

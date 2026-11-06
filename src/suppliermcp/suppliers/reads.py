@@ -28,6 +28,7 @@ from suppliermcp.access import Identity, require_scope
 from suppliermcp.catalog.contracts import CatalogError, Model, utcnow
 from suppliermcp.config import Settings
 from suppliermcp.suppliers.catalog_projection import catalog_projection
+from suppliermcp.suppliers.ed.transforms import table_projection
 from suppliermcp.suppliers.mega.capabilities import (
     account_exports,
     require_window,
@@ -254,7 +255,11 @@ class _Page:
         return self.result
 
 
+_EMPTY_HOG = {"X-HOG", "X-HOG_El"}
+
+
 def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
+    empty_hog = export and preview.result.catalog_projection and spec.name in _EMPTY_HOG
     parser = expat.ParserCreate(namespace_separator=" ")
     stack = []
     download = None
@@ -286,6 +291,14 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
                 result_seen = True
         if export and not stack and name not in {"Result", "SHOP"}:
             invalid()
+        if empty_hog:
+            path_parts = tuple(s["name"] for s in stack) + (name,)
+            if (
+                ns
+                or attrs
+                or path_parts != ("Result", "StoItem", "SPresentTree")[: len(path_parts)]
+            ):
+                raise CatalogError("catalog_projection_unavailable")
         if stack:
             stack[-1]["text"] = ""
             stack[-1]["children"] += 1
@@ -299,7 +312,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
         )
         project = preview.result.catalog_projection and not (soap and spec.strategy == "download")
         node = None
-        if project:
+        if project and not empty_hog:
             qualified = f"{{{ns}}}{name}" if ns else name
             if not stack:
                 node = catalog_projection(spec.interface, spec.name, qualified)
@@ -333,6 +346,8 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
     def chars(value):
         if not stack:
             return
+        if empty_hog and value.strip():
+            raise CatalogError("catalog_projection_unavailable")
         f = stack[-1]
         control = f["name"].lower() == "statuscode" or (
             soap and spec.strategy == "download" and f["name"].lower() in {"url", "isready"}
@@ -448,14 +463,14 @@ class OperationReader:
             self.signing_key,
         )
         if preview.result.catalog_projection:
-            if spec.interface == "mega":
+            if spec.interface == "mega" and spec.name not in _EMPTY_HOG:
                 catalog_projection(
                     "mega",
                     spec.name,
                     "SHOP" if spec.name in {"StoItemShop_El", "StoItemShoptet_El"} else "Result",
                 )
             elif args.get("fileFormat", "XML") != "XML":
-                raise CatalogError("catalog_projection_unavailable")
+                table_projection(args)
         window()
         hosts = {
             httpx.URL(spec.target).host,
@@ -511,6 +526,8 @@ class OperationReader:
         def consume(data, prefix=""):
             if args.get("fileFormat", "XML").upper() == "XML":
                 _xml(data, spec, preview, prefix=prefix)
+            elif preview.result.catalog_projection:
+                table_projection(args)(data, preview, prefix)
             else:
                 # Fixed-size independently decodable blocks preserve non-XML formats.
                 for i, chunk in enumerate(data):
@@ -534,6 +551,9 @@ class OperationReader:
                 buffer.write(chunk)
             try:
                 with bounded_archive(buffer, self.settings.max_expanded_bytes) as archive:
+                    if preview.result.catalog_projection and args.get("fileFormat", "XML") != "XML":
+                        if sum(not entry.is_dir() for entry in archive.infolist()) != 1:
+                            raise CatalogError("catalog_projection_unavailable")
                     for index, entry in enumerate(archive.infolist(), 1):
                         if not entry.is_dir():
                             with archive.open(entry) as f:
