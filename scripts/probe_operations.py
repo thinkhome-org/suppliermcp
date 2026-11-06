@@ -176,8 +176,8 @@ def main():
         help="Exercise a separately authorized both-scope identity",
     )
     p.add_argument("--concurrency", type=int, choices=(1, 2, 3, 4), default=2)
-    p.add_argument("--wire-mib", type=int, choices=range(1, 257), metavar="1..256", default=2)
-    p.add_argument("--expanded-mib", type=int, choices=range(1, 1025), metavar="1..1024", default=8)
+    p.add_argument("--wire-mib", type=int, choices=range(1, 1025), metavar="1..1024", default=2)
+    p.add_argument("--expanded-mib", type=int, choices=range(1, 2049), metavar="1..2048", default=8)
     opt = p.parse_args()
     opt.operation = opt.operation or ["*"]
     s = Settings.from_env()

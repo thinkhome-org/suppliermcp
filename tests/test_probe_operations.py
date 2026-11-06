@@ -58,3 +58,35 @@ def test_iso_registry_weekdays_intersect_monday_and_sunday():
         require_window(contract, spec.mode, valid)
         with pytest.raises(CatalogError, match="outside_supplier_window"):
             require_window(contract, spec.mode, invalid)
+
+
+def test_probe_can_use_full_deployment_bounds_without_overriding_installation_limits(
+    monkeypatch, tmp_path
+):
+    import sys
+
+    configured = Settings(max_download_bytes=1024**3, max_expanded_bytes=2 * 1024**3)
+    seen = []
+
+    async def capture(settings, options, fixtures):
+        seen.append((settings.max_download_bytes, settings.max_expanded_bytes))
+
+    monkeypatch.setattr(probes, "run", capture)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "probe",
+            "--output",
+            str(tmp_path / "x.json"),
+            "--wire-mib",
+            "1024",
+            "--expanded-mib",
+            "2048",
+        ],
+    )
+    monkeypatch.setattr(probes.Settings, "from_env", lambda: configured)
+    probes.main()
+    configured.max_download_bytes = 1024
+    probes.main()
+    assert seen == [(1024**3, 2 * 1024**3), (1024, 2 * 1024**3)]
