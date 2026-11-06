@@ -13,8 +13,9 @@ from suppliermcp.config import Settings
 from .schema import catalog_schema, validate_filter
 
 
-def matching_ids(conn, query):
-    schema = catalog_schema(conn)
+def matching_ids(conn, query, *, candidate_ids=None, schema=None):
+    if query.filters and schema is None:
+        schema = catalog_schema(conn)
     conditions, params = [], []
     for f in query.filters:
         validate_filter(f, schema)
@@ -33,6 +34,9 @@ def matching_ids(conn, query):
         conditions.append(expr)
     expr = " AND ".join(conditions) or "true"
     base = "s.active"
+    if candidate_ids is not None:
+        base += " AND s.id=ANY(%s)"
+        params.append(candidate_ids)
     if query.supplier:
         base += " AND s.data->>'supplier'=%s"
         params.append(query.supplier)
@@ -46,7 +50,15 @@ def matching_ids(conn, query):
 
 
 def materialize(
-    conn, products, coverage, principal, query_hash, total=None, unknown_total=0, settings=None
+    conn,
+    products,
+    coverage,
+    principal,
+    query_hash,
+    total=None,
+    unknown_total=0,
+    settings=None,
+    price_query=None,
 ):
     settings = settings or Settings()
     result_id = secrets.token_urlsafe(24)
@@ -65,15 +77,45 @@ def materialize(
     )
     from itertools import islice
 
+    if price_query:
+        conn.execute("CREATE TEMP TABLE sorted_products_input (data jsonb) ON COMMIT DROP")
     count = 0
     products = iter(products)
     while batch := list(islice(products, 200)):
-        with conn.cursor().copy(
-            "COPY query_result_rows (result_id,ordinal,data) FROM STDIN"
-        ) as copy:
+        target = (
+            "sorted_products_input (data)"
+            if price_query
+            else "query_result_rows (result_id,ordinal,data)"
+        )
+        with conn.cursor().copy(f"COPY {target} FROM STDIN") as copy:
             for product in batch:
-                copy.write_row((result_id, count, Jsonb(product.model_dump(mode="json"))))
+                payload = Jsonb(product.model_dump(mode="json"))
+                copy.write_row((payload,) if price_query else (result_id, count, payload))
                 count += 1
+    if price_query:
+        # The snapshot contains the resolved offer, including source conflicts.
+        direction = "ASC" if price_query.sort == "price_asc" else "DESC"
+        conn.execute(
+            f"""
+            INSERT INTO query_result_rows (result_id, ordinal, data)
+            SELECT %s, row_number() OVER (ORDER BY amount {direction} NULLS LAST,
+                                                   data->>'product_id') - 1, data
+            FROM sorted_products_input
+            CROSS JOIN LATERAL jsonb_to_record(data->'offers'->0) AS o(
+                unit_net numeric, fees_net numeric, currency text, order_multiple numeric,
+                price_rule text, discount_min_qty numeric, discount numeric)
+            CROSS JOIN LATERAL (SELECT ceil(%s::numeric / order_multiple) * order_multiple AS qty) q
+            CROSS JOIN LATERAL (SELECT CASE WHEN currency = %s THEN CASE
+                WHEN %s::numeric IS NULL THEN unit_net
+                WHEN price_rule = 'plain' OR (price_rule = 'valuepack' AND qty >= discount_min_qty)
+                    THEN (unit_net + fees_net) * qty
+                WHEN price_rule = 'valuepack' AND qty < discount_min_qty
+                    THEN (unit_net + discount + fees_net) * qty
+                END END AS amount) price
+        """,
+            (result_id, price_query.quantity, price_query.currency, price_query.quantity),
+        )
+        conn.execute("DROP TABLE sorted_products_input")
     data["count"] = count
     data["total"] = count if total is None else total
     conn.execute("UPDATE query_results SET data=%s WHERE id=%s", (Jsonb(data), result_id))
@@ -123,20 +165,6 @@ def start_listing(conn, query, principal, settings=None):
                 yield from get_products(conn, ids[start : start + 200], include_evidence=False)
 
         products = compact_products()
-        if query.sort != "id":
-
-            def price(p):
-                eligible = [
-                    o.unit_net
-                    for o in p.offers
-                    if o.currency == query.currency and o.unit_net is not None
-                ]
-                return min(eligible) if eligible else None
-
-            products = list(products)
-            present = [p for p in products if price(p) is not None]
-            missing = [p for p in products if price(p) is None]
-            products = sorted(present, key=price, reverse=query.sort == "price_desc") + missing
         coverage = read_status(conn, enabled)
         digest = hashlib.sha256(query.model_dump_json().encode()).hexdigest()
         return materialize(
@@ -146,6 +174,7 @@ def start_listing(conn, query, principal, settings=None):
             principal,
             digest,
             unknown_total=len(unknown),
+            price_query=query if query.sort != "id" else None,
             settings=settings,
         )
 

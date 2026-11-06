@@ -213,7 +213,7 @@ def create_app(settings):
                 aliases = client.request("GET", "/aliases").json()["aliases"]
                 exists = any(a["name"] == ALIAS for a in aliases)
                 if not exists or not any(
-                    f["name"] == "supplier"
+                    f["name"] == "verified"
                     for f in client.request("GET", f"/collections/{ALIAS}").json()["fields"]
                 ):
                     rebuild_index(conn, client)

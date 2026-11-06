@@ -1,5 +1,6 @@
 """Rebuildable index; PostgreSQL remains authoritative."""
 
+import hashlib
 import json
 import secrets
 import unicodedata
@@ -19,6 +20,14 @@ def normalize(text):
         c for c in unicodedata.normalize("NFKD", text.casefold()) if not unicodedata.combining(c)
     )
     return " ".join(SYNONYMS.get(word, word) for word in plain.split())
+
+
+SEARCH_FIELDS = {"code": 12, "model": 10, "name": 8, "brand": 5, "text": 1}
+FACET_FIELDS = {"manufacturer", "stock_state", "category", "currency"}
+
+
+def facet_key(field, value):
+    return hashlib.sha256(f"{field}\0{value}".encode()).hexdigest()
 
 
 class IndexClient:
@@ -59,7 +68,8 @@ class IndexClient:
             json={
                 "name": name,
                 "fields": [
-                    {"name": "text", "type": "string"},
+                    *({"name": field, "type": "string"} for field in SEARCH_FIELDS),
+                    {"name": "verified", "type": "string[]", "facet": True},
                     {"name": "revision", "type": "int64"},
                     {"name": "supplier", "type": "string", "facet": True},
                 ],
@@ -87,6 +97,11 @@ def document(row, conn=None):
     )
     return {
         "id": item_id,
+        "name": normalize(data.get("name") or ""),
+        "code": normalize(" ".join(data.get(k) or "" for k in ("sku", "ean"))),
+        "model": normalize(data.get("mpn") or ""),
+        "brand": normalize(data.get("manufacturer") or ""),
+        "verified": [],
         "text": normalize(text),
         "revision": revision,
         "supplier": data.get("supplier", item_id.partition(":")[0]),
@@ -97,6 +112,13 @@ def documents(conn, rows):
     from suppliermcp.catalog.repository import get_products
 
     views = {v.product_id: v for v in get_products(conn, [r[0] for r in rows])}
+    facets = {}
+    for item_id, field, value in conn.execute(
+        "SELECT item_id,field,value FROM catalog_values WHERE item_id=ANY(%s) "
+        "AND field=ANY(%s) AND state='known'",
+        (list(views), sorted(FACET_FIELDS)),
+    ):
+        facets.setdefault(item_id, []).append(facet_key(field, value))
     labels = dict(
         conn.execute(
             "SELECT data->>'code',data->>'label' FROM source_schema WHERE kind='parameter'"
@@ -123,6 +145,7 @@ def documents(conn, rows):
             if o.interface == "mega" and o.field == "ScaId" and o.state == "known"
         )
         doc = document((item_id, data, revision))
+        doc["verified"] = facets.get(item_id, [])
         doc["text"] += " " + normalize(" ".join(extra))
         result.append(doc)
     return result

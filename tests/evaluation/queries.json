@@ -238,5 +238,23 @@
       "laptops0",
       "laptops1"
     ]
+  },
+  {
+    "family": "models",
+    "id": "ap225",
+    "name": "Přístupový bod EAP225",
+    "query": "přístupový bod EAP225",
+    "exclude": [
+      "ap235"
+    ]
+  },
+  {
+    "family": "models",
+    "id": "ap235",
+    "name": "Přístupový bod EAP235",
+    "query": "přístupový bod EAP235",
+    "exclude": [
+      "ap225"
+    ]
   }
 ]

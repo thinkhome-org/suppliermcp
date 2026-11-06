@@ -12,7 +12,8 @@ from suppliermcp.sync.publish import publish, stage
 @pytest.fixture
 def index():
     with httpx.Client(
-        base_url="http://localhost:58109", headers={"X-TYPESENSE-API-KEY": "test-only"}
+        base_url=os.getenv("SUPPLIERMCP_TEST_INDEX_URL", "http://localhost:58109"),
+        headers={"X-TYPESENSE-API-KEY": "test-only"},
     ) as http:
         for c in http.get("/collections").json():
             http.delete("/collections/" + c["name"])
@@ -98,7 +99,7 @@ def test_supplier_filter_precedes_candidate_limit(conn, index, operator, value):
     assert "candidate_scan_limited_to_1000" not in result.coverage.warnings
 
 
-def test_worker_upgrades_index_without_supplier_field(conn, index):
+def test_worker_upgrades_v1_index(conn, index):
     from suppliermcp.config import Settings
     from suppliermcp.sync.jobs import create_app
 
@@ -108,7 +109,11 @@ def test_worker_upgrades_index_without_supplier_field(conn, index):
         "/collections",
         json={
             "name": "legacy",
-            "fields": [{"name": "text", "type": "string"}, {"name": "revision", "type": "int64"}],
+            "fields": [
+                {"name": "text", "type": "string"},
+                {"name": "revision", "type": "int64"},
+                {"name": "supplier", "type": "string", "facet": True},
+            ],
         },
     )
     index.request("PUT", "/aliases/supplier_catalog", json={"collection_name": "legacy"})
@@ -116,9 +121,70 @@ def test_worker_upgrades_index_without_supplier_field(conn, index):
         database_url=os.getenv(
             "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
         ),
-        typesense_url="http://localhost:58109",
+        typesense_url=os.getenv("SUPPLIERMCP_TEST_INDEX_URL", "http://localhost:58109"),
         typesense_key="test-only",
     )
     create_app(settings).tasks["suppliermcp.index"].func()
     fields = index.request("GET", "/collections/supplier_catalog").json()["fields"]
-    assert any(f["name"] == "supplier" for f in fields)
+    assert {"supplier", "verified", "name", "brand", "model", "code"} <= {f["name"] for f in fields}
+
+
+def test_numeric_filter_returns_only_match_at_original_position_1001(conn, index):
+    from suppliermcp.catalog.contracts import Offer
+
+    rows = []
+    for n in range(1001):
+        item = SourceItem(supplier="mega", source_id=str(n), sku=str(n), name="SSD")
+        rows.extend([item, Offer(item_id=item.item_id, stock_qty=n)])
+    publish(
+        conn,
+        stage(
+            conn, BatchManifest(interface="mega", domain="catalog", artifact_sha256="numeric"), rows
+        ),
+    )
+    rebuild_index(conn, index)
+    page = index.request(
+        "GET",
+        "/collections/supplier_catalog/documents/search",
+        params={"q": "ssd", "query_by": "text", "per_page": 250, "page": 5},
+    ).json()
+    last = page["hits"][0]["document"]["id"]
+    result = search(
+        conn,
+        index,
+        "ssd",
+        [Filter(field="stock_qty", operator="eq", value=int(last.split(":")[1]))],
+        "alice",
+    )
+    assert [p.product_id for p in result.results] == [last]
+
+
+def test_model_match_outranks_description_mention(conn, index):
+    from suppliermcp.catalog.contracts import Observation
+
+    rows = [
+        SourceItem(supplier="mega", source_id="device", sku="001", name="Router", mpn="M200"),
+        SourceItem(
+            supplier="mega",
+            source_id="accessory",
+            sku="002",
+            name="Stand",
+            observations=[
+                Observation(
+                    interface="mega",
+                    endpoint="base",
+                    field="description",
+                    value="Compatible with M200",
+                )
+            ],
+        ),
+    ]
+    publish(
+        conn,
+        stage(
+            conn, BatchManifest(interface="mega", domain="catalog", artifact_sha256="rank"), rows
+        ),
+    )
+    rebuild_index(conn, index)
+    results = search(conn, index, "M200", [], "alice").results
+    assert [row.product_id for row in results] == ["mega:device", "mega:accessory"]

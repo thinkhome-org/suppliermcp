@@ -154,11 +154,14 @@ class CatalogQuery(Model):
     filters: list[Filter] = Field(default_factory=list)
     classification: Literal["confirmed", "unknown"] = "confirmed"
     sort: Literal["id", "price_asc", "price_desc"] = "id"
+    quantity: Positive | None = None
     currency: str | None = None
     supplier: Literal["ed", "mega"] | None = None
 
     @model_validator(mode="after")
     def price_currency(self):
+        if self.quantity is not None and self.sort == "id":
+            raise ValueError("Quantity requires price sorting")
         if self.sort != "id" and not self.currency:
             raise ValueError("Price sorting requires a currency")
         return self
@@ -217,6 +220,7 @@ class Comparison(Model):
     product_id: str | None = None
     error: dict | None = None
     offers: list[OfferQuote] = Field(default_factory=list)
+    incomparable_ids: list[str] = Field(default_factory=list)
     last_known_winner: str | None = None
     fresh_winner: str | None = None
     warnings: list[str] = Field(default_factory=list)

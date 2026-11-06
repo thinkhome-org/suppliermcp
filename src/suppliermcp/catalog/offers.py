@@ -65,6 +65,7 @@ def compare(offers, quantity, now):
     fresh = [q for q in comparable if q.fresh]
     return Comparison(
         offers=quotes,
+        incomparable_ids=[q.item_id for q in quotes if not comparable or q.total_net is None],
         last_known_winner=min(comparable, key=lambda q: q.total_net).item_id
         if comparable
         else None,
