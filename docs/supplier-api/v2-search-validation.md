@@ -35,3 +35,34 @@ Seven queries and their expected model tokens were fixed before indexing. The ba
 Five of seven queries returned a title-labelled match in their first five hits. Fourteen of the fifteen returned entries met that label. Inspection identified two different causes for the empty results. The second query's entire model token occurred immediately before a hyphen in all six matching titles. The fifth query's sole title match was an audio product. Its supplier title and evidence provided no basis for including it in an SSD search. Accordingly, the fifth case is a negative control in the subsequent evaluation. The original grades above preserve the predeclared rule.
 
 The model-token fix in `7d5eb74` indexes whole alphanumeric model components immediately before a hyphen. A synthetic regression checks the family, the full hyphenated identifier, the compact identifier and rejection of shorter prefixes and adjacent model numbers. The numbers above predate this change.
+
+## Clean v2.0.0-rc.3 catalogue, revision 11
+
+Six of six positive queries returned a relevant product in the top five. The SSD negative control returned zero hits. Across the seven queries, 21 of the 22 returned entries met their predeclared title label. The third result for the router family and variant missed its label. The hyphenated access-point model returned five relevant results.
+
+The isolated v2 database had **157,824 active products** from projected eD PUBLIC, eD PRIVATE and 100MEGA imports, including price, stock, native parameters and dictionary data. The benchmark ran from commit `0017b12`, whose application source matched the RC3 tag. PostgreSQL supplied the expected product sets before the rebuild. The same seven queries and six positive labels listed above were used, with the SSD ambiguity treated as a negative control as documented before this run.
+
+| Query intent | Expected title matches | Grades at ranks 1–5 |
+|---|---:|---|
+| Access point with Czech category words and model | 6 | 1, 1, 1 |
+| Access point by model alone | 6 | 1, 1, 1, 1, 1 |
+| Switch with Czech category word and model | 10 | 1, 1 |
+| SSD with model | 7 | 1, 1, 1, 1, 1 |
+| SSD with an ambiguous model token | 0 | No hits |
+| Router with Czech category word and model | 4 | 1, 1, 1, 1 |
+| Router by model family and variant | 2 | 1, 1, 0 |
+
+| Measurement | Result |
+|---|---:|
+| Rebuilt Typesense documents | 157,824 |
+| Full index rebuild, elapsed | 809.44 s |
+| Rebuild process, peak RSS | 730,808,320 bytes |
+| Isolated Typesense cgroup, peak memory including cache | 2,078,617,600 bytes |
+| Complete searches during a synthetic 1,000-row import | 179 |
+| Search latency, p50 / p95 | 32.39 / 43.97 ms |
+| Products checked against independent SQL ordering | 157,824 |
+| Missing, extra or misordered product IDs | 0 |
+
+The load test cycled through the seven queries and timed only searches that completed while the separate importer was staging or publishing. Its outer transaction rolled back. Afterward the catalogue still had 157,824 active products at revision 11, with zero synthetic product IDs and zero synthetic import runs.
+
+An end-to-end cursor traversal matched the independent price ordering for all 500 products in its scope. The four full-catalogue partitions then matched all 50,000, 50,000, 50,000 and 7,824 expected IDs at their expected ordinals. These checks use CZK unit-price order. The sample of seven text queries supports the stated relevance observations for those queries.
