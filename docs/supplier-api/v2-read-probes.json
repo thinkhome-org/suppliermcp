@@ -5736,6 +5736,7 @@
       "scope": "documents:read"
     },
     "mega_order.GetStatus": {
+      "acceptance_gap": "missing_legitimate_order_input",
       "both_scopes": false,
       "input": "generated_read_only",
       "interface": "mega_order",
