@@ -41,8 +41,8 @@ jobs:
           uv build --wheel
           test -f "dist/suppliermcp-${version/-rc./rc}-py3-none-any.whl"
           cp -R integrations/codex/marketplace "$native"
-          python integrations/codex/build_plugin.py "$native/plugins/suppliermcp" --codex --url "$MCP_URL"
-          python integrations/codex/build_plugin.py "$portable" --url "$MCP_URL"
+          uv run --locked python integrations/codex/build_plugin.py "$native/plugins/suppliermcp" --codex --url "$MCP_URL"
+          uv run --locked python integrations/codex/build_plugin.py "$portable" --url "$MCP_URL"
           jq -e --arg v "$version" '.version == $v' "$native/plugins/suppliermcp/.codex-plugin/plugin.json"
           jq -e --arg v "$version" '.version == $v' "$portable/plugin.json"
           zip -qr "dist/$native.zip" "$native"
