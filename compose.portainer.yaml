@@ -8,13 +8,9 @@ x-app: &app
     SUPPLIERMCP_TYPESENSE_URL: http://typesense:8108
     SUPPLIERMCP_TYPESENSE_KEY: ${SUPPLIERMCP_TYPESENSE_KEY:?Set an index API key}
     SUPPLIERMCP_AUTH_PUBLIC_KEY: ${SUPPLIERMCP_AUTH_PUBLIC_KEY:?Set the PEM verification public key}
-    SUPPLIERMCP_OAUTH_ISSUER: ${SUPPLIERMCP_OAUTH_ISSUER:-}
-    SUPPLIERMCP_OAUTH_PUBLIC_URL: ${SUPPLIERMCP_OAUTH_PUBLIC_URL:-}
-    SUPPLIERMCP_AUTH_CLIENTS: '${SUPPLIERMCP_AUTH_CLIENTS:-{}}'
-    SUPPLIERMCP_AUTH_LEGACY_SUBJECTS: '${SUPPLIERMCP_AUTH_LEGACY_SUBJECTS:-[]}'
-    SUPPLIERMCP_AUTH_ISSUER: ${SUPPLIERMCP_AUTH_ISSUER:-suppliermcp}
-    SUPPLIERMCP_AUTH_AUDIENCE: ${SUPPLIERMCP_AUTH_AUDIENCE:-suppliermcp}
-    SUPPLIERMCP_ALLOWED_HOSTS: '["${SUPDB_PUBLIC_HOST:-suppliermcp.thinkhome.org}","${SUPDB_ORIGIN_ALIAS:-suppliermcp-origin}:8000","127.0.0.1:*","localhost:*"]'
+    SUPPLIERMCP_AUTH_ISSUER: suppliermcp
+    SUPPLIERMCP_AUTH_AUDIENCE: suppliermcp
+    SUPPLIERMCP_ALLOWED_HOSTS: '["suppliermcp.thinkhome.org","suppliermcp-origin:8000","127.0.0.1:*","localhost:*"]'
     SUPPLIERMCP_ALLOWED_ORIGINS: '[]'
     SUPPLIERMCP_ARTIFACT_DIR: /data/artifacts
     SUPPLIERMCP_SOURCE_CONTRACTS_PATH: /config/source-contracts.json
@@ -25,8 +21,6 @@ x-app: &app
     SUPPLIERMCP_MEGA_PASSWORD: ${SUPPLIERMCP_MEGA_PASSWORD:-}
     SUPPLIERMCP_ED_PUBLIC_LOGIN: ${SUPPLIERMCP_ED_PUBLIC_LOGIN:-}
     SUPPLIERMCP_ED_PUBLIC_PASSWORD: ${SUPPLIERMCP_ED_PUBLIC_PASSWORD:-}
-    SUPPLIERMCP_ED_PRIVATE_LOGIN: ${SUPPLIERMCP_ED_PRIVATE_LOGIN:-}
-    SUPPLIERMCP_ED_PRIVATE_PASSWORD: ${SUPPLIERMCP_ED_PRIVATE_PASSWORD:-}
   configs:
     - source: source_contracts
       target: /config/source-contracts.json
@@ -60,13 +54,10 @@ services:
     logging: *logging
   mcp:
     <<: *app
-    environment:
-      <<: *app-env
-      SUPPLIERMCP_READ_CURSOR_KEY: ${SUPPLIERMCP_READ_CURSOR_KEY:-}
     networks:
       backend: {}
       cloudflare:
-        aliases: ["${SUPDB_ORIGIN_ALIAS:-suppliermcp-origin}"]
+        aliases: [suppliermcp-origin]
   worker:
     <<: *app
     command: [python, -m, suppliermcp.worker, run]

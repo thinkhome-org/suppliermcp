@@ -31,11 +31,12 @@ def main():
         .decode()
     )
     contracts = json.dumps({"test_note": "Unicode žluťoučký $literal"})
-    env = {k: v for k, v in os.environ.items() if not k.startswith("SUPPLIERMCP_")}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("SUPPLIERMCP_", "SUPDB_"))}
     values = {
         "SUPPLIERMCP_IMAGE": os.environ.get(
             "SUPPLIERMCP_SMOKE_IMAGE", "suppliermcp:portainer-test"
         ),
+        "SUPDB_ORIGIN_ALIAS": "suppliermcp-green-origin",
         "POSTGRES_PASSWORD": secrets.token_urlsafe(24),
         "SUPPLIERMCP_TYPESENSE_KEY": secrets.token_urlsafe(24),
         "SUPPLIERMCP_AUTH_PUBLIC_KEY": public,
@@ -72,30 +73,34 @@ def main():
                 }
             )
         )
-        compose = [
-            "docker",
-            "compose",
-            "--project-name",
-            project,
-            "--env-file",
-            str(stack_env),
-            "-f",
-            str(ROOT / "compose.portainer.yaml"),
-            "-f",
-            str(override),
-        ]
-        blue = compose
+
+        def command(project_name, manifest):
+            return [
+                "docker",
+                "compose",
+                "--project-name",
+                project_name,
+                "--env-file",
+                str(stack_env),
+                "-f",
+                str(ROOT / manifest),
+                "-f",
+                str(override),
+            ]
+
+        blue = command(project + "-blue", "compose.portainer.yaml")
+        green = command(project + "-green", "compose.portainer-v2.yaml")
         run(["docker", "network", "create", network])
         try:
             rollback_image = os.environ.get("SUPPLIERMCP_ROLLBACK_IMAGE")
-            database = compose + ["exec", "-T", "postgres"]
+            database = blue + ["exec", "-T", "postgres"]
             marker_query = (
                 "SELECT count(*) FROM source_items WHERE id='mega:rollback-check' AND active"
             )
             psql = database + ["psql", "-XAt", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp", "-c"]
             if rollback_image:
                 env["SUPPLIERMCP_IMAGE"] = rollback_image
-                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                run(blue + ["up", "-d", "--wait", "--wait-timeout", "180"])
                 run(
                     psql
                     + [
@@ -104,7 +109,7 @@ def main():
                     ]
                 )
                 # Quiesce writers before backing up the disposable v1 installation.
-                run(compose + ["stop", "mcp", "worker"])
+                run(blue + ["stop", "mcp", "worker"])
                 backup = Path(directory) / "v1.sql"
                 with backup.open("wb") as out:
                     subprocess.run(
@@ -125,21 +130,40 @@ def main():
                 env["SUPPLIERMCP_IMAGE"] = values["SUPPLIERMCP_IMAGE"]
                 # A v1 catalogue cannot prove XML ancestry. Upgrade on isolated volumes.
                 refused = subprocess.run(
-                    compose + ["run", "--rm", "--no-deps", "migrate"], capture_output=True, env=env
+                    command(project + "-blue", "compose.portainer-v2.yaml")
+                    + ["run", "--rm", "--no-deps", "migrate"],
+                    capture_output=True,
+                    env=env,
                 )
                 assert refused.returncode != 0 and b"catalog_reprojection_required" in (
                     refused.stdout + refused.stderr
                 )
                 assert run(psql + [marker_query]).strip() == "1"
-                compose = list(blue)
-                compose[compose.index(project)] = project + "-green"
-            run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
-            address = run(compose + ["port", "mcp", "8000"]).strip()
+            run(green + ["up", "-d", "--wait", "--wait-timeout", "180"])
+
+            def aliases(stack):
+                container = run(stack + ["ps", "-q", "mcp"]).strip()
+                networks = json.loads(
+                    run(
+                        [
+                            "docker",
+                            "inspect",
+                            "--format",
+                            "{{json .NetworkSettings.Networks}}",
+                            container,
+                        ]
+                    )
+                )
+                return networks[network]["Aliases"]
+
+            assert "suppliermcp-green-origin" in aliases(green)
+            assert "suppliermcp-origin" not in aliases(green)
+            address = run(green + ["port", "mcp", "8000"]).strip()
             url = "http://" + address
             assert httpx.get(url + "/health/ready").status_code == 200
             assert httpx.post(url + "/mcp").status_code == 401
             mounted = run(
-                compose
+                green
                 + [
                     "exec",
                     "-T",
@@ -151,7 +175,7 @@ def main():
             )
             assert mounted == contracts
             transported = run(
-                compose
+                green
                 + [
                     "exec",
                     "-T",
@@ -189,8 +213,8 @@ def main():
             asyncio.run(verify())
             if rollback_image:
                 assert run(psql + [marker_query]).strip() == "1"
-                run(compose + ["restart", "mcp", "postgres", "typesense", "worker"])
-                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                run(green + ["restart", "mcp", "postgres", "typesense", "worker"])
+                run(green + ["up", "-d", "--wait", "--wait-timeout", "180"])
                 assert run(psql + [marker_query]).strip() == "1"
                 # Destroy only the disposable blue volume; restore the independent backup.
                 env["SUPPLIERMCP_IMAGE"] = rollback_image
@@ -206,6 +230,8 @@ def main():
                     )
                 run(blue + ["up", "-d", "--wait", "--wait-timeout", "180"])
                 assert run(psql + [marker_query]).strip() == "1"
+                assert "suppliermcp-origin" in aliases(blue)
+                assert "suppliermcp-green-origin" not in aliases(blue)
                 restored_url = "http://" + run(blue + ["port", "mcp", "8000"]).strip()
 
                 async def check_restored_image():
@@ -225,8 +251,8 @@ def main():
                 "PASS: fresh migrations, readiness, auth, nine tools, two resources, exact config, disabled sources"
             )
         finally:
-            run(compose + ["down", "-v"])
-            if compose != blue:
+            run(green + ["down", "-v"])
+            if rollback_image:
                 run(blue + ["down", "-v"])
             run(["docker", "network", "rm", network])
 

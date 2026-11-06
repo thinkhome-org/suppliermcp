@@ -1,5 +1,6 @@
 """Rendered deployment boundaries, without production secrets or a Docker daemon."""
 
+import hashlib
 import json
 import os
 import subprocess
@@ -8,6 +9,11 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_v1_production_git_stack_manifest_stays_pinned():
+    expected = "b2ac0f774b21ab18832c7a44574b2b871eb0caf61faecc8fdc735e35600f1f93"
+    assert hashlib.sha256((ROOT / "compose.portainer.yaml").read_bytes()).hexdigest() == expected
 
 
 def render(missing=None, extra=None):
@@ -35,7 +41,7 @@ def render(missing=None, extra=None):
             "--env-file",
             "/dev/null",
             "-f",
-            str(ROOT / "compose.portainer.yaml"),
+            str(ROOT / "compose.portainer-v2.yaml"),
             "config",
             "--format",
             "json",
@@ -55,7 +61,7 @@ def test_portainer_render_isolates_services_and_orders_fresh_migrations():
     assert not any(s.get("ports") for s in services.values())
     assert {n for n, s in services.items() if "cloudflare" in s.get("networks", {})} == {"mcp"}
     assert config["networks"]["cloudflare"]["external"] is True
-    assert services["mcp"]["networks"]["cloudflare"]["aliases"] == ["suppliermcp-origin"]
+    assert services["mcp"]["networks"]["cloudflare"]["aliases"] == ["suppliermcp-green-origin"]
     assert services["migrate"]["restart"] == "no"
     assert services["migrate"]["command"] == ["python", "-m", "suppliermcp.worker", "migrate"]
     for name in ("mcp", "worker"):
@@ -131,7 +137,7 @@ def test_portainer_ui_env_file_roundtrip_preserves_special_values(tmp_path):
             "--env-file",
             str(stack_env),
             "-f",
-            str(ROOT / "compose.portainer.yaml"),
+            str(ROOT / "compose.portainer-v2.yaml"),
             "config",
             "--format",
             "json",
@@ -166,7 +172,7 @@ def test_contract_updates_change_both_service_hashes():
         "--env-file",
         "/dev/null",
         "-f",
-        str(ROOT / "compose.portainer.yaml"),
+        str(ROOT / "compose.portainer-v2.yaml"),
         "config",
         "--hash",
         "mcp,worker",

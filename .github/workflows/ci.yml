@@ -27,7 +27,8 @@ jobs:
           (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/.venv/bin/python" "$GITHUB_WORKSPACE/scripts/verify_wheel.py")
       - run: docker build -t suppliermcp:local .
       - run: uv run python scripts/smoke.py
-      - run: uv run python scripts/portainer_smoke.py
+      - name: Boot the isolated v2 Portainer manifest
+        run: uv run python scripts/portainer_smoke.py
         env:
           SUPPLIERMCP_SMOKE_IMAGE: suppliermcp:local
       - if: always()
