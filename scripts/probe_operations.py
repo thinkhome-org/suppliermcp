@@ -7,6 +7,7 @@ import json
 import os
 from collections import Counter
 from datetime import UTC, datetime, timedelta
+from importlib.metadata import version
 from pathlib import Path
 
 from suppliermcp.access import Identity
@@ -89,6 +90,7 @@ async def probe(reader, spec, args, shape, dual_scope):
     identity = Identity("local-acceptance", "account-operator", "local-reader", frozenset(scopes))
     row = {
         "observed_at": now.isoformat(timespec="seconds"),
+        "package_version": version("suppliermcp"),
         "interface": spec.interface,
         "mode": spec.mode,
         "scope": spec.scope,

@@ -18,6 +18,7 @@ async def test_missing_capability_is_sanitized_and_does_not_claim_a_supplier_cal
     spec = resolve_operation("mega.StoItemBase.targeted")
     row = await probes.probe(reader, spec, {"code": "sensitive-input"}, "operator_fixture", False)
     assert row["outcome"] == "capability_not_verified"
+    assert row["package_version"]
     assert "sensitive-input" not in json.dumps(row)
     assert probes.next_allowed(spec, reader, datetime.now(UTC)) is None
     path = tmp_path / "evidence.json"
