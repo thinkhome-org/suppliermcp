@@ -8,6 +8,7 @@ import pytest
 from suppliermcp.access import Identity
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.config import Settings
+from suppliermcp.suppliers.mega.capabilities import account_binding
 from suppliermcp.suppliers.reads import OperationReader
 from suppliermcp.suppliers.registry import operation_inventory
 from suppliermcp.suppliers.transport import SupplierTransport
@@ -41,6 +42,7 @@ def make_reader(handler, spec, tmp_path):
     if spec.interface == "mega":
         reader.contracts = {
             "mega": {
+                "account_login_sha256": account_binding("login"),
                 "exports": {
                     spec.name: {
                         "modes": [spec.mode],
@@ -48,7 +50,7 @@ def make_reader(handler, spec, tmp_path):
                         "hours": spec.hours,
                         "timezone": "Europe/Prague",
                     }
-                }
+                },
             }
         }
     return reader

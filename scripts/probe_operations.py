@@ -12,13 +12,22 @@ from pathlib import Path
 from suppliermcp.access import Identity
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.config import Settings
-from suppliermcp.suppliers.mega.capabilities import next_window, verified_export_window
+from suppliermcp.suppliers.mega.capabilities import (
+    account_exports,
+    next_window,
+    verified_export_window,
+)
 from suppliermcp.suppliers.reads import OperationReader
 from suppliermcp.suppliers.registry import operation_inventory
 
 
 def next_allowed(spec, reader, now):
-    local = reader.contracts.get("mega", {}).get("exports", {}).get(spec.name, {})
+    credentials = reader.settings.credentials.get("mega")
+    if not credentials:
+        return None
+    local = account_exports(
+        reader.contracts.get("mega", {}), credentials[0].get_secret_value()
+    ).get(spec.name, {})
     start = next_window(verified_export_window(spec, local), spec.mode, now)
     return start.isoformat() if start else None
 

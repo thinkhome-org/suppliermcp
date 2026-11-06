@@ -27,7 +27,11 @@ from suppliermcp.access import Identity, require_scope
 from suppliermcp.catalog.contracts import CatalogError, Model, utcnow
 from suppliermcp.config import Settings
 from suppliermcp.suppliers.catalog_projection import catalog_projection
-from suppliermcp.suppliers.mega.capabilities import require_window, verified_export_window
+from suppliermcp.suppliers.mega.capabilities import (
+    account_exports,
+    require_window,
+    verified_export_window,
+)
 from suppliermcp.suppliers.registry import OperationSpec, resolve_operation
 from suppliermcp.suppliers.transport import SupplierTransport
 
@@ -416,7 +420,9 @@ class OperationReader:
 
         def window():
             if spec.interface == "mega":
-                contract = self.contracts.get("mega", {}).get("exports", {}).get(spec.name, {})
+                contract = account_exports(self.contracts.get("mega", {}), credentials[0]).get(
+                    spec.name, {}
+                )
                 require_window(verified_export_window(spec, contract), spec.mode, self.clock())
 
         preview = _Page(

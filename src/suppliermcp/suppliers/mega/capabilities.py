@@ -1,5 +1,6 @@
 """Account-specific method windows; unknown permissions fail closed."""
 
+import hashlib
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from defusedxml.ElementTree import fromstring
@@ -53,6 +54,18 @@ def parse_capabilities(data: bytes) -> dict:
         raise CatalogError("invalid_capabilities") from None
 
 
+def account_binding(login):
+    return hashlib.sha256(("i6ws.100mega.cz\0" + login).encode()).hexdigest()
+
+
+def account_exports(options, login):
+    return (
+        options.get("exports", {})
+        if options.get("account_login_sha256") == account_binding(login)
+        else {}
+    )
+
+
 def verified_export_window(spec, account):
     """Intersect ISO supplier weekdays with zero-based local Python weekdays."""
     if spec.mode not in account.get("modes", []) or account.get("timezone") != "Europe/Prague":
@@ -104,6 +117,9 @@ def refresh_account_contracts(settings, previous):
     credentials = settings.credentials.get("mega")
     if not credentials:
         raise CatalogError("source_not_configured")
+    binding = account_binding(credentials[0].get_secret_value())
+    if previous.get("mega", {}).get("account_login_sha256", binding) != binding:
+        raise CatalogError("account_contract_mismatch")
     transport = SupplierTransport(
         {"i6ws.100mega.cz"},
         {"capabilities"},
@@ -124,7 +140,9 @@ def refresh_account_contracts(settings, previous):
         | {"modes": row["modes"], "windows": row["windows"], "timezone": "Europe/Prague"}
         for name, row in current.items()
     }
-    return previous | {"mega": previous.get("mega", {}) | {"exports": exports}}
+    return previous | {
+        "mega": previous.get("mega", {}) | {"account_login_sha256": binding, "exports": exports}
+    }
 
 
 def main():

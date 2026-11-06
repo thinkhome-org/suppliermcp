@@ -13,6 +13,7 @@ from suppliermcp.suppliers.ed.gateway import READS, EdGateway
 from suppliermcp.suppliers.ed.private import EdPrivateAdapter
 from suppliermcp.suppliers.ed.public import EdPublicAdapter
 from suppliermcp.suppliers.mega.adapter import MegaAdapter
+from suppliermcp.suppliers.mega.capabilities import account_exports
 from suppliermcp.suppliers.transport import SupplierTransport
 from suppliermcp.sync.artifacts import ArtifactStore
 
@@ -38,7 +39,9 @@ def build_adapters(settings):
                 {"GetResult", "GetResultByCode", "GetResultByFromTo"},
                 auth=(login.get_secret_value(), password.get_secret_value()),
             )
-            adapters[interface] = MegaAdapter(transport, store, options.get("exports", {}))
+            adapters[interface] = MegaAdapter(
+                transport, store, account_exports(options, login.get_secret_value())
+            )
         else:
             host = ("public" if interface == "ed_public" else "private") + "-ws-cz.elinkx.biz"
             transport = SupplierTransport(
@@ -172,9 +175,8 @@ def record_refresh_outcome(
         if outcome == "outside_supplier_window":
             from suppliermcp.suppliers.mega.capabilities import next_window
 
-            next_allowed = next_window(
-                adapter.contracts.get(source_endpoint, {}), "targeted" if codes else "full"
-            )
+            mode = "targeted" if codes else "full"
+            next_allowed = next_window(adapter.export_window(source_endpoint, mode), mode)
         endpoints[source_endpoint] = {
             "outcome": outcome,
             "attempted_at": now.isoformat(),
@@ -276,7 +278,7 @@ def create_app(settings):
                             require_window,
                         )
 
-                        contract = options.get("exports", {}).get(source_endpoint, {})
+                        contract = adapter.export_window(source_endpoint, "full")
                         try:
                             require_window(contract, "full")
                         except CatalogError as error:
@@ -320,10 +322,8 @@ def schedule_refresh(interface, domain, codes=None, settings=None):
         adapter = build_adapters(settings)[interface]
         from suppliermcp.suppliers.mega.capabilities import require_window
 
-        require_window(
-            adapter.contracts.get(adapter.endpoints.get(domain), {}),
-            "targeted" if codes else "full",
-        )
+        mode = "targeted" if codes else "full"
+        require_window(adapter.export_window(adapter.endpoints.get(domain), mode), mode)
     app = create_app(settings)
     with app.open():
         return (
