@@ -20,3 +20,14 @@ These observations cover the tested components and revision at the time of each 
 Use the per-operation evidence for claims about supplier coverage. A successful method listing, a successful XML download request, a parsed page of results and a complete import prove different things.
 
 [Wiki](https://github.com/thinkhome-org/suppliermcp/wiki) · [Release project](https://github.com/orgs/thinkhome-org/projects/2) · [Candidate pull request](https://github.com/thinkhome-org/suppliermcp/pull/6)
+
+
+## Published RC3 and the clean catalogue
+
+[RC3](https://github.com/thinkhome-org/suppliermcp/releases/tag/v2.0.0-rc.3) passed CI, CodeQL and the published-digest smoke/rollback job. The SHA-256 checksums of the downloaded wheel, native and portable plugin archives, and image reference were verified locally. RC2's release job stopped at a version mismatch before publishing artifacts; RC3 derives both plugin versions from package metadata.
+
+The temporary HTTPS endpoint was switched to the verified RC3 wheel. On this endpoint a Keycloak-issued personal token completed an eD invoice-list read (HTTP 200); the ordinary client received HTTP 403 for the same read. An actual Codex CLI session completed eD PRIVATE transportation and eD PUBLIC invoice-list MCP calls. The catalogue library also exercised ELINKX PUBLIC/PRIVATE and an i6ws category export using their declared protocol profiles.
+
+On the signed-in personal ChatGPT website, the operator created the cloud plugin and successfully authenticated to the temporary OAuth realm. ChatGPT presented a separate **Connect** action for chat use. The temporary window closed before confirmation of that step; no catalogue or document tool call from an ordinary ChatGPT web conversation is claimed. The temporary tunnel, both DNS records, login service and its temporary credentials were removed. Production Portainer v2 cutover remains pending access to its Docker environment. The v1 manifest retained its original bytes on main; the v2 manifest uses a separate filename and candidate origin alias.
+
+A separate v2 database was populated through the projected adapters. Verified retained eD PUBLIC and 100MEGA source artifacts were re-parsed; the eD PRIVATE baseline and stock export were fetched from the account. At revision 11 the database contained 157,824 active products. All rows in the complete price-ordered listing matched an independent SQL calculation. [Search, index rebuild and latency evidence](v2-search-validation.md).
