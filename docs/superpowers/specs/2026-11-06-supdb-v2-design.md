@@ -34,4 +34,4 @@ Výběr tříd, názvů balíčků, detailu indexů a konkrétních verzí závi
 
 Pro označení 2.0.0 jako plně funkční jsou průchod osobního ChatGPT, Codexu a ověření všech podporovaných čtení požadavky zadání. Zbývající mezery dovolují vydat kandidáta s přehledem omezení. Pro relevanci navrhuji před měřením označit očekávané výsledky na pevné sadě českých dotazů. Počáteční výkonové měření zveřejnit s konfigurací stroje; konkrétní SLA zatím nebylo zadáno.
 
-Otevřené rozhodnutí vlastníka: které identity a klienti smějí číst firemní doklady a dodací adresy. Bez přiřazeného oprávnění bude přístup zamítnut.
+Schváleno vlastníkem: oddělená oprávnění pro katalog a doklady včetně adres. Vlastní Codex a osobní ChatGPT dostanou obě. Ostatní autorizované aplikace při registraci dostanou pouze katalog. Oprávnění k dokladům pokrývá celý účet dodavatele. Dělení podle zákazníka a typu dokladu není součástí v2.
