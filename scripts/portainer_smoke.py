@@ -86,6 +86,42 @@ def main():
         ]
         run(["docker", "network", "create", network])
         try:
+            rollback_image = os.environ.get("SUPPLIERMCP_ROLLBACK_IMAGE")
+            database = compose + ["exec", "-T", "postgres"]
+            marker_query = (
+                "SELECT count(*) FROM source_items WHERE id='mega:rollback-check' AND active"
+            )
+            psql = database + ["psql", "-XAt", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp", "-c"]
+            if rollback_image:
+                env["SUPPLIERMCP_IMAGE"] = rollback_image
+                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                run(
+                    psql
+                    + [
+                        """INSERT INTO source_items(id,data,revision) VALUES ('mega:rollback-check',
+                    '{"supplier":"mega","source_id":"rollback-check","sku":"0007","name":"Synthetic"}',0)"""
+                    ]
+                )
+                # Quiesce writers before backing up the disposable v1 installation.
+                run(compose + ["stop", "mcp", "worker"])
+                backup = Path(directory) / "v1.sql"
+                with backup.open("wb") as out:
+                    subprocess.run(
+                        database
+                        + [
+                            "pg_dump",
+                            "-U",
+                            "suppliermcp",
+                            "--no-owner",
+                            "--no-privileges",
+                            "suppliermcp",
+                        ],
+                        stdout=out,
+                        env=env,
+                        check=True,
+                    )
+                backup.chmod(0o600)
+                env["SUPPLIERMCP_IMAGE"] = values["SUPPLIERMCP_IMAGE"]
             run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
             address = run(compose + ["port", "mcp", "8000"]).strip()
             url = "http://" + address
@@ -140,6 +176,39 @@ def main():
                     assert all(s["outcome"] == "disabled" for s in status["interfaces"].values())
 
             asyncio.run(verify())
+            if rollback_image:
+                assert run(psql + [marker_query]).strip() == "1"
+                run(compose + ["restart", "mcp", "postgres", "typesense", "worker"])
+                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                assert run(psql + [marker_query]).strip() == "1"
+                run(compose + ["down", "-v"])
+                env["SUPPLIERMCP_IMAGE"] = rollback_image
+                run(compose + ["up", "-d", "--wait", "postgres"])
+                with backup.open("rb") as source:
+                    subprocess.run(
+                        database + ["psql", "-qX", "-v", "ON_ERROR_STOP=1", "-U", "suppliermcp"],
+                        stdin=source,
+                        stdout=subprocess.DEVNULL,
+                        env=env,
+                        check=True,
+                    )
+                run(compose + ["up", "-d", "--wait", "--wait-timeout", "180"])
+                assert run(psql + [marker_query]).strip() == "1"
+                restored_url = "http://" + run(compose + ["port", "mcp", "8000"]).strip()
+
+                async def check_restored_image():
+                    async with Client(restored_url + "/mcp", auth=token) as client:
+                        result = await client.call_tool(
+                            "lookup_products",
+                            {"identifiers": [{"kind": "sku", "supplier": "mega", "value": "0007"}]},
+                        )
+                        data = result.structured_content
+                        assert data.get("result", data)["entries"][0]["status"] == "found"
+
+                asyncio.run(check_restored_image())
+                print(
+                    "PASS: upgrade, restart and v1 backup restoration with authenticated SKU lookup"
+                )
             print(
                 "PASS: fresh migrations, readiness, auth, nine tools, two resources, exact config, disabled sources"
             )

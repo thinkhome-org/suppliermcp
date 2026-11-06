@@ -59,6 +59,7 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
       - name: Smoke-test the published digest and record it
         env:
+          SUPPLIERMCP_ROLLBACK_IMAGE: ghcr.io/thinkhome-org/suppliermcp@sha256:451fd11823f9a3ee72acb2a3737d162d9d21fb174dd2253b1fb358c3e0fe0f23
           SUPPLIERMCP_SMOKE_IMAGE: ${{ env.IMAGE }}@${{ steps.image.outputs.digest }}
         run: |
           docker pull "$SUPPLIERMCP_SMOKE_IMAGE"
