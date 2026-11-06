@@ -1,18 +1,21 @@
+from importlib.metadata import version
+
 from fastmcp import FastMCP
 from starlette.responses import JSONResponse
 
+from suppliermcp.api import create_api
 from suppliermcp.catalog.db import connect
 from suppliermcp.config import Settings
 
 from . import resources, tools
-from .auth import verifier
+from .auth import server_auth
 
 
 def create_server(settings):
     server = FastMCP(
         "SupplierMCP",
-        version="1.0.0",
-        auth=verifier(settings),
+        version=version("suppliermcp"),
+        auth=server_auth(settings),
         mask_error_details=True,
         instructions=resources.HELP,
         strict_input_validation=True,
@@ -37,13 +40,15 @@ def create_server(settings):
 
 
 def http_app(server, settings):
-    return server.http_app(
+    app = server.http_app(
         path="/mcp",
         stateless_http=True,
         json_response=True,
         allowed_hosts=settings.allowed_hosts,
         allowed_origins=settings.allowed_origins,
     )
+    app.mount("/v2", create_api(settings))
+    return app
 
 
 def main():

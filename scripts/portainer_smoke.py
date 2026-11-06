@@ -16,6 +16,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastmcp import Client
 from portainer_env import write_portainer_env
 
+from suppliermcp.service import CATALOG_OPERATIONS
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -126,7 +128,11 @@ def main():
 
             async def verify():
                 async with Client(url + "/mcp", auth=token) as client:
-                    assert len(await client.list_tools()) == 7
+                    assert {tool.name for tool in await client.list_tools()} == {
+                        *CATALOG_OPERATIONS,
+                        "list_operations",
+                        "read_operation",
+                    }
                     assert len(await client.list_resources()) == 2
                     result = (await client.call_tool("get_catalog_status", {})).structured_content
                     status = result.get("result", result)
@@ -135,7 +141,7 @@ def main():
 
             asyncio.run(verify())
             print(
-                "PASS: fresh migrations, readiness, auth, seven tools, two resources, exact config, disabled sources"
+                "PASS: fresh migrations, readiness, auth, nine tools, two resources, exact config, disabled sources"
             )
         finally:
             run(compose + ["down", "-v"])

@@ -3,7 +3,17 @@ name = "suppliermcp"
 version = "1.0.0"
 description = "Read-only supplier catalog MCP"
 requires-python = ">=3.12,<3.13"
-dependencies = ["fastmcp", "pydantic>=2,<3", "httpx", "zeep", "defusedxml", "psycopg[binary,pool]>=3,<4", "procrastinate", "pyjwt[crypto]"]
+dependencies = [
+    "fastmcp",
+    "pydantic>=2,<3",
+    "httpx",
+    "zeep",
+    "defusedxml",
+    "psycopg[binary,pool]>=3,<4",
+    "procrastinate",
+    "pyjwt[crypto]",
+    "fastapi>=0.162.0",
+]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

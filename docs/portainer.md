@@ -52,7 +52,7 @@ The ThinkHome stack was installed with fresh volumes on 2026-11-05/06 in Portain
 
 The protected target client profile is `/Users/samuel/.local/share/suppliermcp-thinkhome/codex.toml`, with its token in the sibling `client.env`. These files are local operator artifacts, not repository content. The initial client token lasts 30 days; renew it with the host-only signing key before expiry.
 
-Verify unauthorized `/mcp` access returns 401 and authenticated clients discover seven tools and two skill resources. Run `scripts/live_verify.py --url https://suppliermcp.thinkhome.org/mcp --report /protected/path/report.json` with `SUPPLIERMCP_TOKEN` supplied privately. Inspect the report's checks, not merely process exit status.
+Verify unauthorized `/mcp` access returns 401. On a v2 candidate, authenticated clients should discover the seven catalog tools plus `list_operations` and `read_operation`. Check the two skill resources as well. Run `scripts/live_verify.py --url https://suppliermcp.thinkhome.org/mcp --report /protected/path/report.json` with `SUPPLIERMCP_TOKEN` supplied privately. Inspect the report's checks, not merely process exit status.
 
 After the fresh import, compare authoritative active product counts with index document counts and inspect `get_catalog_status` endpoint outcomes/revisions. A running worker is not proof of a populated catalog. Night-only exports wait for their permitted Europe/Prague windows; unavailable/disabled interfaces must remain visible without hiding retained results. Do not bypass windows with repeated targeted reads.
 

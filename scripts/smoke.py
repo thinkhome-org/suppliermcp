@@ -13,12 +13,18 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastmcp import Client
 
+from suppliermcp.service import CATALOG_OPERATIONS
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 async def verify(token, seeded=False):
     async with Client("http://127.0.0.1:8000/mcp", auth=token) as client:
-        assert len(await client.list_tools()) == 7
+        assert {tool.name for tool in await client.list_tools()} == {
+            *CATALOG_OPERATIONS,
+            "list_operations",
+            "read_operation",
+        }
         status = (await client.call_tool("get_catalog_status", {})).structured_content["result"]
         assert len(status["interfaces"]) == 3
         if seeded:
@@ -116,7 +122,7 @@ print('8 optional-interface startup combinations verified')
 """
             print(run("exec", "-T", "mcp", "python", "-", input=combinations).strip())
             print(
-                "Authenticated image, seven tools, remote skill bytes, migration and restart persistence verified"
+                "Authenticated image, nine tools, remote skill bytes, migration and restart persistence verified"
             )
         finally:
             run("down", "-v", "--remove-orphans")

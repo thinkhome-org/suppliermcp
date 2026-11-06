@@ -1,3 +1,4 @@
+import os
 import socket
 import threading
 import time
@@ -27,7 +28,9 @@ def running_server(**overrides):
             {
                 "auth_public_key": public,
                 "auth_legacy_subjects": ["alice", "bob"],
-                "database_url": "postgresql://test:test@localhost:55439/test",
+                "database_url": os.getenv(
+                    "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+                ),
                 "typesense_url": "http://localhost:58109",
                 "typesense_key": "test-only",
             }
@@ -83,6 +86,8 @@ async def test_http_auth_tools_resources_and_empty_catalog(conn):
                 "get_catalog_schema",
                 "compare_offers",
                 "get_catalog_status",
+                "list_operations",
+                "read_operation",
             }
             for t in tools:
                 assert "principal" not in t.input_schema.get("properties", {})
