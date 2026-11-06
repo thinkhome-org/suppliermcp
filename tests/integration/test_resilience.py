@@ -303,3 +303,40 @@ def test_simultaneous_outcome_updates_preserve_both_endpoints(conn):
         list(workers.map(write, range(8)))
     state = conn.execute("SELECT data FROM source_state WHERE interface='mega'").fetchone()[0]
     assert set(state["endpoints"]) == set(map(str, range(8)))
+
+
+def test_scheduler_repeated_tick_preserves_each_pending_job(conn, tmp_path):
+    import os
+
+    from suppliermcp.config import Settings
+    from suppliermcp.sync.jobs import create_app
+
+    contracts = tmp_path / "contracts.json"
+    contracts.write_text('{"ed_private":{"intervals_seconds":{"catalog":86400,"stock":7200}}}')
+    settings = Settings(
+        database_url=os.getenv(
+            "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+        ),
+        source_contracts_path=contracts,
+        artifact_dir=tmp_path / "artifacts",
+        credentials={"ed_private": ("test", "test")},
+    )
+    app = create_app(settings)
+    with app.open():
+        if not conn.execute("SELECT to_regclass('procrastinate_jobs')").fetchone()[0]:
+            app.schema_manager.apply_schema()
+        conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+        try:
+            tick = app.tasks["suppliermcp.tick"].func
+            tick(timestamp=0)
+            tick(timestamp=60)
+            queued = conn.execute(
+                "SELECT queueing_lock FROM procrastinate_jobs WHERE status='todo' ORDER BY queueing_lock"
+            ).fetchall()
+            assert queued == [
+                ("ed_private:getProductCatalogueDownloadXML",),
+                ("ed_private:getProductCatalogueStockDownloadXML",),
+                ("index",),
+            ]
+        finally:
+            conn.execute("TRUNCATE procrastinate_jobs CASCADE")
