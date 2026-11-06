@@ -206,5 +206,9 @@ def test_green_stack_does_not_advertise_the_blue_tunnel_alias():
     mcp = json.loads(result.stdout)["services"]["mcp"]
     assert mcp["networks"]["cloudflare"]["aliases"] == ["supdb-green-origin"]
     hosts = json.loads(mcp["environment"]["SUPPLIERMCP_ALLOWED_HOSTS"])
-    assert "supdb-green.example.org" in hosts and "supdb-green-origin:8000" in hosts
-    assert "suppliermcp.thinkhome.org" not in hosts
+    assert hosts == [
+        "supdb-green.example.org",
+        "supdb-green-origin:8000",
+        "127.0.0.1:*",
+        "localhost:*",
+    ]
