@@ -143,11 +143,12 @@ def test_enrichment_partition_failure_keeps_other_partitions(tmp_path):
         transport=Transport(),
         sleep=lambda _: None,
     )
-    manifests, failures = adapter.enrichment()
-    manifests = list(manifests)
-    assert len(manifests) == 1 and failures == ["B"]
-    assert list(adapter.parse(manifests[0])) == []
-    assert not manifests[0].complete
+    assert adapter.commodity_codes() == ["A", "B"]
+    manifest = adapter.fetch_commodity("A")
+    assert list(adapter.parse(manifest)) == []
+    assert not manifest.complete
+    with pytest.raises(CatalogError, match="supplier_unavailable"):
+        adapter.fetch_commodity("B")
 
 
 def test_relationship_and_navigator_evidence(tmp_path):
@@ -211,3 +212,15 @@ def test_non_catalog_content_is_not_an_empty_commodity(tmp_path, xml, expected):
     )
     with pytest.raises(CatalogError, match=expected):
         list(EdPrivateAdapter().parse(manifest))
+
+
+def test_private_commodity_error_must_not_certify_partial_dictionary():
+    class Gateway:
+        def call(self, method):
+            return b"<List><CommodityCode>A</CommodityCode><StatusCode>ERROR</StatusCode></List>"
+
+    from suppliermcp.catalog.contracts import CatalogError
+
+    adapter = EdPrivateAdapter(gateway=Gateway(), store=object())
+    with pytest.raises(CatalogError, match="supplier_response_error"):
+        adapter.commodity_codes()

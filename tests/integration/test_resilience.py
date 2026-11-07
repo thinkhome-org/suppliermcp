@@ -156,17 +156,20 @@ def test_private_baseline_runs_enrichment(conn):
             else:
                 yield Offer(item_id="ed:1", unit_net="25")
 
-        def enrichment(self):
+        def commodity_codes(self):
+            return ["A", "B"]
+
+        def fetch_commodity(self, code):
             self.called = True
-            return [
-                BatchManifest(
-                    interface=self.interface,
-                    domain="catalog",
-                    mode="targeted",
-                    endpoint="full",
-                    artifact_sha256="detail",
-                )
-            ], ["missing-commodity"]
+            if code == "B":
+                raise CatalogError("supplier_unavailable")
+            return BatchManifest(
+                interface=self.interface,
+                domain="catalog",
+                mode="targeted",
+                endpoint="full",
+                artifact_sha256="detail",
+            )
 
     adapter = Private()
     run_refresh(conn, adapter, "catalog")
@@ -338,5 +341,180 @@ def test_scheduler_repeated_tick_preserves_each_pending_job(conn, tmp_path):
                 ("ed_private:getProductCatalogueStockDownloadXML",),
                 ("index",),
             ]
+            key = "ed_private:getProductCatalogueDownloadXML"
+            orphan = conn.execute(
+                "UPDATE procrastinate_jobs SET status='doing' WHERE queueing_lock=%s RETURNING id",
+                (key,),
+            ).fetchone()[0]
+            # A second pending job may have been enqueued before the first worker vanished.
+            app.tasks["suppliermcp.refresh"].configure(lock="supplier:ed", queueing_lock=key).defer(
+                interface="ed_private", domain="catalog", endpoint=None
+            )
+            tick(timestamp=120)
+            assert (
+                conn.execute(
+                    "SELECT status FROM procrastinate_jobs WHERE id=%s", (orphan,)
+                ).fetchone()[0]
+                == "aborted"
+            )
+            assert (
+                conn.execute(
+                    "SELECT count(*) FROM procrastinate_jobs WHERE queueing_lock=%s AND status='todo'",
+                    (key,),
+                ).fetchone()[0]
+                == 1
+            )
+            lonely = conn.execute(
+                "UPDATE procrastinate_jobs SET status='doing' WHERE queueing_lock=%s AND status='todo' RETURNING id",
+                (key,),
+            ).fetchone()[0]
+            tick(timestamp=180)
+            assert (
+                conn.execute(
+                    "SELECT status FROM procrastinate_jobs WHERE id=%s", (lonely,)
+                ).fetchone()[0]
+                == "todo"
+            )
+            worker = conn.execute(
+                "INSERT INTO procrastinate_workers DEFAULT VALUES RETURNING id"
+            ).fetchone()[0]
+            conn.execute(
+                "UPDATE procrastinate_jobs SET status='doing',worker_id=%s WHERE id=%s",
+                (worker, lonely),
+            )
+            conn.execute("UPDATE procrastinate_jobs SET status='doing' WHERE queueing_lock='index'")
+            tick(timestamp=240)
+            assert conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock=%s ORDER BY id", (key,)
+            ).fetchall() == [("aborted",), ("doing",)]
+            assert conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock='index'"
+            ).fetchall() == [("todo",)]
         finally:
             conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+
+
+def test_resume_private_commodities_after_worker_exit(conn):
+    class Private:
+        interface = "ed_private"
+        store = None
+        methods = {"catalog": "getProductCatalogueDownloadXML"}
+        fetched = []
+        base_fetches = 0
+        crash = True
+
+        def fetch(self, domain, codes):
+            self.base_fetches += 1
+            return BatchManifest(
+                interface=self.interface,
+                domain=domain,
+                endpoint=self.methods[domain],
+                artifact_sha256="baseline",
+                complete=True,
+            )
+
+        def parse(self, manifest):
+            if manifest.endpoint == self.methods["catalog"]:
+                yield SourceItem(supplier="ed", source_id="1", sku="one", name="Memory")
+            if manifest.endpoint == "chunk" and manifest.artifact_sha256 == "data":
+                yield Offer(item_id="ed:1", unit_net="25")
+
+        def commodity_codes(self):
+            return ["A", "B", "C"]
+
+        def fetch_commodity(self, code):
+            self.fetched.append(code)
+            if code == "C" and self.crash:
+                raise KeyboardInterrupt
+            return BatchManifest(
+                interface=self.interface,
+                domain="catalog",
+                mode="targeted",
+                endpoint="chunk",
+                artifact_sha256="data" if code == "B" else "empty",
+            )
+
+    adapter = Private()
+    with pytest.raises(KeyboardInterrupt):
+        run_refresh(conn, adapter, "catalog")
+    assert not conn.execute(
+        "SELECT (data->'domains'->'catalog'->>'complete')::bool FROM source_state WHERE interface='ed_private'"
+    ).fetchone()[0]
+    adapter.crash = False
+    import os
+
+    from suppliermcp.config import Settings
+    from suppliermcp.sync.jobs import create_app
+
+    app = create_app(
+        Settings(
+            database_url=os.getenv(
+                "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+            )
+        )
+    )
+    with app.open():
+        if not conn.execute("SELECT to_regclass('procrastinate_jobs')").fetchone()[0]:
+            app.schema_manager.apply_schema()
+        conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+        key = "ed_private:getProductCatalogueDownloadXML"
+        app.tasks["suppliermcp.refresh"].configure(lock="supplier:ed", queueing_lock=key).defer(
+            interface="ed_private", domain="catalog", endpoint=None
+        )
+        run_refresh(conn, adapter, "catalog")
+        assert (
+            conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock=%s", (key,)
+            ).fetchone()[0]
+            == "aborted"
+        )
+        conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+
+    assert adapter.base_fetches == 1
+    assert adapter.fetched == ["A", "B", "C", "C"]
+    assert conn.execute("SELECT code,empty FROM ed_commodity_parts ORDER BY code").fetchall() == [
+        ("A", True),
+        ("B", False),
+        ("C", True),
+    ]
+    assert conn.execute("SELECT finished FROM ed_commodity_cycles").fetchone()[0]
+    assert conn.execute(
+        "SELECT (data->'domains'->'catalog'->>'complete')::bool FROM source_state WHERE interface='ed_private'"
+    ).fetchone()[0]
+    run_refresh(conn, adapter, "catalog")
+    assert adapter.base_fetches == 2
+    assert adapter.fetched[-3:] == ["A", "B", "C"]
+
+
+def test_manual_private_baseline_recovery_requires_commodity_coverage(conn, tmp_path, monkeypatch):
+    import os
+    import sys
+
+    from suppliermcp.config import Settings
+    from suppliermcp.worker import main
+
+    settings = Settings(
+        database_url=os.getenv(
+            "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+        ),
+        artifact_dir=tmp_path,
+        credentials={"ed_private": ("test", "test")},
+    )
+    monkeypatch.setattr(Settings, "from_env", lambda: settings)
+    baseline = BatchManifest(
+        interface="ed_private",
+        domain="catalog",
+        complete=True,
+        endpoint="getProductCatalogueDownloadXML",
+    )
+    run = stage(
+        conn, baseline, [SourceItem(supplier="ed", source_id="1", sku="one", name="Memory")]
+    )
+    monkeypatch.setattr(sys, "argv", ["worker", "resume-import", str(run)])
+    main()
+    assert not conn.execute(
+        "SELECT (data->'domains'->'catalog'->>'complete')::bool FROM source_state WHERE interface='ed_private'"
+    ).fetchone()[0]
+    conn.execute("INSERT INTO ed_commodity_cycles(baseline_run_id) VALUES (%s)", (run,))
+    with pytest.raises(CatalogError, match="refresh_in_progress"):
+        main()

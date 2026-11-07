@@ -5,13 +5,11 @@ import binascii
 import hashlib
 import hmac
 import json
-import logging
 import re
 import secrets
 import struct
 import tempfile
 import zipfile
-from contextvars import ContextVar
 from datetime import date, datetime
 from functools import cache
 from importlib.resources import files
@@ -41,10 +39,6 @@ from suppliermcp.sync.artifacts import bounded_archive
 _PROCESS_CURSOR_KEY = secrets.token_bytes(32)
 _read_limiter = RunVar("supplier_read_capacity")
 SOAP = "http://schemas.xmlsoap.org/soap/envelope/"
-_private_request = ContextVar("supplier_request", default=False)
-# httpx logs full download URLs. These may act as bearer credentials.
-for _logger in ("httpx", "httpcore.connection", "httpcore.http11", "httpcore.http2"):
-    logging.getLogger(_logger).addFilter(lambda _: not _private_request.get())
 
 
 class SupplierField(Model):
@@ -482,7 +476,6 @@ class OperationReader:
             auth=credentials if spec.profile.family == "i6ws" else None,
             max_bytes=self.settings.max_download_bytes,
         )
-        token = _private_request.set(True)
         try:
             params = {
                 "endpoint": spec.operation_id,
@@ -520,7 +513,6 @@ class OperationReader:
             return preview.finish()
         finally:
             transport.client.close()
-            _private_request.reset(token)
 
     def _download(self, chunks, spec, preview, args):
         def consume(data, prefix=""):

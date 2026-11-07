@@ -295,3 +295,26 @@ async def test_native_dictionary_tree_is_reachable_through_mcp(conn):
                 and r["data"]["provenance"]["revision"]
                 for r in records
             )
+
+
+async def test_slow_readiness_probe_keeps_liveness_responsive(monkeypatch):
+    import asyncio
+
+    started = threading.Event()
+    release = threading.Event()
+
+    def stalled_database(settings):
+        started.set()
+        release.wait(timeout=3)
+        raise ConnectionError
+
+    monkeypatch.setattr("suppliermcp.mcp.server.connect", stalled_database)
+    with running_server() as (url, _):
+        async with httpx.AsyncClient(base_url=url.removesuffix("/mcp")) as http:
+            probe = asyncio.create_task(http.get("/health/ready"))
+            try:
+                assert await asyncio.to_thread(started.wait, 2)
+                assert (await http.get("/health/live", timeout=1)).status_code == 200
+            finally:
+                release.set()
+                assert (await probe).status_code == 503

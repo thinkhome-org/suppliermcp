@@ -1,14 +1,14 @@
 """Source-isolated refreshes and PostgreSQL-backed scheduling."""
 
 import json
-from itertools import chain
+from contextlib import contextmanager
 from pathlib import Path
 
 import procrastinate
 from procrastinate.exceptions import AlreadyEnqueued
 from psycopg.types.json import Jsonb
 
-from suppliermcp.catalog.contracts import CatalogError, utcnow
+from suppliermcp.catalog.contracts import BatchManifest, CatalogError, utcnow
 from suppliermcp.catalog.db import connect
 from suppliermcp.config import Settings
 from suppliermcp.suppliers.ed.gateway import READS, EdGateway
@@ -79,14 +79,20 @@ def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
     ).get(domain, domain)
     if codes and adapter.interface == "ed_private":
         source_endpoint = "getProductDetail"
+    with refresh_lock(conn, adapter.interface, source_endpoint):
+        return _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint)
+
+
+@contextmanager
+def refresh_lock(conn, interface, endpoint):
     # Each installation has one configured account per interface.
-    lock_key = f"suppliermcp.refresh:{adapter.interface}:{source_endpoint}"
+    lock_key = f"suppliermcp.refresh:{interface}:{endpoint}"
     if not conn.execute(
         "SELECT pg_try_advisory_lock(hashtextextended(%s, 0))", (lock_key,)
     ).fetchone()[0]:
         raise CatalogError("refresh_in_progress", retryable=True)
     try:
-        return _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint)
+        yield
     finally:
         conn.execute("SELECT pg_advisory_unlock(hashtextextended(%s, 0))", (lock_key,))
 
@@ -94,38 +100,59 @@ def run_refresh(conn, adapter, domain, codes=None, *, endpoint=None):
 def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
     now, manifest = utcnow(), None
     revision = None
+    run_id = None
     outcome = "refresh_failed"
     try:
-        manifest = (
-            adapter.fetch_export(endpoint, codes=codes)
-            if endpoint
-            else adapter.fetch(domain, codes)
+        private_catalog = adapter.interface == "ed_private" and domain == "catalog" and not codes
+        cycle = (
+            conn.execute(
+                """SELECT r.id, r.manifest, r.revision FROM ed_commodity_cycles c
+               JOIN import_runs r ON r.id=c.baseline_run_id WHERE NOT c.finished"""
+            ).fetchone()
+            if private_catalog
+            else None
         )
+        if cycle:
+            run_id, saved_manifest, revision = cycle
+            manifest = BatchManifest.model_validate(saved_manifest)
+        else:
+            manifest = (
+                adapter.fetch_export(endpoint, codes=codes)
+                if endpoint
+                else adapter.fetch(domain, codes)
+            )
+            manifest.started_at = now
+            run_id = stage(conn, manifest, adapter.parse(manifest))
+            revision = publish(conn, run_id)
+            if getattr(adapter, "store", None) and manifest.path:
+                adapter.store.mark(Path(manifest.path), "success", manifest)
         source_endpoint = manifest.endpoint or source_endpoint
         domain = manifest.domain
-        manifest.started_at = now
-        run_id = stage(conn, manifest, adapter.parse(manifest))
-        revision = publish(conn, run_id)
-        if getattr(adapter, "store", None) and manifest.path:
-            adapter.store.mark(Path(manifest.path), "success", manifest)
         outcome = "ok"
-        if adapter.interface == "ed_private" and domain == "catalog" and not codes:
-            manifests, failures = adapter.enrichment()
-            if hasattr(adapter, "dictionaries"):
-                dictionaries, dictionary_failures = adapter.dictionaries()
-                manifests = chain(manifests, dictionaries)
-                failures.extend(dictionary_failures)
-            for chunk in manifests:
-                try:
-                    revision = publish(conn, stage(conn, chunk, adapter.parse(chunk)))
-                    if adapter.store and chunk.path:
-                        adapter.store.mark(Path(chunk.path), "success", chunk)
-                except CatalogError:
-                    failures.append("chunk_failed")
-                    if adapter.store and chunk.path:
-                        adapter.store.mark(Path(chunk.path), "failed", chunk)
-            if failures:
-                outcome = "partial"
+        if private_catalog:
+            outcome = "partial"
+            if not cycle:
+                expected = adapter.commodity_codes()
+                if not expected:
+                    raise CatalogError("commodity_list_empty")
+                status = conn.execute(
+                    "SELECT status FROM import_runs WHERE id=%s", (run_id,)
+                ).fetchone()[0]
+                if status not in {"published", "unchanged"} or not manifest.complete:
+                    raise CatalogError("incomplete_baseline")
+                with conn.transaction():
+                    conn.execute(
+                        "INSERT INTO ed_commodity_cycles(baseline_run_id) VALUES (%s)", (run_id,)
+                    )
+                    conn.execute(
+                        """INSERT INTO ed_commodity_parts(baseline_run_id,code)
+                                    SELECT %s, unnest(%s::text[])""",
+                        (run_id, expected),
+                    )
+                    record_refresh_outcome(
+                        conn, adapter, domain, source_endpoint, now, outcome, manifest, revision
+                    )
+            revision, outcome = _finish_private_catalog(conn, adapter, run_id, revision)
 
     except Exception as exc:
         outcome = exc.code if isinstance(exc, CatalogError) else "refresh_failed"
@@ -138,11 +165,85 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
         )
         raise CatalogError(outcome, retryable=True) from None
     finally:
-        record_refresh_outcome(
-            conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes
-        )
+        with conn.transaction():
+            if private_catalog and outcome == "ok":
+                conn.execute(
+                    "UPDATE ed_commodity_cycles SET finished=true WHERE baseline_run_id=%s",
+                    (run_id,),
+                )
+                if conn.execute("SELECT to_regclass('procrastinate_jobs')").fetchone()[0]:
+                    conn.execute(
+                        """SELECT procrastinate_finish_job_v1(id,'aborted',false) FROM
+                        (SELECT id FROM procrastinate_jobs WHERE task_name='suppliermcp.refresh'
+                         AND queueing_lock=%s AND status='todo' FOR UPDATE) pending""",
+                        (f"{adapter.interface}:{source_endpoint}",),
+                    )
+            record_refresh_outcome(
+                conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes
+            )
 
     return revision
+
+
+def _finish_private_catalog(conn, adapter, baseline, revision):
+    pending = conn.execute(
+        """SELECT code FROM ed_commodity_parts
+           WHERE baseline_run_id=%s AND chunk_run_id IS NULL ORDER BY code""",
+        (baseline,),
+    ).fetchall()
+    for (code,) in pending:
+        chunk = None
+        try:
+            chunk = adapter.fetch_commodity(code)
+            part = stage(conn, chunk, adapter.parse(chunk))
+            with conn.transaction():
+                empty = not conn.execute(
+                    "SELECT 1 FROM staging WHERE run_id=%s LIMIT 1", (part,)
+                ).fetchone()
+                revision = publish(conn, part)
+                status = conn.execute(
+                    "SELECT status FROM import_runs WHERE id=%s", (part,)
+                ).fetchone()[0]
+                if status not in {"published", "unchanged"}:
+                    raise CatalogError("commodity_not_published")
+                conn.execute(
+                    """UPDATE ed_commodity_parts SET chunk_run_id=%s, empty=%s
+                                WHERE baseline_run_id=%s AND code=%s""",
+                    (part, empty, baseline, code),
+                )
+            if adapter.store and chunk.path:
+                adapter.store.mark(Path(chunk.path), "success", chunk)
+        except CatalogError:
+            if chunk and adapter.store and chunk.path:
+                adapter.store.mark(Path(chunk.path), "failed", chunk)
+
+    if conn.execute(
+        """SELECT 1 FROM ed_commodity_parts WHERE baseline_run_id=%s
+                       AND chunk_run_id IS NULL LIMIT 1""",
+        (baseline,),
+    ).fetchone():
+        return revision, "partial"
+
+    revision = conn.execute(
+        """SELECT GREATEST(%s, max(r.revision)) FROM ed_commodity_parts p
+                               JOIN import_runs r ON r.id=p.chunk_run_id WHERE baseline_run_id=%s""",
+        (revision, baseline),
+    ).fetchone()[0]
+    dictionaries, failures = (
+        adapter.dictionaries() if hasattr(adapter, "dictionaries") else ([], [])
+    )
+    for chunk in dictionaries:
+        try:
+            revision = max(revision, publish(conn, stage(conn, chunk, adapter.parse(chunk))))
+            if adapter.store and chunk.path:
+                adapter.store.mark(Path(chunk.path), "success", chunk)
+        except CatalogError:
+            failures.append(chunk.endpoint)
+            if adapter.store and chunk.path:
+                adapter.store.mark(Path(chunk.path), "failed", chunk)
+    if failures:
+        return revision, "partial"
+    return revision, "ok"
 
 
 def locked_source_state(conn, interface):
@@ -204,6 +305,38 @@ def record_refresh_outcome(
         )
 
 
+def _scheduled_job_running(conn, task, key):
+    # Procrastinate drops the owner after worker loss. Respect any live source/index lock too.
+    with conn.transaction():
+        job = conn.execute(
+            """SELECT id, worker_id FROM procrastinate_jobs WHERE task_name=%s
+                              AND queueing_lock=%s AND status='doing' FOR UPDATE""",
+            (task, key),
+        ).fetchone()
+        if not job:
+            return False
+        if job[1] is not None:
+            return True
+        protected = (
+            conn.execute("SELECT pg_try_advisory_xact_lock(91003)")
+            if key == "index"
+            else conn.execute(
+                "SELECT pg_try_advisory_xact_lock(hashtextextended(%s,0))",
+                ("suppliermcp.refresh:" + key,),
+            )
+        ).fetchone()[0]
+        if protected:
+            if conn.execute(
+                "SELECT 1 FROM procrastinate_jobs WHERE queueing_lock=%s AND status='todo'", (key,)
+            ).fetchone():
+                conn.execute("SELECT procrastinate_finish_job_v1(%s,'aborted',false)", (job[0],))
+            else:
+                conn.execute(
+                    "SELECT procrastinate_retry_job_v2(%s,now(),NULL,NULL,NULL)", (job[0],)
+                )
+        return True
+
+
 def create_app(settings):
     app = procrastinate.App(
         connector=procrastinate.PsycopgConnector(conninfo=settings.database_url.get_secret_value())
@@ -245,12 +378,13 @@ def create_app(settings):
     @app.periodic(cron="* * * * *")
     @app.task(name="suppliermcp.tick")
     def tick(timestamp):
-        try:
-            index.configure(lock="index", queueing_lock="index").defer()
-        except AlreadyEnqueued:
-            pass
         contracts = source_contracts(settings)
         with connect(settings) as conn:
+            if not _scheduled_job_running(conn, "suppliermcp.index", "index"):
+                try:
+                    index.configure(lock="index", queueing_lock="index").defer()
+                except AlreadyEnqueued:
+                    pass
             conn.execute("DELETE FROM query_results WHERE expires_at < now()")
             ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
             adapters = build_adapters(settings)
@@ -270,6 +404,15 @@ def create_app(settings):
                     source_endpoint = endpoint or getattr(
                         adapter, "endpoints", getattr(adapter, "methods", {})
                     ).get(domain, domain)
+                    if _scheduled_job_running(
+                        conn, "suppliermcp.refresh", f"{interface}:{source_endpoint}"
+                    ):
+                        continue
+                    if interface == "ed_private" and domain == "catalog" and not endpoint:
+                        if conn.execute(
+                            "SELECT 1 FROM ed_commodity_cycles WHERE NOT finished"
+                        ).fetchone():
+                            interval = min(interval, 300)
                     state_row = conn.execute(
                         "SELECT data FROM source_state WHERE interface=%s", (interface,)
                     ).fetchone()

@@ -167,68 +167,85 @@ def documents(conn, rows):
     return result
 
 
-def drain_outbox(conn, client):
-    count = 0
+def _drain_batch(conn, client, after_id):
     with conn.transaction():
         require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         # Share the publication lane so a snapshot cannot overtake a newer publication.
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
-        rows = conn.execute(
-            "SELECT item_id,max(id) FROM index_outbox WHERE NOT done GROUP BY item_id ORDER BY min(id) LIMIT 200"
+        events = conn.execute(
+            "SELECT id,item_id FROM index_outbox WHERE NOT done AND id>%s ORDER BY id LIMIT 200",
+            (after_id,),
         ).fetchall()
-        batch, events = [], []
-        active = {
-            r[0]: r
-            for r in conn.execute(
-                "SELECT id,data,revision FROM source_items WHERE id=ANY(%s) AND active",
-                ([r[0] for r in rows],),
+        if not events:
+            return after_id, 0, False
+        item_ids = list(dict.fromkeys(item_id for _, item_id in events))
+        active = conn.execute(
+            "SELECT id,data,revision FROM source_items WHERE id=ANY(%s) AND active", (item_ids,)
+        ).fetchall()
+        removed = set(item_ids) - {row[0] for row in active}
+        for item_id in removed:
+            client.request(
+                "DELETE",
+                f"/collections/{ALIAS}/documents/" + quote(item_id, safe=""),
+                params={"ignore_not_found": "true"},
             )
-        }
-        for item_id, event_id in rows:
-            row = active.get(item_id)
-            if row:
-                batch.append(row)
-                events.append((item_id, event_id))
-            else:
-                client.request(
-                    "DELETE",
-                    f"/collections/{ALIAS}/documents/" + quote(item_id, safe=""),
-                    params={"ignore_not_found": "true"},
-                )
-                count += conn.execute(
-                    "UPDATE index_outbox SET done=true WHERE item_id=%s AND id<=%s AND NOT done",
-                    (item_id, event_id),
-                ).rowcount
-        successes = client.import_documents(ALIAS, documents(conn, batch)) if batch else []
-        for (item_id, event_id), success in zip(events, successes, strict=True):
-            if success:
-                count += conn.execute(
-                    "UPDATE index_outbox SET done=true WHERE item_id=%s AND id<=%s AND NOT done",
-                    (item_id, event_id),
-                ).rowcount
-    return count
+        results = client.import_documents(ALIAS, documents(conn, active)) if active else []
+        accepted = removed | {row[0] for row, ok in zip(active, results, strict=True) if ok}
+        acknowledged = conn.execute(
+            "UPDATE index_outbox SET done=true WHERE id=ANY(%s) AND NOT done",
+            ([event_id for event_id, item_id in events if item_id in accepted],),
+        ).rowcount
+        return events[-1][0], acknowledged, not all(results)
+
+
+def drain_outbox(conn, client):
+    return _drain_batch(conn, client, 0)[1]
 
 
 def rebuild_index(conn, client):
-    name = "catalog_" + secrets.token_hex(8)
+    prefix = ALIAS + "_build_"
+    name = prefix + secrets.token_hex(8)
     with conn.transaction():
         require_projected_catalog(conn)
         conn.execute("SELECT pg_advisory_xact_lock(91003)")
         conn.execute("SELECT pg_advisory_xact_lock(91002)")
+        previous = client.request("GET", f"/aliases/{ALIAS}", allow_missing=True)
+        previous_name = previous.json()["collection_name"] if previous.status_code == 200 else None
         client.create(name)
-        with conn.cursor(name="index_rebuild") as cursor:
-            cursor.execute("SELECT id,data,revision FROM source_items WHERE active ORDER BY id")
-            while rows := cursor.fetchmany(200):
-                if not all(client.import_documents(name, documents(conn, rows))):
-                    raise CatalogError("index_import_failed")
+        try:
+            with conn.cursor(name="index_rebuild") as cursor:
+                cursor.execute("SELECT id,data,revision FROM source_items WHERE active ORDER BY id")
+                while rows := cursor.fetchmany(200):
+                    if not all(client.import_documents(name, documents(conn, rows))):
+                        raise CatalogError("index_import_failed")
+        except Exception:
+            # No alias switch has been attempted, so this collection is safe to discard.
+            client.request("DELETE", f"/collections/{name}", allow_missing=True)
+            raise
         client.request("PUT", f"/aliases/{ALIAS}", json={"collection_name": name})
         conn.execute("UPDATE index_outbox SET done=true WHERE NOT done")
+        protected = {name, previous_name}
+        protected.update(
+            a["collection_name"] for a in client.request("GET", "/aliases").json()["aliases"]
+        )
+        for collection in client.request("GET", "/collections").json():
+            old = collection["name"]
+            if re.fullmatch(prefix + r"[0-9a-f]{16}", old) and old not in protected:
+                client.request("DELETE", f"/collections/{old}", allow_missing=True)
     return name
 
 
 def drain_pending(conn, client):
     total = 0
-    while processed := drain_outbox(conn, client):
+    after_id = 0
+    rejected = False
+    while True:
+        last_id, processed, batch_rejected = _drain_batch(conn, client, after_id)
+        if last_id == after_id:
+            if rejected:
+                raise CatalogError("index_import_failed", retryable=True)
+            return total
+        after_id = last_id
         total += processed
-    return total
+        rejected |= batch_rejected

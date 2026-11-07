@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -116,7 +117,7 @@ def test_portainer_ui_env_file_roundtrip_preserves_special_values(tmp_path):
     source, output = tmp_path / "input.json", tmp_path / "portainer.env"
     source.write_text(json.dumps(values))
     prepared = subprocess.run(
-        ["python", str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
+        [sys.executable, str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
         capture_output=True,
         text=True,
     )
@@ -192,7 +193,7 @@ def test_portainer_env_rejects_variable_name_injection(tmp_path):
     source, output = tmp_path / "input.json", tmp_path / "portainer.env"
     source.write_text(json.dumps({"SAFE\nINJECTED": "sensitive-test-value"}))
     result = subprocess.run(
-        ["python", str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
+        [sys.executable, str(ROOT / "scripts/portainer_env.py"), str(source), str(output)],
         capture_output=True,
         text=True,
     )

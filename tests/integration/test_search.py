@@ -235,3 +235,47 @@ def test_model_before_hyphen_matches_only_the_complete_model_component(conn, ind
     for term in ("RXP235", "RXP235-Wall", "RXP235Wall"):
         assert [r.product_id for r in search(conn, index, term, [], "alice").results] == ["mega:0"]
     assert not search(conn, index, "RXP23", [], "alice").results
+
+
+def test_rejected_batch_does_not_hide_later_products(conn, index):
+    from suppliermcp.search.index import drain_pending
+
+    rows = [
+        SourceItem(supplier="mega", source_id=str(i), sku=str(i), name="SKU") for i in range(201)
+    ]
+    publish(conn, stage(conn, BatchManifest(interface="mega", domain="catalog"), rows))
+    real = index.import_documents
+    index.create("target")
+    index.request("PUT", f"/aliases/{ALIAS}", json={"collection_name": "target"})
+    calls = []
+
+    def reject_first(collection, docs):
+        calls.append(len(docs))
+        return [False] * len(docs) if len(calls) == 1 else real(collection, docs)
+
+    index.import_documents = reject_first
+    with pytest.raises(CatalogError) as error:
+        drain_pending(conn, index)
+    assert error.value.code == "index_import_failed"
+    assert calls == [200, 1]
+    assert conn.execute("SELECT count(*) FROM index_outbox WHERE NOT done").fetchone() == (200,)
+    assert index.request("GET", f"/collections/{ALIAS}").json()["num_documents"] == 1
+    index.import_documents = real
+    assert drain_pending(conn, index) == 200
+
+
+def test_rebuild_cleans_owned_generations_and_preserves_aliased_ones(conn, index):
+    add(conn)
+    first = rebuild_index(conn, index)
+    index.request("PUT", "/aliases/external", json={"collection_name": first})
+    second = rebuild_index(conn, index)
+    third = rebuild_index(conn, index)
+    fourth = rebuild_index(conn, index)
+    names = {c["name"] for c in index.request("GET", "/collections").json()}
+    assert names == {first, third, fourth}
+    assert second not in names
+    index.import_documents = lambda collection, docs: [False] * len(docs)
+    with pytest.raises(CatalogError, match="index_import_failed"):
+        rebuild_index(conn, index)
+    assert {c["name"] for c in index.request("GET", "/collections").json()} == names
+    assert index.request("GET", f"/aliases/{ALIAS}").json()["collection_name"] == fourth

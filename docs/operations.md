@@ -108,3 +108,30 @@ curl --fail http://127.0.0.1:18000/health/ready
 For installations with eD PRIVATE enabled, run its catalog refresh as well. Check authenticated catalog status and known SKU, current offer evidence, filtered listing, and search on the candidate. Verify required endpoint coverage before changing the client URL or reverse proxy. Keep the v1 stack, database, index and artifacts during acceptance. Rolling back means pointing clients back at the original stack. A copied v1 database, an old Typesense collection or a v1 result cursor cannot establish projected provenance.
 
 For the stable promotion procedure, see [Promote SupDB 2.0.0](stable-release.md).
+
+### Resuming an interrupted eD PRIVATE catalog
+
+Apply the candidate's migrations before starting its worker. The normal
+`python -m suppliermcp.worker refresh ed_private --domain catalog` command resumes
+the open baseline. It requests only outstanding commodity codes, then refreshes
+the dictionaries. The scheduler also retries an unfinished cycle. Another live
+refresh owns the source lock if the command reports `refresh_in_progress`.
+
+Use this read-only query on the green database to check progress and validated
+empty responses. The baseline run ID identifies one frozen set of requested
+codes. The worker commits each receipt with the product changes.
+
+```sql
+SELECT c.baseline_run_id, c.finished, count(*) AS expected,
+       count(p.chunk_run_id) AS published,
+       count(*) FILTER (WHERE p.empty) AS valid_empty
+FROM ed_commodity_cycles c
+JOIN ed_commodity_parts p USING (baseline_run_id)
+JOIN import_runs r ON r.id=c.baseline_run_id
+GROUP BY c.baseline_run_id, c.finished, r.manifest->>'started_at'
+ORDER BY r.manifest->>'started_at' DESC LIMIT 1;
+```
+
+RC5 did not persist which code produced each chunk. The first upgraded cycle
+requests all codes again. A completed cycle proves eD commodity coverage for
+that baseline. Verify the active search index separately before acceptance.

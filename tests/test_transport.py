@@ -132,3 +132,12 @@ def test_read_separates_http_service_errors_from_timeouts():
                 "GET", "https://api.example/read", endpoint="read", consume=list
             )
         assert error.value.code == code and error.value.retryable
+
+
+def test_worker_request_keeps_signed_url_out_of_http_logs(caplog):
+    caplog.set_level("INFO", logger="httpx")
+    t = transport(lambda r: httpx.Response(200, content=b"catalog"))
+    assert t.read("GET", "https://api.example/export?token=private-example", endpoint="read")
+    assert "private-example" not in caplog.text
+    t.client.get("https://api.example/public-test")
+    assert "public-test" in caplog.text
