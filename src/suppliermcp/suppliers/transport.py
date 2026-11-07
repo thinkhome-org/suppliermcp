@@ -15,7 +15,6 @@ from defusedxml.ElementTree import fromstring
 
 from suppliermcp.catalog.contracts import CatalogError
 
-
 _private_request = ContextVar("supplier_request", default=False)
 # httpx logs full download URLs. These may act as bearer credentials.
 for _logger in ("httpx", "httpcore.connection", "httpcore.http11", "httpcore.http2"):
