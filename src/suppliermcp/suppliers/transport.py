@@ -1,8 +1,11 @@
 """Read-only HTTPS transport with pinned public destinations and safe failures."""
 
 import ipaddress
+import logging
 import socket
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from urllib.parse import urljoin
 from xml.etree.ElementTree import ParseError
 
@@ -11,6 +14,21 @@ from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring
 
 from suppliermcp.catalog.contracts import CatalogError
+
+
+_private_request = ContextVar("supplier_request", default=False)
+# httpx logs full download URLs. These may act as bearer credentials.
+for _logger in ("httpx", "httpcore.connection", "httpcore.http11", "httpcore.http2"):
+    logging.getLogger(_logger).addFilter(lambda _: not _private_request.get())
+
+
+@contextmanager
+def _suppress_supplier_http_logs():
+    token = _private_request.set(True)
+    try:
+        yield
+    finally:
+        _private_request.reset(token)
 
 
 def resolve(host):
@@ -97,6 +115,7 @@ class SupplierTransport:
             timeout=httpx.Timeout(self.download_timeout, connect=10),
         )
 
+    @_suppress_supplier_http_logs()
     def _request(
         self,
         method: str,
