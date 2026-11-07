@@ -45,3 +45,17 @@ Both-scope tests also read the documented binary variants of the public price li
 The 100MEGA Order service reported an unknown order for `GetStatus` using the supplier guide’s absent-order example. A one-year change-list read returned no orders from which to obtain a valid ID. The operator knows of no other usable order for this account. Successful GetStatus acceptance is therefore blocked by a missing legitimate input. All three `GetXCompany` operations explicitly denied access and cited a missing parameter, including the date-based operation with its documented argument supplied. The same responses occurred over SOAP, HTTP GET and form POST. Licensing and the exact account setting remain unverified. The two `X-ASM-StiRelation` delta export variants returned HTTP 500 and explicitly reported an invalid SQL column with both documented HTTP methods and date-only inputs. Each affected matrix row records the checks without storing upstream text or identifiers.
 
 For a current snapshot of item relationships, both `mega.X-ASM-StiRelation.full` and `mega.X-ASM-StiRelation_El.full` returned business data. Refreshing the corresponding full snapshot can recover the current state when a delta fails. It cannot recover a historical change interval.
+
+## Bounded RC6 blocker recheck, 7 November 2026
+
+The production Portainer worker identified package `2.0.0rc6` and image `ghcr.io/thinkhome-org/suppliermcp@sha256:39119ec4ac5bbc77bb75813d582a924fc489832b6ac363c93844b2488b82b134`. Sequential reader-library probes at **01:56:58–01:57:07 UTC (02:56:58–02:57:07 Europe/Prague)** used each operation's minimum scope, a 1 MiB wire limit, a 2 MiB expansion limit and an 8 KiB response bound.
+
+| Reviewed operations | Observed result |
+| --- | --- |
+| `mega_order.GetXCompany`, `mega_order.GetXCompanyListChanged`, `mega_order.GetXCompanyListId` | `supplier_soap_server_application_fault` |
+| `mega.X-ASM-StiRelation.delta`, `mega.X-ASM-StiRelation_El.delta` | `supplier_http_5xx` in an allowed account window, using a one-minute change interval |
+| `mega_order.GetStatusListChanged` | Valid empty response for the preceding 365 days |
+
+The firm detail/list selectors were synthetic. The order status detail still needs a legitimate order ID. The earlier SQL diagnosis and successful relationship full-snapshot reads retain their historical provenance. This run made no eD calls or full-catalogue downloads. The six small reads do not establish acceptance of all 326 operations on this image. Sanitized receipts retain timestamps, package, image, scope, bounds and outcome, excluding supplier payloads, URLs, credentials, arguments and cursors.
+
+The follow-up requirements remain tracked in [export issue #3](https://github.com/thinkhome-org/suppliermcp/issues/3) and [SOAP issue #4](https://github.com/thinkhome-org/suppliermcp/issues/4). Stable promotion still requires the complete reviewed evidence for the exact staged stable image.
