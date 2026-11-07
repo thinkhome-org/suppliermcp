@@ -108,3 +108,13 @@ the initial commodity set again because RC5 did not bind each successful chunk
 to its commodity code. Successful client reads do not establish full catalog
 coverage. Issues #2, #3 and #4 remain open. The Wiki synchronization and release
 Project show the completed PRs while keeping those acceptance areas in progress.
+
+A subsequent authenticated check of the supplier's current
+[GetXCompanyListChanged help](https://i6ws.100mega.cz/Order.asmx?op=GetXCompanyListChanged)
+and WSDL returned HTTP 200. The help documents the single `ChangeDate` input
+in SOAP, query-string and form-post bindings. Direct HTTP GET with a timezone-free
+ISO datetime and form POST with a UTC ISO datetime both returned HTTP 500 with
+the same access-denied/missing-parameter classification. This was a bounded
+read-only check from the operator's Mac, separate from the RC6 Portainer probes.
+It established no additional documented parameter or working company-list
+alternative for this account.
