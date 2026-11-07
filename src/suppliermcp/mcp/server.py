@@ -28,7 +28,7 @@ def create_server(settings):
         return JSONResponse({"alive": True})
 
     @server.custom_route("/health/ready", methods=["GET"])
-    async def ready(request):
+    def ready(request):
         try:
             with connect(settings) as conn:
                 require_projected_catalog(conn)
