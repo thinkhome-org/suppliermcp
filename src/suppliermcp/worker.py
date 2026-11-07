@@ -63,7 +63,7 @@ def main():
                     "import recovery requires RUN_ID; accept-import also requires --reason"
                 )
             from suppliermcp.catalog.contracts import BatchManifest, CatalogError
-            from suppliermcp.sync.jobs import build_adapters, record_refresh_outcome
+            from suppliermcp.sync.jobs import build_adapters, record_refresh_outcome, refresh_lock
 
             row = conn.execute(
                 "SELECT manifest FROM import_runs WHERE id=%s", (args.run_id,)
@@ -71,30 +71,42 @@ def main():
             if not row:
                 raise CatalogError("import_not_found")
             manifest = BatchManifest.model_validate(row[0])
-            revision = publish(
-                conn,
-                args.run_id,
-                accept_reason=args.reason if args.command == "accept-import" else None,
-            )
-            adapter = build_adapters(settings).get(manifest.interface)
-            if adapter:
-                try:
-                    record_refresh_outcome(
-                        conn,
-                        adapter,
-                        manifest.domain,
-                        manifest.endpoint,
-                        manifest.started_at,
-                        "ok",
-                        manifest,
-                        revision,
-                    )
-                    if manifest.path:
-                        from pathlib import Path
+            with refresh_lock(conn, manifest.interface, manifest.endpoint):
+                private_baseline = (
+                    manifest.interface == "ed_private"
+                    and manifest.endpoint == "getProductCatalogueDownloadXML"
+                )
+                if (
+                    private_baseline
+                    and conn.execute(
+                        "SELECT 1 FROM ed_commodity_cycles WHERE NOT finished"
+                    ).fetchone()
+                ):
+                    raise CatalogError("refresh_in_progress", retryable=True)
+                revision = publish(
+                    conn,
+                    args.run_id,
+                    accept_reason=args.reason if args.command == "accept-import" else None,
+                )
+                adapter = build_adapters(settings).get(manifest.interface)
+                if adapter:
+                    try:
+                        record_refresh_outcome(
+                            conn,
+                            adapter,
+                            manifest.domain,
+                            manifest.endpoint,
+                            manifest.started_at,
+                            "partial" if private_baseline else "ok",
+                            manifest,
+                            revision,
+                        )
+                        if manifest.path:
+                            from pathlib import Path
 
-                        adapter.store.mark(Path(manifest.path), "success", manifest)
-                finally:
-                    adapter.transport.client.close()
+                            adapter.store.mark(Path(manifest.path), "success", manifest)
+                    finally:
+                        adapter.transport.client.close()
 
 
 if __name__ == "__main__":

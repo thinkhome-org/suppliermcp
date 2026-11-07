@@ -143,11 +143,12 @@ def test_enrichment_partition_failure_keeps_other_partitions(tmp_path):
         transport=Transport(),
         sleep=lambda _: None,
     )
-    manifests, failures = adapter.enrichment()
-    manifests = list(manifests)
-    assert len(manifests) == 1 and failures == ["B"]
-    assert list(adapter.parse(manifests[0])) == []
-    assert not manifests[0].complete
+    assert adapter.commodity_codes() == ["A", "B"]
+    manifest = adapter.fetch_commodity("A")
+    assert list(adapter.parse(manifest)) == []
+    assert not manifest.complete
+    with pytest.raises(CatalogError, match="supplier_unavailable"):
+        adapter.fetch_commodity("B")
 
 
 def test_relationship_and_navigator_evidence(tmp_path):
