@@ -212,3 +212,15 @@ def test_non_catalog_content_is_not_an_empty_commodity(tmp_path, xml, expected):
     )
     with pytest.raises(CatalogError, match=expected):
         list(EdPrivateAdapter().parse(manifest))
+
+
+def test_private_commodity_error_must_not_certify_partial_dictionary():
+    class Gateway:
+        def call(self, method):
+            return b"<List><CommodityCode>A</CommodityCode><StatusCode>ERROR</StatusCode></List>"
+
+    from suppliermcp.catalog.contracts import CatalogError
+
+    adapter = EdPrivateAdapter(gateway=Gateway(), store=object())
+    with pytest.raises(CatalogError, match="supplier_response_error"):
+        adapter.commodity_codes()

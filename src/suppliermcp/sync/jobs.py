@@ -171,6 +171,13 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
                     "UPDATE ed_commodity_cycles SET finished=true WHERE baseline_run_id=%s",
                     (run_id,),
                 )
+                if conn.execute("SELECT to_regclass('procrastinate_jobs')").fetchone()[0]:
+                    conn.execute(
+                        """SELECT procrastinate_finish_job_v1(id,'aborted',false) FROM
+                        (SELECT id FROM procrastinate_jobs WHERE task_name='suppliermcp.refresh'
+                         AND queueing_lock=%s AND status='todo' FOR UPDATE) pending""",
+                        (f"{adapter.interface}:{source_endpoint}",),
+                    )
             record_refresh_outcome(
                 conn, adapter, domain, source_endpoint, now, outcome, manifest, revision, codes
             )
@@ -298,28 +305,36 @@ def record_refresh_outcome(
         )
 
 
-def _recover_private_catalog_job(conn, key):
-    # Procrastinate clears the owner after worker loss. The source lock also protects live CLI imports.
+def _scheduled_job_running(conn, task, key):
+    # Procrastinate drops the owner after worker loss. Respect any live source/index lock too.
     with conn.transaction():
-        orphan = conn.execute(
-            """SELECT id FROM procrastinate_jobs WHERE task_name='suppliermcp.refresh'
-               AND queueing_lock=%s AND status='doing' AND worker_id IS NULL FOR UPDATE SKIP LOCKED""",
-            (key,),
+        job = conn.execute(
+            """SELECT id, worker_id FROM procrastinate_jobs WHERE task_name=%s
+                              AND queueing_lock=%s AND status='doing' FOR UPDATE""",
+            (task, key),
         ).fetchone()
-        if (
-            not orphan
-            or not conn.execute(
+        if not job:
+            return False
+        if job[1] is not None:
+            return True
+        protected = (
+            conn.execute("SELECT pg_try_advisory_xact_lock(91003)")
+            if key == "index"
+            else conn.execute(
                 "SELECT pg_try_advisory_xact_lock(hashtextextended(%s,0))",
                 ("suppliermcp.refresh:" + key,),
-            ).fetchone()[0]
-        ):
-            return
-        if conn.execute(
-            "SELECT 1 FROM procrastinate_jobs WHERE queueing_lock=%s AND status='todo'", (key,)
-        ).fetchone():
-            conn.execute("SELECT procrastinate_finish_job_v1(%s,'aborted',false)", orphan)
-        else:
-            conn.execute("SELECT procrastinate_retry_job_v2(%s,now(),NULL,NULL,NULL)", orphan)
+            )
+        ).fetchone()[0]
+        if protected:
+            if conn.execute(
+                "SELECT 1 FROM procrastinate_jobs WHERE queueing_lock=%s AND status='todo'", (key,)
+            ).fetchone():
+                conn.execute("SELECT procrastinate_finish_job_v1(%s,'aborted',false)", (job[0],))
+            else:
+                conn.execute(
+                    "SELECT procrastinate_retry_job_v2(%s,now(),NULL,NULL,NULL)", (job[0],)
+                )
+        return True
 
 
 def create_app(settings):
@@ -363,12 +378,13 @@ def create_app(settings):
     @app.periodic(cron="* * * * *")
     @app.task(name="suppliermcp.tick")
     def tick(timestamp):
-        try:
-            index.configure(lock="index", queueing_lock="index").defer()
-        except AlreadyEnqueued:
-            pass
         contracts = source_contracts(settings)
         with connect(settings) as conn:
+            if not _scheduled_job_running(conn, "suppliermcp.index", "index"):
+                try:
+                    index.configure(lock="index", queueing_lock="index").defer()
+                except AlreadyEnqueued:
+                    pass
             conn.execute("DELETE FROM query_results WHERE expires_at < now()")
             ArtifactStore(settings.artifact_dir, budget=settings.artifact_budget).prune(utcnow())
             adapters = build_adapters(settings)
@@ -388,8 +404,11 @@ def create_app(settings):
                     source_endpoint = endpoint or getattr(
                         adapter, "endpoints", getattr(adapter, "methods", {})
                     ).get(domain, domain)
+                    if _scheduled_job_running(
+                        conn, "suppliermcp.refresh", f"{interface}:{source_endpoint}"
+                    ):
+                        continue
                     if interface == "ed_private" and domain == "catalog" and not endpoint:
-                        _recover_private_catalog_job(conn, f"{interface}:{source_endpoint}")
                         if conn.execute(
                             "SELECT 1 FROM ed_commodity_cycles WHERE NOT finished"
                         ).fetchone():

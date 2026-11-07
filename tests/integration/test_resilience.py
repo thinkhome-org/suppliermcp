@@ -375,6 +375,21 @@ def test_scheduler_repeated_tick_preserves_each_pending_job(conn, tmp_path):
                 ).fetchone()[0]
                 == "todo"
             )
+            worker = conn.execute(
+                "INSERT INTO procrastinate_workers DEFAULT VALUES RETURNING id"
+            ).fetchone()[0]
+            conn.execute(
+                "UPDATE procrastinate_jobs SET status='doing',worker_id=%s WHERE id=%s",
+                (worker, lonely),
+            )
+            conn.execute("UPDATE procrastinate_jobs SET status='doing' WHERE queueing_lock='index'")
+            tick(timestamp=240)
+            assert conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock=%s ORDER BY id", (key,)
+            ).fetchall() == [("aborted",), ("doing",)]
+            assert conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock='index'"
+            ).fetchall() == [("todo",)]
         finally:
             conn.execute("TRUNCATE procrastinate_jobs CASCADE")
 
@@ -426,7 +441,35 @@ def test_resume_private_commodities_after_worker_exit(conn):
         "SELECT (data->'domains'->'catalog'->>'complete')::bool FROM source_state WHERE interface='ed_private'"
     ).fetchone()[0]
     adapter.crash = False
-    run_refresh(conn, adapter, "catalog")
+    import os
+
+    from suppliermcp.config import Settings
+    from suppliermcp.sync.jobs import create_app
+
+    app = create_app(
+        Settings(
+            database_url=os.getenv(
+                "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+            )
+        )
+    )
+    with app.open():
+        if not conn.execute("SELECT to_regclass('procrastinate_jobs')").fetchone()[0]:
+            app.schema_manager.apply_schema()
+        conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+        key = "ed_private:getProductCatalogueDownloadXML"
+        app.tasks["suppliermcp.refresh"].configure(lock="supplier:ed", queueing_lock=key).defer(
+            interface="ed_private", domain="catalog", endpoint=None
+        )
+        run_refresh(conn, adapter, "catalog")
+        assert (
+            conn.execute(
+                "SELECT status FROM procrastinate_jobs WHERE queueing_lock=%s", (key,)
+            ).fetchone()[0]
+            == "aborted"
+        )
+        conn.execute("TRUNCATE procrastinate_jobs CASCADE")
+
     assert adapter.base_fetches == 1
     assert adapter.fetched == ["A", "B", "C", "C"]
     assert conn.execute("SELECT code,empty FROM ed_commodity_parts ORDER BY code").fetchall() == [

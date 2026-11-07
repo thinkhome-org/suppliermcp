@@ -14,10 +14,20 @@ class EdPrivateAdapter(EdPublicAdapter):
         "schema": "getNavigator",
     }
 
+    @staticmethod
+    def _dictionary_root(data):
+        root = fromstring(data, forbid_dtd=True)
+        if any(
+            local(e.tag) == "Fault" or local(e.tag) == "StatusCode" and e.text == "ERROR"
+            for e in root.iter()
+        ):
+            raise CatalogError("supplier_response_error")
+        return root
+
     def commodity_codes(self):
         if not self.gateway or not self.store:
             raise CatalogError("source_not_configured")
-        root = fromstring(self.gateway.call("getProductCommodityList"), forbid_dtd=True)
+        root = self._dictionary_root(self.gateway.call("getProductCommodityList"))
         return sorted(
             {
                 e.text.strip()
@@ -49,12 +59,7 @@ class EdPrivateAdapter(EdPublicAdapter):
             started_at = utcnow()
             try:
                 data = self.gateway.call(endpoint)
-                root = fromstring(data, forbid_dtd=True)
-                if any(
-                    local(e.tag) == "Fault" or local(e.tag) == "StatusCode" and e.text == "ERROR"
-                    for e in root.iter()
-                ):
-                    raise CatalogError("supplier_response_error")
+                self._dictionary_root(data)
                 manifest = BatchManifest(
                     interface=self.interface,
                     domain="schema",
