@@ -13,6 +13,8 @@ from suppliermcp.catalog.contracts import (
     SourceItem,
 )
 
+BULK_ANALYZE_ITEMS = 10_000
+
 
 def _class_export(manifest):
     return (
@@ -373,8 +375,10 @@ def publish(conn, run_id, *, accept_reason=None):
                 )
             from suppliermcp.search.schema import refresh_values
 
-            # Bulk imports need current statistics before repeated projection lookups.
-            conn.execute("ANALYZE source_items, observations, current_offers")
+            # At 10k items the projection below does 50 batches in this transaction,
+            # before autovacuum can see these writes. Smaller imports use existing stats.
+            if len(changed) >= BULK_ANALYZE_ITEMS:
+                conn.execute("ANALYZE source_items, observations, current_offers")
             refresh_values(conn, changed)
             with conn.cursor().copy("COPY index_outbox (item_id, revision) FROM STDIN") as outbox:
                 for item_id in changed:
