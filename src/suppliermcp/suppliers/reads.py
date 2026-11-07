@@ -257,6 +257,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
     parser = expat.ParserCreate(namespace_separator=" ")
     stack = []
     download = None
+    empty_shop_delta = False
     result_seen = False
     body_seen = False
 
@@ -264,7 +265,7 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
         raise CatalogError("invalid_supplier_xml")
 
     def start(tag, attrs):
-        nonlocal result_seen, body_seen
+        nonlocal result_seen, body_seen, empty_shop_delta
         ns, _, name = tag.rpartition(" ")
         if len(stack) >= 64 or len(name) > 256:
             invalid()
@@ -304,9 +305,22 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
             )
             or name.lower() in {"password", "login", "errortext"}
         )
+        if (
+            not stack
+            and export
+            and preview.result.catalog_projection
+            and name == "Result"
+            and spec.mode == "delta"
+            and spec.name in {"StoItemShop_El", "StoItemShoptet_El"}
+        ):
+            empty_shop_delta = True
+        if empty_shop_delta and (
+            ns or attrs or len(stack) > 1 or stack and name not in {"StatusCode", "ErrorText"}
+        ):
+            raise CatalogError("catalog_projection_unavailable")
         project = preview.result.catalog_projection and not (soap and spec.strategy == "download")
         node = None
-        if project and not empty_hog:
+        if project and not empty_hog and not empty_shop_delta:
             qualified = f"{{{ns}}}{name}" if ns else name
             if not stack:
                 node = catalog_projection(spec.interface, spec.name, qualified)
@@ -340,7 +354,9 @@ def _xml(chunks, spec, preview, *, soap=False, export=False, prefix=""):
     def chars(value):
         if not stack:
             return
-        if empty_hog and value.strip():
+        if (
+            empty_hog or empty_shop_delta and stack[-1]["name"] not in {"StatusCode", "ErrorText"}
+        ) and value.strip():
             raise CatalogError("catalog_projection_unavailable")
         f = stack[-1]
         control = f["name"].lower() == "statuscode" or (

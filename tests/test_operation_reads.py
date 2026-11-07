@@ -395,3 +395,35 @@ async def test_other_reviewed_elinkx_service_reuses_wrapped_reads(monkeypatch, t
     result = await reader.read_operation(IDENTITY, spec.operation_id, {})
     assert [field.value for field in result.fields] == ["ok"]
     assert account_binding("login", profile) != account_binding("login")
+
+
+@pytest.mark.parametrize("endpoint", ["StoItemShop_El", "StoItemShoptet_El"])
+@pytest.mark.parametrize("payload", [b"<Result/>", b"<Result> \n </Result>"])
+def test_empty_shop_delta_result(endpoint, payload, tmp_path):
+    spec = next(s for s in READS if s.operation_id == f"mega.{endpoint}.delta")
+    reader = make_reader(lambda request: httpx.Response(200, content=payload), spec, tmp_path)
+    result = reader._read(
+        spec, arguments(spec), Identity("iss", "user", "catalog", frozenset({"catalog:read"})), None
+    )
+    assert not result.fields
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b'<Result customer="secret"/>',
+        b"<Result>secret</Result>",
+        b"<Result><Customer>secret</Customer></Result>",
+        b'<Result xmlns="urn:unknown"/>',
+    ],
+)
+def test_shop_delta_rejects_unreviewed_result(payload, tmp_path):
+    spec = next(s for s in READS if s.operation_id == "mega.StoItemShop_El.delta")
+    reader = make_reader(lambda request: httpx.Response(200, content=payload), spec, tmp_path)
+    with pytest.raises(CatalogError, match="catalog_projection_unavailable"):
+        reader._read(
+            spec,
+            arguments(spec),
+            Identity("iss", "user", "catalog", frozenset({"catalog:read"})),
+            None,
+        )
