@@ -298,3 +298,20 @@ async def test_v1_nested_identity_cannot_cross_catalog_cutover(conn, monkeypatch
         assert not conn.execute("SELECT 1 FROM migrations WHERE name LIKE '011%'").fetchone()
         conn.execute("SET LOCAL search_path TO public")
         conn.execute("DROP SCHEMA v1_upgrade CASCADE")
+
+
+def test_small_publications_skip_manual_planner_sampling(conn, monkeypatch):
+    from suppliermcp.sync import publish as publisher
+
+    def samples():
+        conn.execute("SELECT pg_stat_force_next_flush()")
+        return conn.execute(
+            "SELECT analyze_count FROM pg_stat_user_tables WHERE relname='observations'"
+        ).fetchone()[0]
+
+    before = samples()
+    put(conn, "one", [product("one", ["red"])])
+    assert samples() == before
+    monkeypatch.setattr(publisher, "BULK_ANALYZE_ITEMS", 2)
+    put(conn, "two", [product("two", ["red"]), product("two", ["green"], id="2")])
+    assert samples() == before + 1
