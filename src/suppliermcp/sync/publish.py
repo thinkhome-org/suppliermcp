@@ -376,10 +376,9 @@ def publish(conn, run_id, *, accept_reason=None):
             # Bulk imports need current statistics before repeated projection lookups.
             conn.execute("ANALYZE source_items, observations, current_offers")
             refresh_values(conn, changed)
-            for item_id in changed:
-                conn.execute(
-                    "INSERT INTO index_outbox(item_id,revision) VALUES (%s,%s)", (item_id, revision)
-                )
+            with conn.cursor().copy("COPY index_outbox (item_id, revision) FROM STDIN") as outbox:
+                for item_id in changed:
+                    outbox.write_row((item_id, revision))
             cursor.close()
             conn.execute(
                 "INSERT INTO endpoint_checkpoints VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT(interface,domain,endpoint) DO UPDATE SET started_at=EXCLUDED.started_at,artifact_sha256=EXCLUDED.artifact_sha256,revision=EXCLUDED.revision,delta_to=COALESCE(EXCLUDED.delta_to,endpoint_checkpoints.delta_to),import_scope=EXCLUDED.import_scope",
