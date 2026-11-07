@@ -16,8 +16,8 @@ jobs:
         run: |
           set -eu
           printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          docker pull ghcr.io/thinkhome-org/suppliermcp@sha256:023f84848fe6e8c4faa3442ed00ff0354eb36a868c5370068b014195df67a99b
-          docker tag ghcr.io/thinkhome-org/suppliermcp@sha256:023f84848fe6e8c4faa3442ed00ff0354eb36a868c5370068b014195df67a99b supdb-stage-verified:2.0.0-stage.2
+          docker pull ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6
+          docker tag ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6 supdb-stage-verified:2.0.0-stage.3
           cat > /tmp/transfer.crt <<'CERT'
           -----BEGIN CERTIFICATE-----
           MIIEFTCCAn2gAwIBAgIUFAaR2TtFw5Mz5a6W/1Ggljhk04EwDQYJKoZIhvcNAQEL
@@ -44,7 +44,7 @@ jobs:
           rFddXOyOqfH5iAgNVR0fEZM3JfJIjuyM0JnadjDCqCpD8nWHwbf4tjk=
           -----END CERTIFICATE-----
           CERT
-          docker save supdb-stage-verified:2.0.0-stage.2 | gzip | openssl cms -encrypt -binary -aes-256-cbc -outform DER -out stage.enc /tmp/transfer.crt
+          docker save supdb-stage-verified:2.0.0-stage.3 | gzip | openssl cms -encrypt -binary -aes-256-cbc -outform DER -out stage.enc /tmp/transfer.crt
           sha256sum stage.enc > stage.enc.sha256
       - uses: actions/upload-artifact@v7
         with:
