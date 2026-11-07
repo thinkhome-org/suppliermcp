@@ -63,3 +63,48 @@ At approximately 22:13 UTC on 6 November, the then-local RC5 Codex connection ex
 ## Codex as a remote Portainer client
 
 After the local acceptance tests, the operator switched the regular Mac Codex connection `supdb_v2` to the permanent Portainer MCP endpoint at `https://supdb.thinkhome.org/mcp`. The Codex app-server used its global configuration and a scoped bearer for the hosted service. It returned a nonempty catalogue search and successfully read the eD invoice list. The local RC3 and RC5 results above describe the earlier configuration.
+
+## RC6 recovery and remote clients, 7 November 2026
+
+[RC6](https://github.com/thinkhome-org/suppliermcp/releases/tag/v2.0.0-rc.6)
+was published from merged commit `7a502acb9ce115c5977194daf2cecc3612a89e56`.
+Its immutable image is
+`ghcr.io/thinkhome-org/suppliermcp@sha256:39119ec4ac5bbc77bb75813d582a924fc489832b6ac363c93844b2488b82b134`.
+The release validation, dedicated login check and published-image restart/rollback
+rehearsal passed. All four entries in the downloaded `SHA256SUMS` passed, and all
+five assets also matched their GitHub-reported SHA-256 digests. Both plugin
+archives point at the permanent HTTPS MCP URL. The wheel contains migration 012
+for per-commodity recovery receipts. The release workflow verified the candidate
+tag resolves to the tested digest. The operator's local GitHub credential could
+not read GHCR directly; the deployment inspection supplies the independent image
+check.
+
+After the authorized VM shutdown/start, the guest reported six CPUs at 01:30:05
+UTC, with `MemTotal=40043964 KiB` (38.19 GiB) and
+`MemAvailable=29305828 KiB`. The Proxmox allocation was 40000 MiB. At 01:57:34
+UTC the Portainer deployment reported the exact RC6 digest for the application,
+worker and migration container. Migration 012 completed and public readiness
+returned HTTP 200 at 01:57:45 UTC.
+
+The operator's native Codex plugin was upgraded from 1.0.0 to the verified RC6
+archive. Its installed manifest, transport definition and two skills matched
+the extracted archive byte for byte. The bundled duplicate transport is
+disabled while the authenticated `supdb_v2` connection points at
+`https://supdb.thinkhome.org/mcp`. A fresh regular Codex app-server process then
+successfully called `search_products` and `ed_public.getInvoiceList` through
+`supdb_v2` at approximately 01:59 UTC. The check printed only success metadata.
+
+A separate protocol-level check ran against RC6 between 01:59:02 and 01:59:11
+UTC. It completed public PKCE authorization-code flows for `personal-codex`,
+`personal-chatgpt` and `ordinary-app`, verified their signed tokens, discovered
+nine MCP tools and read the eD transportation list. Both personal registrations
+read the invoice list. The ordinary registration was denied. The actual personal
+ChatGPT website interaction remains the earlier recorded web test; the RC6
+check exercises its registration and protocol without a new browser chat.
+
+At these checks, complete eD PRIVATE coverage and full PostgreSQL/Typesense
+ID-and-revision parity remained pending. The new recovery mechanism will request
+the initial commodity set again because RC5 did not bind each successful chunk
+to its commodity code. Successful client reads do not establish full catalog
+coverage. Issues #2, #3 and #4 remain open. The Wiki synchronization and release
+Project show the completed PRs while keeping those acceptance areas in progress.
