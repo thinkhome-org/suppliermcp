@@ -1,0 +1,56 @@
+name: Transfer encrypted stage image
+on:
+  push:
+    branches: [codex/stage-image-transfer]
+permissions:
+  contents: read
+  packages: read
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Export exact image encrypted for VM
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker pull ghcr.io/thinkhome-org/suppliermcp@sha256:c045b205c03c4ccae34f399bf7b583a6fbc6b12f86eaca72b57df124b55c73a0
+          docker tag ghcr.io/thinkhome-org/suppliermcp@sha256:c045b205c03c4ccae34f399bf7b583a6fbc6b12f86eaca72b57df124b55c73a0 supdb-stage-verified:2.0.0-stage.1
+          cat > /tmp/transfer.crt <<'CERT'
+          -----BEGIN CERTIFICATE-----
+          MIIEJzCCAo+gAwIBAgIUe51DHBmONRXQEjqjArk1NWgkrZMwDQYJKoZIhvcNAQEL
+          BQAwIzEhMB8GA1UEAwwYU3VwREIgc3RhZ2luZyBPQ0kgaW1wb3J0MB4XDTI2MTEw
+          NzA0MzIwOFoXDTI2MTEwOTA0MzIwOFowIzEhMB8GA1UEAwwYU3VwREIgc3RhZ2lu
+          ZyBPQ0kgaW1wb3J0MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA3oRR
+          65oID+UwkQwCrw3ExiG1hh+gLOaFzobN33S/LWGHsc4dKV8p+0/nxtjSbpA9oZv+
+          f5xCjVPGNrnB5uxQQd26gP/o0+Fnio2OkDvpuFpJwkmTC2h7h06OWwFreqLP//+A
+          IkSWok2rjUxzgAsZaAowItK33GLZOMMxIakpqSRzUN1tPBq5rtmpmmoZ+gg/eX8O
+          5vUrY8rqSyMo2OF+aMcSuPH5k9nwd+2WKUe0/beunrUUnneICgQlZ5Cjhm2rOtP+
+          WdtpTy59zF5E+Mf5brFMxo+x2MGz78Cm3Q1sty1iJTcWLnXQATLEE4f5ETmYcScM
+          ToVFTk5WPSEB9+Bwrgrxktvvoc0otQtVT2k2sG/56JIhzXJcuS1iivQ7SdbEcGSd
+          21pWz3vP5SN9pO8M39024yof/7tZ/Xm/CBtKrejld19Qm2OrqFhAfqMpA7mVBccO
+          w0+KduNyUPQ++ikNSB9hZVP28yrOr0+iwxvnWGNHCUuwcRCc0Se5tTxLLbPrAgMB
+          AAGjUzBRMB0GA1UdDgQWBBRxdR3oMyWx4KeecGldpud20J9/5jAfBgNVHSMEGDAW
+          gBRxdR3oMyWx4KeecGldpud20J9/5jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+          DQEBCwUAA4IBgQB/mV0hWX4GRjRf+7NCJrC1kiV4qE1jzp2Ol9CX8iY0lZ0gy5KF
+          cuRQOpd9rap0ViqhUOXOENmz1eJZcg6wW9pBbvVPWjdx94jq764P+UbAF1awm7bL
+          zwhjU0+z/UPcfI1mr8V2d+ZJchYpXASMtKXDMzqhAIMtRY5y00GQCy5zkXdIaT9R
+          9oJe/XZcPNNeJsLH99D9UzMz3K32h6WE3LjmBtw9P4F1QjsyPAA6EpF4rBmE3VdR
+          r5AgUziOjRfwS9/xWEF1aZS70LMIbwHypIK7Gt60pMxJ+Kb5AoyATUPTu2mOBS5V
+          cV9h4hGmT+AWQ7JWX14bkdAm3MebZs4azt62HCJhy5CFgqT4/gskSy1CACF3zuWo
+          dibUSw8DqD1ezYs3Vmj+vU+KBFz1LA+7quBaBH0BZSE/Zko945LTRAX8yBQwRjAA
+          gSftTOeM8yXJ7a8qSCzfYlK2X5jrv+JoHMwXBJLmSyFUVOgX9DxEqjlaWar93OAQ
+          JHz209ZC2rSa48g=
+          -----END CERTIFICATE-----
+          CERT
+          docker save supdb-stage-verified:2.0.0-stage.1 | gzip | openssl cms -encrypt -binary -aes-256-cbc -outform DER -out stage.enc /tmp/transfer.crt
+          sha256sum stage.enc > stage.enc.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: encrypted-stage-image
+          path: |
+            stage.enc
+            stage.enc.sha256
+          retention-days: 1
