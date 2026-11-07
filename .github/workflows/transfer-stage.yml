@@ -20,29 +20,28 @@ jobs:
           docker tag ghcr.io/thinkhome-org/suppliermcp@sha256:c045b205c03c4ccae34f399bf7b583a6fbc6b12f86eaca72b57df124b55c73a0 supdb-stage-verified:2.0.0-stage.1
           cat > /tmp/transfer.crt <<'CERT'
           -----BEGIN CERTIFICATE-----
-          MIIEJzCCAo+gAwIBAgIUe51DHBmONRXQEjqjArk1NWgkrZMwDQYJKoZIhvcNAQEL
-          BQAwIzEhMB8GA1UEAwwYU3VwREIgc3RhZ2luZyBPQ0kgaW1wb3J0MB4XDTI2MTEw
-          NzA0MzIwOFoXDTI2MTEwOTA0MzIwOFowIzEhMB8GA1UEAwwYU3VwREIgc3RhZ2lu
-          ZyBPQ0kgaW1wb3J0MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA3oRR
-          65oID+UwkQwCrw3ExiG1hh+gLOaFzobN33S/LWGHsc4dKV8p+0/nxtjSbpA9oZv+
-          f5xCjVPGNrnB5uxQQd26gP/o0+Fnio2OkDvpuFpJwkmTC2h7h06OWwFreqLP//+A
-          IkSWok2rjUxzgAsZaAowItK33GLZOMMxIakpqSRzUN1tPBq5rtmpmmoZ+gg/eX8O
-          5vUrY8rqSyMo2OF+aMcSuPH5k9nwd+2WKUe0/beunrUUnneICgQlZ5Cjhm2rOtP+
-          WdtpTy59zF5E+Mf5brFMxo+x2MGz78Cm3Q1sty1iJTcWLnXQATLEE4f5ETmYcScM
-          ToVFTk5WPSEB9+Bwrgrxktvvoc0otQtVT2k2sG/56JIhzXJcuS1iivQ7SdbEcGSd
-          21pWz3vP5SN9pO8M39024yof/7tZ/Xm/CBtKrejld19Qm2OrqFhAfqMpA7mVBccO
-          w0+KduNyUPQ++ikNSB9hZVP28yrOr0+iwxvnWGNHCUuwcRCc0Se5tTxLLbPrAgMB
-          AAGjUzBRMB0GA1UdDgQWBBRxdR3oMyWx4KeecGldpud20J9/5jAfBgNVHSMEGDAW
-          gBRxdR3oMyWx4KeecGldpud20J9/5jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
-          DQEBCwUAA4IBgQB/mV0hWX4GRjRf+7NCJrC1kiV4qE1jzp2Ol9CX8iY0lZ0gy5KF
-          cuRQOpd9rap0ViqhUOXOENmz1eJZcg6wW9pBbvVPWjdx94jq764P+UbAF1awm7bL
-          zwhjU0+z/UPcfI1mr8V2d+ZJchYpXASMtKXDMzqhAIMtRY5y00GQCy5zkXdIaT9R
-          9oJe/XZcPNNeJsLH99D9UzMz3K32h6WE3LjmBtw9P4F1QjsyPAA6EpF4rBmE3VdR
-          r5AgUziOjRfwS9/xWEF1aZS70LMIbwHypIK7Gt60pMxJ+Kb5AoyATUPTu2mOBS5V
-          cV9h4hGmT+AWQ7JWX14bkdAm3MebZs4azt62HCJhy5CFgqT4/gskSy1CACF3zuWo
-          dibUSw8DqD1ezYs3Vmj+vU+KBFz1LA+7quBaBH0BZSE/Zko945LTRAX8yBQwRjAA
-          gSftTOeM8yXJ7a8qSCzfYlK2X5jrv+JoHMwXBJLmSyFUVOgX9DxEqjlaWar93OAQ
-          JHz209ZC2rSa48g=
+          MIIEFTCCAn2gAwIBAgIUFAaR2TtFw5Mz5a6W/1Ggljhk04EwDQYJKoZIhvcNAQEL
+          BQAwGjEYMBYGA1UEAwwPU3VwREIgVk0gaW1wb3J0MB4XDTI2MTEwNzA0NDA1NVoX
+          DTI2MTEwOTA0NDA1NVowGjEYMBYGA1UEAwwPU3VwREIgVk0gaW1wb3J0MIIBojAN
+          BgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEApk1No3vidL+ZSQ+4menuB5DRWya+
+          jjy26CaDt6IffaS8bZ1ApdIuU+ywfqrFn5mbtoUMV7FxcBAFtvdMboZqw2uNIqEQ
+          2IoO7yREWppdaI7KuxVcRXY87Bvp5T+VJhMwpcX4KdsZG9HUX+ztJUkRbDKHqNDj
+          65kKJNJK8oeAa5MPxlC2lsa24M5xr5xaPz5gFkOxKrKXEIs6/jmnn5iYZ6318jIV
+          gSNTb+FVafqYpkVGhsOliDxtgdDCa7UrKaV0iVlQYdM5fICMuGJArCBBOtXohoH4
+          /8/YoIMBnKZwaTPwgQ7vw9ur6vvTkYjROSK7tQLvPP3lVY4hsiXDXjyhUCCbJMo1
+          0eghBRQupa5SrS2qz2U0Et7eVUc33T8KtNg4CbYEUFduKMEpl4NobVEQYyEFucPe
+          1EmtdEFHNbklF8klJw7e3vdS/nCSvZ/NfX+E8FTNsZzde6R7u/+2rvqCxwARfTBq
+          1iNzZbE/u048c6b/k15/EIHc/XXkatk9yX+XAgMBAAGjUzBRMB0GA1UdDgQWBBTo
+          2y0k1iS+wgVDCQDhTh6c7kXDyzAfBgNVHSMEGDAWgBTo2y0k1iS+wgVDCQDhTh6c
+          7kXDyzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBgQCRoUmXRMQu
+          6KxjlK4CeUxLq9fl3qq0772LsNJu54g3raT3zIHuhkzMNlkLAj/bobO2TVZ+YdKr
+          ZaEtE4pL7obP11y6aYGxnp+Qp9a+5GwkP+NjH68nGa0pef9hGHvDpZ54u7O8crMn
+          A0nZPCwzChoofRlSVF5JaqYMfoXH+Qtvz1JFdo0dxH1mwPt3U+sky/F7lqjLmA0P
+          57JFsoo6rpr43V+jV2XeNUuu/S3/YISf04ceeMuj6lF0pQ04kTBFgveeqgj9h5am
+          EidxEXoaIzoBu/j0MmWEGDBjapfvg/ytz59umwbNN5oJvk8hgJemfE1eBwJ9A3at
+          mRHtWrfzRjK2IS7+EsBF+L4frmOYO731pzuI1lpLKRldIx16Lf4m/aOkLoYOQD/u
+          kdME/IVDeuGl1VqzZGj3xpY0Uu2Gr+H6gVlVaGRMprLUMKJb8IEiYXdjvCQdkWVp
+          rFddXOyOqfH5iAgNVR0fEZM3JfJIjuyM0JnadjDCqCpD8nWHwbf4tjk=
           -----END CERTIFICATE-----
           CERT
           docker save supdb-stage-verified:2.0.0-stage.1 | gzip | openssl cms -encrypt -binary -aes-256-cbc -outform DER -out stage.enc /tmp/transfer.crt
