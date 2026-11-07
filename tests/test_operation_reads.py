@@ -427,3 +427,23 @@ def test_shop_delta_rejects_unreviewed_result(payload, tmp_path):
             Identity("iss", "user", "catalog", frozenset({"catalog:read"})),
             None,
         )
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "getProductCatalogueFullDownloadXMLExt",
+        "getProductCatalogueFullDownloadXMLv1",
+        "getProductCatalogueFullDownloadZIPExt",
+        "getProductCatalogueFullDownloadZIPv1",
+    ],
+)
+def test_ed_legacy_full_exports_supply_empty_optional_filters(endpoint):
+    from suppliermcp.suppliers.reads import validate_arguments
+
+    spec = next(s for s in READS if s.operation_id == "ed_private." + endpoint)
+    args = validate_arguments(spec, {"onStock": True, "Comodities": "123"}, datetime.now(UTC))
+    expected = {"onStock": "true", "Comodities": "123", "Producers": "", "Categories": ""}
+    if endpoint.endswith("v1"):
+        expected["ComoditiesTree"] = ""
+    assert args == expected

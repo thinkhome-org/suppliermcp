@@ -108,6 +108,16 @@ def validate_arguments(spec, arguments, now):
                     raise ValueError
             elif required:
                 raise ValueError
+        if spec.interface == "ed_private" and spec.name in {
+            "getProductCatalogueFullDownloadXMLExt",
+            "getProductCatalogueFullDownloadXMLv1",
+            "getProductCatalogueFullDownloadZIPExt",
+            "getProductCatalogueFullDownloadZIPv1",
+        }:
+            # These eD methods dereference omitted string filters despite optional WSDL fields.
+            for field in spec.inputs:
+                if field.xsd_type == "string":
+                    result.setdefault(field.name, "")
         if "dateFrom" in result:
             result.setdefault(
                 "dateTo", now.astimezone(ZoneInfo("Europe/Prague")).date().isoformat()
