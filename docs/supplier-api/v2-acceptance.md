@@ -118,3 +118,9 @@ the same access-denied/missing-parameter classification. This was a bounded
 read-only check from the operator's Mac, separate from the RC6 Portainer probes.
 It established no additional documented parameter or working company-list
 alternative for this account.
+
+## Production eD PRIVATE catalog and index, 7 November 2026
+
+The RC6 worker finished the eD PRIVATE catalog on Portainer. A fresh supplier list matched all 357 distinct commodity codes recorded for the import. Of those, 183 returned products and 174 returned valid empty results. All 357 had committed receipts. The catalog and dictionaries completed at eD revision 317.
+
+At 04:51:54 Europe/Prague the rebuilt serving Typesense alias and PostgreSQL contained the same 157,804 active product IDs and revisions at catalog revision 318. Under the index and publication locks the full comparison found zero missing IDs, extra IDs, revision mismatches or pending changes. Rebuild and verification took 1,275.91 seconds. The SHA-256 of the sorted ID/revision pairs was `9b3d5bcad034071d1202d4de44e358897e85074189bac8eff190c0460d533a94`. Remote Codex then returned complete catalog status with catalog and index revision 318 and a Logitech search returned 20 results. This verifies [the eD PRIVATE acceptance issue](https://github.com/thinkhome-org/suppliermcp/issues/2) for this snapshot.
