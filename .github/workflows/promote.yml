@@ -38,7 +38,7 @@ jobs:
           git merge-base --is-ancestor "$source" HEAD
           git diff --quiet "$source" HEAD -- . ":(exclude)$RECORD/operations.json" ":(exclude)$RECORD/acceptance.json" \
             ":(exclude)$RECORD/release-notes.md" ":(exclude)scripts/verify_promotion.py" \
-            ":(exclude)tests/test_promotion.py" ":(exclude).github/workflows/promote.yml"
+            ":(exclude)docs/stable-release.md" ":(exclude)tests/test_promotion.py" ":(exclude).github/workflows/promote.yml"
           gh release view "$stage" --json isPrerelease,isDraft | jq -e '.isPrerelease and (.isDraft | not)'
           gh release download "$stage" --dir dist
           uv run --locked python scripts/verify_promotion.py "$RECORD" dist "$source"
