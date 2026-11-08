@@ -1,7 +1,8 @@
 # Supplier contracts
 
 Fixtures in tests are synthetic examples derived from the supplied documentation,
-not authenticated captures. Account capability coverage remains unverified.
+not authenticated captures. Fixtures alone do not verify account capability coverage;
+consult the timestamped live release records for that evidence.
 
 For eD, PUBLIC identity and price fields are eligible observations. PRIVATE basic
 catalog price, fee, VAT and stock fields are placeholders. Detailed and stock
