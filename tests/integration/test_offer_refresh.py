@@ -74,3 +74,59 @@ async def test_direct_read_account_is_excluded_from_catalog_refresh(conn, tmp_pa
             adapter.transport.client.close()
     [result] = await service.compare_offers(["ed:1"], refresh=True)
     assert calls == ["ed_private"] and "refresh_pending" in result.warnings
+
+
+async def test_identical_gtin_compares_suppliers_without_conflating_order_multiple(conn):
+    import os
+
+    from suppliermcp.access import Identity
+    from suppliermcp.config import Settings
+    from suppliermcp.service import CatalogService
+
+    for supplier, interface, price, multiple in [
+        ("ed", "ed_public", "10", "10"),
+        ("mega", "mega", "12", "1"),
+    ]:
+        source = SourceItem(
+            supplier=supplier,
+            source_id="1",
+            sku=supplier,
+            name="Same trade item",
+            manufacturer="Logitech",
+            mpn="910-006477",
+            ean="5099206099906",
+        )
+        publish(
+            conn,
+            stage(
+                conn,
+                BatchManifest(interface=interface, domain="catalog"),
+                [
+                    source,
+                    Offer(
+                        item_id=source.item_id,
+                        currency="CZK",
+                        unit_net=price,
+                        fees_net="0",
+                        order_multiple=multiple,
+                    ),
+                ],
+            ),
+        )
+    service = CatalogService(
+        Settings(
+            database_url=os.getenv(
+                "SUPPLIERMCP_TEST_DSN", "postgresql://test:test@localhost:55439/test"
+            )
+        ),
+        Identity("issuer", "user", "client", frozenset({"catalog:read"})),
+    )
+    [one] = await service.compare_offers(["ed:1"], quantities={"ed:1": Decimal(1)})
+    assert {v.item_id for v in one.offers} == {"ed:1", "mega:1"}
+    assert {v.orderable_qty for v in one.offers} == {Decimal(1), Decimal(10)}
+    assert one.last_known_winner is None
+    assert "different_orderable_quantities_not_ranked" in one.warnings
+    [ten] = await service.compare_offers(["ed:1"], quantities={"ed:1": Decimal(10)})
+    assert {v.total_net for v in ten.offers} == {Decimal(100), Decimal(120)}
+    assert ten.last_known_winner == "ed:1"
+    assert ten.fresh_winner is None
