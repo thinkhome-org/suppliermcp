@@ -28,7 +28,7 @@ def main():
             require_projected_catalog(conn)
     if args.command == "run":
         with app.open():
-            app.run_worker()
+            app.run_worker(shutdown_graceful_timeout=30)
         return
     with connect(settings) as conn:
         if args.command == "migrate":

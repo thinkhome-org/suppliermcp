@@ -141,3 +141,85 @@ def test_worker_request_keeps_signed_url_out_of_http_logs(caplog):
     assert "private-example" not in caplog.text
     t.client.get("https://api.example/public-test")
     assert "public-test" in caplog.text
+
+
+def test_worker_download_bounds_stalled_reads_and_does_not_retry_shutdown():
+    import threading
+
+    from procrastinate.exceptions import JobAborted
+    from procrastinate.job_context import JobContext
+
+    from suppliermcp.sync.lifecycle import abortable_job
+
+    aborted = threading.Event()
+    context = JobContext(
+        app=None, job=None, start_timestamp=0, abort_reason=lambda: aborted.is_set()
+    )
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        assert request.extensions["timeout"]["read"] == 60
+        aborted.set()
+        raise httpx.ReadTimeout("fixture stalled read", request=request)
+
+    class Store:
+        def save(self, chunks, manifest):
+            return b"".join(chunks)
+
+    t = transport(handler, download_timeout=900)
+
+    @abortable_job
+    def job():
+        t.download("https://api.example/file", Store(), None, endpoint="read")
+
+    with pytest.raises(JobAborted):
+        job(context)
+    assert len(calls) == 1
+
+
+def test_ordinary_download_preserves_configured_read_timeout():
+    def handler(request):
+        assert request.extensions["timeout"]["read"] == 900
+        return httpx.Response(200, content=b"fixture")
+
+    class Store:
+        def save(self, chunks, manifest):
+            return b"".join(chunks)
+
+    assert (
+        transport(handler, download_timeout=900).download(
+            "https://api.example/file", Store(), None, endpoint="read"
+        )
+        == b"fixture"
+    )
+
+
+def test_worker_abort_is_checked_between_small_network_fragments():
+    import threading
+
+    from procrastinate.exceptions import JobAborted
+    from procrastinate.job_context import JobContext
+
+    from suppliermcp.sync.lifecycle import abortable_job
+
+    aborted = threading.Event()
+    context = JobContext(
+        app=None, job=None, start_timestamp=0, abort_reason=lambda: aborted.is_set()
+    )
+
+    class Stream(httpx.SyncByteStream):
+        def __iter__(self):
+            yield b"a"
+            aborted.set()
+            yield b"b"
+            pytest.fail("waited for a full buffered chunk after shutdown")
+
+    t = transport(lambda request: httpx.Response(200, stream=Stream()))
+
+    @abortable_job
+    def job():
+        return t.read("GET", "https://api.example/file", endpoint="read")
+
+    with pytest.raises(JobAborted):
+        job(context)
