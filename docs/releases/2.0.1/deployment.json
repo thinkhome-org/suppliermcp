@@ -1,0 +1,199 @@
+{
+  "version": "2.0.1",
+  "observed_at": "2026-11-08T22:34:19.301859+00:00",
+  "source_commit": "685a3d47d8914939d3d3b0f709049f0dfe34883a",
+  "fix_pr": 34,
+  "issue": 32,
+  "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:27456ebc3f7494fcfaa551e76d4d7683a0c44faa2ad0d9f7687175c884df9792",
+  "image_id": "sha256:0f6d2fdba9e9624d266debb118d1469f1fd5a1e3a1f11f26683024093713d6f2",
+  "build_run": 42529763948,
+  "ci": {
+    "pr_run": 42529083377,
+    "main_run": 42529442554,
+    "tests_passed": 595,
+    "codeql": "passed",
+    "independent_review": "no blockers"
+  },
+  "deployment": {
+    "production_stack": "supdb-green",
+    "stage_stack": "supdb-stage",
+    "portainer_managed": true,
+    "production_health": "healthy",
+    "worker": "running",
+    "migration_exit_code": 0,
+    "database_and_index_volumes": "preserved",
+    "new_import_required_by_fix": false,
+    "pre_upgrade_pg_dump": "completed; protected on VM"
+  },
+  "stage_comparison": {
+    "observed_at": "2026-11-08T22:24:42.555906+00:00",
+    "package": "2.0.1",
+    "real_pairs": [
+      {
+        "mpn": "8489A002",
+        "ean": "4960999201719",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      },
+      {
+        "mpn": "7737A001",
+        "ean": "4960999047034",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      },
+      {
+        "mpn": "PK_6ASFTP003blue",
+        "ean": "8592457132943",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      }
+    ],
+    "different_real_products_rejected": true
+  },
+  "production_comparison": {
+    "observed_at": "2026-11-08T22:28:00.434546+00:00",
+    "package": "2.0.1",
+    "real_pairs": [
+      {
+        "mpn": "8489A002",
+        "ean": "4960999201719",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      },
+      {
+        "mpn": "7737A001",
+        "ean": "4960999047034",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      },
+      {
+        "mpn": "PK_6ASFTP003blue",
+        "ean": "8592457132943",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false
+      }
+    ],
+    "different_real_products_rejected": true
+  },
+  "codex": {
+    "client": "normal Codex app-server",
+    "cross_supplier_counts": [
+      2,
+      2,
+      2
+    ],
+    "operations": [
+      "get_catalog_status",
+      "search_products",
+      "get_product",
+      "compare_offers"
+    ],
+    "outcome": "passed"
+  },
+  "chatgpt": {
+    "observed_at": "2026-11-08T22:30:33.990Z",
+    "plugin": "SupDB",
+    "production": true,
+    "operations": [
+      "get_catalog_status",
+      "search_products",
+      "get_product",
+      "compare_offers"
+    ],
+    "cross_supplier_counts": [
+      2,
+      2,
+      2
+    ],
+    "uncertainty": "order_multiple_unknown",
+    "elapsed_seconds": 37,
+    "outcome": "passed"
+  },
+  "live_upstream_reads": {
+    "count": 6,
+    "real_pairs": 3,
+    "receipt_sha256": "83c7a36ef0b77ce98c761b6979039264b6ccebcc55615c4566bc0172c6c49b5f",
+    "outcomes": "all passed; matching EAN and MPN read independently from both supplier APIs"
+  },
+  "assets_sha256": "d3431d6bb3e593e4bd7b9a4eb4ede6d97a3fd90d9790d28731bb41847d2ad51e",
+  "limitations": {
+    "unknown_mega_order_multiple": "preserved; no invented totals or order quantity",
+    "unproven_gtin_or_identity_conflict": "not automatically matched",
+    "prior_supplier_issues": [
+      3,
+      4
+    ],
+    "full_326_operation_matrix_repeated_for_patch": false,
+    "regression_scope": "shared matching, unchanged supplier adapters; six fresh upstream reads and real clients tested"
+  },
+  "deployment_incident": {
+    "issue": 35,
+    "description": "stale old-worker COPY transaction held publication lock after stop; terminated only after TCP port/worker-age ownership verification; rolled back incomplete transaction and resumed durable index outbox"
+  }
+}

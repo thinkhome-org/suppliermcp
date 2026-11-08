@@ -1,5 +1,7 @@
 # Promote SupDB 2.0.0
 
+Production now runs the reviewed 2.0.1 matching patch. See [patch verification](releases/2.0.1/deployment.json) and [packaging semantics](supplier-api/packaging-and-comparison.md). The original 2.0.0 promotion record and runbook below remain historical and are not relabeled as a full 326-operation acceptance of the patch.
+
 Stable 2.0.0 was published and deployed on 2026-11-08 to the production Portainer stack `supdb-green`, replacing RC6. The normal Codex and personal ChatGPT connections use the production endpoint. See the sanitized [production deployment record](releases/2.0.0/deployment.json) for the exact digest, client checks and database/index parity. The steps below remain the reproducible promotion runbook.
 
 The approved stable scope is catalog, search and offer comparison. The six supplier methods listed in [release notes](releases/2.0.0/release-notes.md) are known limitations and do not block this scope. All 326 reads remain in the evidence. The gate allows only those explicitly documented method/outcome pairs; other failures still block promotion.

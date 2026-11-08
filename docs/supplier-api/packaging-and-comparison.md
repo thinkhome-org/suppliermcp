@@ -36,4 +36,4 @@ Přes obě API znovu načteny stejné EAN/MPN; zachovány hashe šesti odpověd�
 | 7737A001 | 4960999047034 | eD JEDN 1 a logistické PACK 10 i 50 současně; 100MEGA QtyPack 1. |
 | PK_6ASFTP003blue | 8592457132943 | eD objednací násobek 10, JEDN 1; 100MEGA QtyPack 1. |
 
-Na původní 2.0.0 všechny tři dvojice vracely jen nabídku výchozího dodavatele. Automatické testy opravy ověřují shodný GTIN, odmítnutí jiného GTIN a výslovného rozdílu balení/varianty, i nezávislé zaokrouhlení objednacích množství. Výsledky po nasazení se zapisují samostatně do záznamu vydání 2.0.1.
+Na původní 2.0.0 všechny tři dvojice vracely jen nabídku výchozího dodavatele. Automatické testy opravy ověřují shodný GTIN, odmítnutí jiného GTIN a výslovného rozdílu balení/varianty, i nezávislé zaokrouhlení objednacích množství. Po nasazení přesného obrazu 2.0.1 prošly všechny tři skutečné dvojice ve stage, produkci, běžném Codexu i osobním ChatGPT: vždy oba dodavatelé. Negativní kontrola různých skutečných produktů spojení odmítla. Podrobnosti v [záznamu 2.0.1](../releases/2.0.1/deployment.json).
