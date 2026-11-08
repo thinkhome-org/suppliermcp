@@ -4,6 +4,7 @@
 Uses only a dedicated disposable database and fixture credentials. No production env is forwarded.
 """
 
+import ipaddress
 import os
 import subprocess
 import time
@@ -70,8 +71,13 @@ def main():
             + extra
         )
 
-    def released(pid):
+    def sessions_at(address):
+        address = str(ipaddress.IPv4Address(address))
+        return sql(f"SELECT count(*) FROM pg_stat_activity WHERE client_addr='{address}'")
+
+    def released(pid, address):
         assert sql(f"SELECT count(*) FROM pg_stat_activity WHERE pid={pid}") == "0"
+        assert sessions_at(address) == "0", "Old worker still owns database sessions"
         assert sql("SELECT pg_try_advisory_xact_lock(91002)") == "t"
 
     try:
@@ -136,6 +142,12 @@ def main():
                 )
             )
             pid = int(active(token, waiting=bool(blocker), http=token == "http"))
+            address = docker(
+                "inspect",
+                "--format",
+                "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+                worker,
+            )
             if token == "http":
                 wait_for(lambda: "HTTP_STALL_ENTERED" in docker("logs", slow_http))
             if token == "graceful1":
@@ -145,9 +157,7 @@ def main():
                 docker("network", "disconnect", network, worker)
                 docker("kill", worker)
                 wait_for(
-                    lambda pid=pid: (
-                        sql(f"SELECT count(*) FROM pg_stat_activity WHERE pid={pid}") == "0"
-                    ),
+                    lambda pid=pid: sessions_at(address) == "0",
                     100,
                 )
             else:
@@ -155,7 +165,7 @@ def main():
                 docker("kill", "--signal", "TERM", worker)
                 assert docker("wait", worker) == "0"
                 assert time.monotonic() - started < (85 if token == "http" else 15)
-            released(pid)
+            released(pid, address)
             assert sql("SELECT count(*) FROM shutdown_markers") == str(index)
             if blocker:
                 docker("rm", "-f", blocker)
