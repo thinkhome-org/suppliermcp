@@ -15,3 +15,9 @@ Těchto šest metod není součástí garantovaného stabilního rozsahu. Jejich
 Tato omezení neblokují vydání katalogu, hledání a porovnávání nabídek. Ostatní neúspěšná čtení, odlišný obraz nebo neúplné akceptační kontroly nadále blokují povýšení. Úplná evidence je v operations.json a acceptance.json u tohoto vydání.
 
 Použije se již ověřený obraz a distribuční balíčky stage.3 bez nového sestavení aplikace. Majetek ThinkHome s.r.o.; bez udělení licence.
+
+## Zjištění po produkčním nasazení
+
+Volání katalogu, hledání, detailu a porovnání prošla v běžném Codexu i osobním ChatGPT. Přesná shoda produkční databáze a indexu byla ověřena pro 157 804 položek, revizi 652. Podrobnosti v [deployment.json](deployment.json).
+
+Dodatečné ověření obsahu porovnání odhalilo chybějící normalizaci `pack_count`: žádná z aktivních položek nemá doložený počet kusů v balení ve společném modelu. Párovač proto nabídky různých dodavatelů bezpečně nespojí ani při kandidátní shodě EAN/MPN. Úspěšný návrat `compare_offers` není dokladem funkčního automatického srovnání eD a 100MEGA. Samostatné nabídky a jejich nejistoty jsou dostupné; automatické porovnání napříč dodavateli čeká na [opravu #32](https://github.com/thinkhome-org/suppliermcp/issues/32). Toto zjištění je dodatečné vůči šesti dříve schváleným omezením. Již vydaný obraz se nemění.

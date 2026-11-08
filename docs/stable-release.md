@@ -1,5 +1,7 @@
 # Promote SupDB 2.0.0
 
+Stable 2.0.0 was published and deployed on 2026-11-08 to the production Portainer stack `supdb-green`, replacing RC6. The normal Codex and personal ChatGPT connections use the production endpoint. See the sanitized [production deployment record](releases/2.0.0/deployment.json) for the exact digest, client checks and database/index parity. The steps below remain the reproducible promotion runbook.
+
 The approved stable scope is catalog, search and offer comparison. The six supplier methods listed in [release notes](releases/2.0.0/release-notes.md) are known limitations and do not block this scope. All 326 reads remain in the evidence. The gate allows only those explicitly documented method/outcome pairs; other failures still block promotion.
 
 RC tags publish candidate packages with RC versions. For stable promotion, prepare a staging commit with version `2.0.0` in the Python package, lockfile and both plugin manifests. Include all intended code, tests, workflows and operator documentation in that commit. Push a fresh `v2.0.0-stage.N` tag on it. The candidate workflow runs CI, builds the stable-version packages and multi-architecture image, smoke-tests the GHCR digest, and attaches the packages and `image-reference.txt` to a GitHub prerelease. This staging path publishes the image by digest only.
