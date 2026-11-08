@@ -4,6 +4,7 @@ from pathlib import Path
 
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.catalog.repository import get_products
+from suppliermcp.sync.lifecycle import check_abort
 
 MAPPINGS = json.loads((Path(__file__).parents[1] / "catalog/mappings.json").read_text())
 
@@ -78,6 +79,7 @@ def validate_filter(f, schema):
 def refresh_values(conn, item_ids):
     ids = list(item_ids)
     for start in range(0, len(ids), 200):
+        check_abort()
         batch = ids[start : start + 200]
         views = get_products(conn, batch)
         conn.execute("DELETE FROM catalog_values WHERE item_id=ANY(%s)", (batch,))
@@ -86,6 +88,7 @@ def refresh_values(conn, item_ids):
         ) as copy:
             for view in views:
                 for row in _value_rows(view):
+                    check_abort()
                     copy.write_row(row)
 
 

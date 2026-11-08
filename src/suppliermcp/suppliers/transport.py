@@ -14,6 +14,7 @@ from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import fromstring
 
 from suppliermcp.catalog.contracts import CatalogError
+from suppliermcp.sync.lifecycle import check_abort, in_job
 
 _private_request = ContextVar("supplier_request", default=False)
 # httpx logs full download URLs. These may act as bearer credentials.
@@ -40,7 +41,8 @@ def _soap_fault(response):
     if response.headers.get("content-encoding", "identity").lower() != "identity":
         return None
     data = bytearray()
-    for chunk in response.iter_bytes(chunk_size=4096):
+    for chunk in response.iter_bytes():
+        check_abort()
         if len(data) + len(chunk) > 64 * 1024:
             return None
         data.extend(chunk)
@@ -111,7 +113,9 @@ class SupplierTransport:
             endpoint=endpoint,
             consume=lambda chunks: store.save(chunks, manifest),
             before_request=before_request,
-            timeout=httpx.Timeout(self.download_timeout, connect=10),
+            timeout=httpx.Timeout(
+                min(self.download_timeout, 60) if in_job() else self.download_timeout, connect=10
+            ),
         )
 
     @_suppress_supplier_http_logs()
@@ -136,9 +140,11 @@ class SupplierTransport:
         except (httpx.InvalidURL, ValueError):
             raise CatalogError("unsafe_download") from None
         for attempt in range(3):
+            check_abort()
             current = original
             try:
                 for redirect in range(6):
+                    check_abort()
                     if (
                         current.scheme != "https"
                         or current.host not in self.hosts
@@ -172,6 +178,7 @@ class SupplierTransport:
                         extensions={"sni_hostname": current.host},
                         timeout=timeout,
                     ) as response:
+                        check_abort()
                         if response.is_redirect:
                             if method != "GET" or redirect == 5:
                                 raise CatalogError("unsafe_download")
@@ -206,7 +213,8 @@ class SupplierTransport:
 
                         def chunks():
                             size = 0
-                            for chunk in response.iter_bytes(chunk_size=64 * 1024):
+                            for chunk in response.iter_bytes():
+                                check_abort()
                                 size += len(chunk)
                                 if size > self.max_bytes:
                                     raise CatalogError("payload_too_large")
@@ -229,6 +237,7 @@ class SupplierTransport:
             except CatalogError:
                 raise
             except (httpx.HTTPError, OSError, ValueError, KeyError) as error:
+                check_abort()
                 if attempt == 2:
                     code = "supplier_unavailable"
                     if not restartable:

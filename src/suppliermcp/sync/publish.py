@@ -12,6 +12,7 @@ from suppliermcp.catalog.contracts import (
     SchemaRecord,
     SourceItem,
 )
+from suppliermcp.sync.lifecycle import check_abort
 
 BULK_ANALYZE_ITEMS = 10_000
 
@@ -33,6 +34,7 @@ def stage(conn, manifest, rows):
         )
         with conn.cursor().copy("COPY staging (run_id,ordinal,kind,data) FROM STDIN") as copy:
             for ordinal, row in enumerate(rows):
+                check_abort()
                 if isinstance(row, SchemaRecord) and row.kind == "product_facts":
                     from suppliermcp.catalog.contracts import Observation
 

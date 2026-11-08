@@ -1,13 +1,32 @@
 import psycopg
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.data import data_dir
+from suppliermcp.sync.lifecycle import check_abort, register_connection
+
+
+def connection_info(settings):
+    dsn = settings.database_url.get_secret_value()
+    options = conninfo_to_dict(dsn).get("options", "")
+    # Bound lost sockets on both ends; healthy long statements/COPY remain unrestricted.
+    options += " -c tcp_keepalives_idle=30 -c tcp_keepalives_interval=10 -c tcp_keepalives_count=3 -c tcp_user_timeout=60000"
+    return make_conninfo(
+        dsn,
+        options=options.strip(),
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=3,
+        tcp_user_timeout=60000,
+    )
 
 
 def connect(settings):
     try:
-        return psycopg.connect(
-            settings.database_url.get_secret_value(), autocommit=True, connect_timeout=5
+        check_abort()
+        return register_connection(
+            psycopg.connect(connection_info(settings), autocommit=True, connect_timeout=5)
         )
     except psycopg.Error:
         raise CatalogError("service_unavailable", retryable=True) from None

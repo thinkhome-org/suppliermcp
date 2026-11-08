@@ -16,6 +16,7 @@ from defusedxml.common import DefusedXmlException
 from defusedxml.ElementTree import iterparse
 
 from suppliermcp.catalog.contracts import CatalogError, utcnow
+from suppliermcp.sync.lifecycle import check_abort
 
 
 class ArtifactStore:
@@ -44,6 +45,7 @@ class ArtifactStore:
         try:
             with os.fdopen(fd, "wb") as f:
                 for chunk in stream:
+                    check_abort()
                     size += len(chunk)
                     if size + used > self.budget:
                         raise CatalogError("artifact_budget_exceeded")
@@ -107,6 +109,7 @@ def _elements(source, on_root=None, projection=None, validate_element=None):
     stack = []
     nodes = []
     for event, element in iterparse(source, events=("start", "end"), forbid_dtd=True):
+        check_abort()
         if event == "start":
             if projection:
                 if not nodes:

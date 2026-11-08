@@ -9,7 +9,7 @@ from procrastinate.exceptions import AlreadyEnqueued
 from psycopg.types.json import Jsonb
 
 from suppliermcp.catalog.contracts import BatchManifest, CatalogError, utcnow
-from suppliermcp.catalog.db import connect
+from suppliermcp.catalog.db import connect, connection_info
 from suppliermcp.config import Settings
 from suppliermcp.suppliers.ed.gateway import READS, EdGateway
 from suppliermcp.suppliers.ed.private import EdPrivateAdapter
@@ -20,6 +20,7 @@ from suppliermcp.suppliers.profiles import SERVICES
 from suppliermcp.suppliers.transport import SupplierTransport
 from suppliermcp.sync.artifacts import ArtifactStore
 
+from .lifecycle import abortable_job, check_abort
 from .publish import publish, stage
 
 
@@ -155,6 +156,7 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
             revision, outcome = _finish_private_catalog(conn, adapter, run_id, revision)
 
     except Exception as exc:
+        check_abort()
         outcome = exc.code if isinstance(exc, CatalogError) else "refresh_failed"
         if manifest and getattr(adapter, "store", None) and manifest.path:
             adapter.store.mark(Path(manifest.path), "failed", manifest)
@@ -165,6 +167,7 @@ def _run_refresh(conn, adapter, domain, codes, endpoint, source_endpoint):
         )
         raise CatalogError(outcome, retryable=True) from None
     finally:
+        check_abort()
         with conn.transaction():
             if private_catalog and outcome == "ok":
                 conn.execute(
@@ -339,12 +342,15 @@ def _scheduled_job_running(conn, task, key):
 
 def create_app(settings):
     app = procrastinate.App(
-        connector=procrastinate.PsycopgConnector(conninfo=settings.database_url.get_secret_value())
+        connector=procrastinate.PsycopgConnector(conninfo=connection_info(settings))
     )
 
     @app.task(
-        name="suppliermcp.refresh", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60)
+        name="suppliermcp.refresh",
+        pass_context=True,
+        retry=procrastinate.RetryStrategy(max_attempts=3, wait=60),
     )
+    @abortable_job
     def refresh(interface, domain, codes=None, endpoint=None):
         adapters = build_adapters(settings)
         if interface not in adapters:
@@ -352,7 +358,12 @@ def create_app(settings):
         with connect(settings) as conn:
             return run_refresh(conn, adapters[interface], domain, codes, endpoint=endpoint)
 
-    @app.task(name="suppliermcp.index", retry=procrastinate.RetryStrategy(max_attempts=3, wait=60))
+    @app.task(
+        name="suppliermcp.index",
+        pass_context=True,
+        retry=procrastinate.RetryStrategy(max_attempts=3, wait=60),
+    )
+    @abortable_job
     def index():
         from suppliermcp.search.index import (
             ALIAS,
@@ -376,7 +387,8 @@ def create_app(settings):
             client.http.close()
 
     @app.periodic(cron="* * * * *")
-    @app.task(name="suppliermcp.tick")
+    @app.task(name="suppliermcp.tick", pass_context=True)
+    @abortable_job
     def tick(timestamp):
         contracts = source_contracts(settings)
         with connect(settings) as conn:

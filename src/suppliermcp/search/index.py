@@ -12,6 +12,7 @@ import httpx
 
 from suppliermcp.catalog.contracts import CatalogError
 from suppliermcp.catalog.db import require_projected_catalog
+from suppliermcp.sync.lifecycle import check_abort
 
 ALIAS = "supplier_catalog_clean_v2"
 SYNONYMS = json.loads(Path(__file__).with_name("synonyms.json").read_text())
@@ -217,6 +218,7 @@ def rebuild_index(conn, client):
             with conn.cursor(name="index_rebuild") as cursor:
                 cursor.execute("SELECT id,data,revision FROM source_items WHERE active ORDER BY id")
                 while rows := cursor.fetchmany(200):
+                    check_abort()
                     if not all(client.import_documents(name, documents(conn, rows))):
                         raise CatalogError("index_import_failed")
         except Exception:
@@ -241,6 +243,7 @@ def drain_pending(conn, client):
     after_id = 0
     rejected = False
     while True:
+        check_abort()
         last_id, processed, batch_rejected = _drain_batch(conn, client, after_id)
         if last_id == after_id:
             if rejected:
