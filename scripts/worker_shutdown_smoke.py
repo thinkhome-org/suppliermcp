@@ -16,9 +16,10 @@ POSTGRES = "postgres@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e60
 
 
 def docker(*args, check=True):
-    return subprocess.run(
+    result = subprocess.run(
         ["docker", *args], check=check, text=True, capture_output=True, timeout=120
-    ).stdout.strip()
+    )
+    return (result.stdout + (result.stderr if args and args[0] == "logs" else "")).strip()
 
 
 def wait_for(predicate, seconds=15):
@@ -112,7 +113,7 @@ def main():
             ).endswith("accepting connections"),
             40,
         )
-        print(fixture("init"))
+        print(fixture("init"), flush=True)
         workers.append(slow_http)
         docker(
             "run", "-d", "--name", slow_http, *common, image, "python", "/fixture.py", "http-server"
@@ -154,6 +155,7 @@ def main():
                 time.sleep(35)
                 assert int(active(token)) == pid, "Healthy COPY was timed out"
             if token == "blackhole":
+                started = time.monotonic()
                 docker("network", "disconnect", network, worker)
                 docker("kill", worker)
                 wait_for(
@@ -166,8 +168,14 @@ def main():
                 assert docker("wait", worker) == "0"
                 assert time.monotonic() - started < (85 if token == "http" else 15)
             released(pid, address)
+            print(
+                f"PASS {token}: rollback and all sessions/locks released in {time.monotonic() - started:.2f}s",
+                flush=True,
+            )
             assert sql("SELECT count(*) FROM shutdown_markers") == str(index)
             if blocker:
+                docker("kill", "--signal", "INT", blocker)
+                docker("wait", blocker)
                 docker("rm", "-f", blocker)
             if token != "blackhole":
                 sql(f"UPDATE shutdown_control SET ready=true WHERE token='{token}'")
@@ -179,6 +187,7 @@ def main():
                 )
                 docker("kill", "--signal", "TERM", worker)
                 assert docker("wait", worker) == "0"
+                print(f"PASS {token}: restart committed once", flush=True)
         # A fresh job after hard loss must be able to publish, without terminating a backend.
         fixture("enqueue", "after-harddeath", "copy")
         sql("UPDATE shutdown_control SET ready=true WHERE token='after-harddeath'")
@@ -194,6 +203,10 @@ def main():
             "PASS: healthy COPY, graceful retry/commit cycles, blocked SQL cancellation, stalled HTTP cancellation, and blackhole lock release"
         )
     except BaseException:
+        print(
+            sql("SELECT args->>'token',status,attempts,worker_id FROM procrastinate_jobs"),
+            flush=True,
+        )
         for name in workers + [db]:
             print(docker("logs", "--tail", "35", name, check=False)[-6000:], flush=True)
         raise
