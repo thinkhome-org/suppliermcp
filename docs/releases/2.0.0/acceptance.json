@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "actual_codex_oauth_catalog_and_documents": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:08:50.905773+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "client": "personal-codex",
+        "forced_expiry_refresh": "passed",
+        "observed_at": "2026-11-08T21:08:50.905773+00:00",
+        "operations": [
+          "search_products",
+          "ed_private.getTransportationList",
+          "ed_public.getInvoiceList"
+        ],
+        "post_portainer_deployment": "passed",
+        "refresh_token_type": "Offline"
+      },
+      "receipt_sha256": "63ed376a444d28f90b25a9b2c31c3cb6ea531fff9c76744cc08ba224b9c41d4b"
+    },
+    "catalog_selection_relevance_and_performance": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:07:50.792189+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "check": "catalog_selection_relevance_and_performance",
+        "listed_page_rows": 20,
+        "observed_at": "2026-11-08T21:07:50.792189+00:00",
+        "outcome": "passed",
+        "priced_rows": 20,
+        "timings_seconds": {
+          "exact_code_search": 0.048,
+          "exact_lookup": 0.013,
+          "filtered_price_listing": 2.522,
+          "search": 0.358
+        }
+      },
+      "receipt_sha256": "5b709f558e24ef1e990dda0d6847815c7a60693879f21f9077bc77043438e227"
+    },
+    "personal_chatgpt_web_oauth_catalog_and_documents": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:08:50.905773+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "document_date_range": "2026-11-08",
+        "document_values_in_final_response": false,
+        "ed_public.getInvoiceList": "passed",
+        "observed_at": "2026-11-08T21:08:50.905773+00:00",
+        "plugin": "SupDB stage",
+        "plugin_id": "plugin_asdk_app_6af0dec82d7481919641b25c185dfc6d",
+        "search_products": "passed",
+        "ui_elapsed_seconds": 13,
+        "ui_test": "Try in chat"
+      },
+      "receipt_sha256": "e65698f2613326dbe3d28ac24ad28cb1cef84f2f3e2cbf95340d8f8f74c7600c"
+    },
+    "portainer_backup_restore_and_v1_rollback": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:08:50.905773+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "backup_sha256": "7526e91a96fcee83763f685245a8f764eb3f0c2f192d197625623ff0453cbbe7",
+        "catalog_pair_sha256": "9b3d5bcad034071d1202d4de44e358897e85074189bac8eff190c0460d533a94",
+        "observed_at": "2026-11-08T21:08:50.905773+00:00",
+        "restored_active_products": 157804,
+        "revision": 318,
+        "stage3_vm_portainer_smoke": "PASS: populated v1 upgrade rejection, isolated v2 restart and v1 backup restoration with authenticated SKU lookup"
+      },
+      "receipt_sha256": "a236ae464fc3859038911d9b5cab9be55eaa06f6e77debb4098b66a3f8e7913c"
+    },
+    "portainer_restart": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:08:50.905773+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "catalog_parity": {
+          "backlog": 0,
+          "catalog_pair_sha256": "9b3d5bcad034071d1202d4de44e358897e85074189bac8eff190c0460d533a94",
+          "db_rows": 157804,
+          "different_revision": 0,
+          "extra": 0,
+          "indexed_rows": 157804,
+          "matching": true,
+          "missing": 0,
+          "observed_at": "2026-11-08T21:05:30.918207+00:00",
+          "package": "2.0.0",
+          "revision": 318
+        },
+        "container_image_id": "sha256:1bd70bb511886a6e7c78b458d1acb64c922c2fdc682e7c33422ff2042373ac0e",
+        "observed_at": "2026-11-08T21:08:50.905773+00:00",
+        "readiness_http": 200,
+        "stack_ids": [
+          31,
+          32
+        ]
+      },
+      "receipt_sha256": "5556cd98e5a6730ffc5e6977eb5a9866146a118d1b882e5b26b5cae6b1ed882a"
+    },
+    "python_catalog_and_documents": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:06:59.980136+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "catalog_search_nonempty": true,
+        "check": "python_catalog_and_documents",
+        "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+        "invoice_list_nonempty": true,
+        "invoice_list_read": true,
+        "observed_at": "2026-11-08T21:06:59.980136+00:00",
+        "ordinary_document_denied": true,
+        "outcome": "passed",
+        "package_version": "2.0.0"
+      },
+      "receipt_sha256": "4e8f92a3ba98c784722f14619ce909b9eb61400eb015e95e7b4abcf564753e95"
+    },
+    "rest_catalog_and_document_denial": {
+      "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+      "observed_at": "2026-11-08T21:08:50.905773+00:00",
+      "outcome": "passed",
+      "receipt": {
+        "anonymous_http": 401,
+        "observed_at": "2026-11-08T21:08:50.905773+00:00",
+        "ordinary_documents_http": 403,
+        "search_nonempty": true,
+        "version": "2.0.0"
+      },
+      "receipt_sha256": "b3bacd43134b1e3f93aeeb65fa0b1e451eca39bfb3272c11fd3a6d47c06e1775"
+    }
+  },
+  "checksums_sha256": "be670a6381526ba613bd03cf0ab5cce2b4795bdb955d5cd148687d1d5ddbe503",
+  "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+  "remaining_supplier_reads": 6,
+  "source_commit": "95eeed7b8ef0e08eabf12cb1d2a7b120f01f969f",
+  "stable_ready": false,
+  "stage_tag": "v2.0.0-stage.3",
+  "version": "2.0.0"
+}
