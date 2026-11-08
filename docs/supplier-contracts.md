@@ -40,7 +40,7 @@ An optional `offer` object is supported under each eD interface configuration an
 {"offer":{"order_multiple":"1","fees_net":"0","currency":"CZK","timestamp_field":"VerifiedPriceTimestamp","timestamp_is_price_evidence":true,"freshness_seconds":3600}}
 ```
 
-Mapped common observations preserve source endpoint, artifact hash, time and derivation. Verified packaging mappings therefore feed both typed filtering and conservative product matching. Conflicting mapped values remain unresolved.
+Mapped common observations preserve source endpoint, artifact hash, time and derivation. Verified packaging mappings feed typed filtering and the manufacturer/MPN matching fallback. An identical valid GTIN proves the declared trade item without an invented pack_count; explicit variant/packaging conflicts still block matching. See [verified packaging and comparison semantics](supplier-api/packaging-and-comparison.md).
 
 ## Adding a supplier in an existing protocol family
 

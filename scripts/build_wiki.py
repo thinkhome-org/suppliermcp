@@ -14,6 +14,7 @@ PAGES = {
     "Compatibility": "docs/compatibility.md",
     "Validation": "docs/validation.md",
     "Supplier-contracts": "docs/supplier-contracts.md",
+    "Packaging-and-comparison": "docs/supplier-api/packaging-and-comparison.md",
     "Supplier-API": "docs/supplier-api/README.md",
     "eD-PUBLIC": "docs/supplier-api/ed_public-reference.md",
     "eD-PRIVATE": "docs/supplier-api/ed_private-reference.md",

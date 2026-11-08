@@ -187,7 +187,7 @@ def test_verified_pack_mapping_reaches_matching(conn, monkeypatch):
     for id in ["1", "2"]:
         product = item(
             id, [Observation(interface="mega", endpoint="base", field="VerifiedPack", value="1")]
-        ).model_copy(update={"ean": "123"})
+        ).model_copy(update={"manufacturer": "Maker", "mpn": "PART"})
         publish_rows(conn, utcnow(), id, [product])
     assert (
         match_items(get_product(conn, "mega:1").item, get_product(conn, "mega:2").item).verdict
