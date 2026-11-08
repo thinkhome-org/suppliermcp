@@ -157,7 +157,7 @@ def main():
                 docker("network", "disconnect", network, worker)
                 docker("kill", worker)
                 wait_for(
-                    lambda pid=pid: sessions_at(address) == "0",
+                    lambda address=address: sessions_at(address) == "0",
                     100,
                 )
             else:
