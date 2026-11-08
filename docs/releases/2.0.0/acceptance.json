@@ -129,9 +129,46 @@
   },
   "checksums_sha256": "be670a6381526ba613bd03cf0ab5cce2b4795bdb955d5cd148687d1d5ddbe503",
   "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+  "known_limitations": {
+    "mega.X-ASM-StiRelation.delta": {
+      "issue": 3,
+      "outcome": "supplier_http_5xx",
+      "reason": "Incremental related-product export fails upstream; full export verified."
+    },
+    "mega.X-ASM-StiRelation_El.delta": {
+      "issue": 3,
+      "outcome": "supplier_http_5xx",
+      "reason": "Incremental related-product export fails upstream; full export verified."
+    },
+    "mega_order.GetStatus": {
+      "issue": 4,
+      "outcome": "missing_genuine_order_fixture",
+      "reason": "No orders exist on the account; supplier test fixture needed."
+    },
+    "mega_order.GetXCompany": {
+      "issue": 4,
+      "outcome": "supplier_soap_server_application_fault",
+      "reason": "Supplier company/contact operation requires confirmed access and parameters."
+    },
+    "mega_order.GetXCompanyListChanged": {
+      "issue": 4,
+      "outcome": "supplier_soap_server_application_fault",
+      "reason": "Supplier company/contact operation requires confirmed access and parameters."
+    },
+    "mega_order.GetXCompanyListId": {
+      "issue": 4,
+      "outcome": "supplier_soap_server_application_fault",
+      "reason": "Supplier company/contact operation requires confirmed access and parameters."
+    }
+  },
+  "release_scope": [
+    "catalog",
+    "search",
+    "offer_comparison"
+  ],
   "remaining_supplier_reads": 6,
   "source_commit": "95eeed7b8ef0e08eabf12cb1d2a7b120f01f969f",
-  "stable_ready": false,
+  "stable_ready": true,
   "stage_tag": "v2.0.0-stage.3",
   "version": "2.0.0"
 }

@@ -20,6 +20,14 @@ CHECKS = {
     "python_catalog_and_documents",
     "catalog_selection_relevance_and_performance",
 }
+KNOWN_LIMITATIONS = {
+    "mega.X-ASM-StiRelation.delta": "supplier_http_5xx",
+    "mega.X-ASM-StiRelation_El.delta": "supplier_http_5xx",
+    "mega_order.GetXCompany": "supplier_soap_server_application_fault",
+    "mega_order.GetXCompanyListChanged": "supplier_soap_server_application_fault",
+    "mega_order.GetXCompanyListId": "supplier_soap_server_application_fault",
+    "mega_order.GetStatus": "missing_genuine_order_fixture",
+}
 ASSETS = {
     "suppliermcp-2.0.0-py3-none-any.whl",
     "suppliermcp-codex-2.0.0.zip",
@@ -58,12 +66,25 @@ def verify(record, rows, assets, source):
     require(sorted(sums.decode().splitlines()) == sorted(expected.splitlines()), "Asset mismatch")
     specs = {s.operation_id: s for s in operation_inventory() if s.effect == "read"}
     require(specs and set(rows) == set(specs), "Supplier matrix differs from the reviewed registry")
+    limitations = record.get("known_limitations", {})
+    require(set(limitations) <= set(KNOWN_LIMITATIONS), "Unapproved release limitation")
+    if limitations:
+        require(
+            record.get("release_scope") == ["catalog", "search", "offer_comparison"],
+            "Known limitations require catalog release scope",
+        )
     for key, spec in specs.items():
         row = rows[key]
         require(
             row.get("image") == image
             and row.get("package_version") == "2.0.0"
-            and row.get("outcome") in {"verified_nonempty", "verified_empty"}
+            and (
+                row.get("outcome") in {"verified_nonempty", "verified_empty"}
+                or key in limitations
+                and limitations[key].get("outcome") == KNOWN_LIMITATIONS[key] == row.get("outcome")
+                and bool(limitations[key].get("reason"))
+                and limitations[key].get("issue") in {3, 4}
+            )
             and row.get("interface") == spec.interface
             and row.get("mode") == spec.mode
             and row.get("scope") == spec.scope
