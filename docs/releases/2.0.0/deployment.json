@@ -1,0 +1,89 @@
+{
+  "version": "2.0.0",
+  "observed_at": "2026-11-08T21:51:19.107323+00:00",
+  "release": "https://github.com/thinkhome-org/suppliermcp/releases/tag/v2.0.0",
+  "release_workflow_run": 42525975134,
+  "scope": [
+    "catalog",
+    "search",
+    "offer_comparison"
+  ],
+  "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:38530e8c7de60be7d36bf053041dc2520e4f81272938f7506e6a49f54eb140a6",
+  "container_image_id": "sha256:1bd70bb511886a6e7c78b458d1acb64c922c2fdc682e7c33422ff2042373ac0e",
+  "production": {
+    "platform": "Portainer on VM111",
+    "stack": "supdb-green",
+    "stack_id": 25,
+    "replaces": "2.0.0-rc.6",
+    "mcp": "https://supdb.thinkhome.org/mcp",
+    "api_health": "healthy",
+    "worker": "running",
+    "migration_exit_code": 0,
+    "database_and_index_volumes": "preserved",
+    "pre_upgrade_pg_dump": "completed; protected backup retained on VM",
+    "identity_stack": "supdb-login; unchanged"
+  },
+  "catalog_parity": {
+    "observed_at": "2026-11-08T21:47:12.330530+00:00",
+    "db_rows": 157804,
+    "indexed_rows": 157804,
+    "revision": 652,
+    "missing": 0,
+    "extra": 0,
+    "different_revision": 0,
+    "backlog": 0,
+    "matching": true,
+    "catalog_pair_sha256": "ad48de8b9a04dae5d5db8f311eb6e17ac6621091d7c8c008f08bc9516e151e93"
+  },
+  "clients": {
+    "codex": {
+      "plugin": "suppliermcp@thinkhome-suppliermcp",
+      "version": "2.0.0",
+      "enabled": true,
+      "server": "supdb_v2",
+      "test": "actual codex app-server using normal user configuration",
+      "operations": {
+        "get_catalog_status": "passed",
+        "search_products": "passed",
+        "get_product": "passed",
+        "compare_offers": "passed"
+      },
+      "comparison_refresh": false
+    },
+    "chatgpt": {
+      "plugin": "SupDB",
+      "destination": "permanent production MCP",
+      "test": "personal ChatGPT web; Try in chat; response complete",
+      "operations": {
+        "get_catalog_status": "passed",
+        "search_products": "passed",
+        "get_product": "passed",
+        "compare_offers": "passed"
+      },
+      "comparison_refresh": false,
+      "elapsed_seconds": 27,
+      "customer_records_in_final_response": false
+    }
+  },
+  "known_limitations": {
+    "issues": [
+      3,
+      4
+    ],
+    "method_count": 6,
+    "blocks_approved_scope": false,
+    "details": "release-notes.md"
+  },
+  "provenance_note": "Production verification after replacement of RC6. Stage acceptance remains separately recorded in acceptance.json; stage results are not relabeled as production supplier probes.",
+  "comparison_acceptance": {
+    "tool_calls": "passed",
+    "automatic_cross_supplier_matching": "not_verified; blocked by absent normalized pack_count observations",
+    "issue": "https://github.com/thinkhome-org/suppliermcp/issues/32",
+    "known_pack_count_rows": {
+      "ed": 0,
+      "mega": 0
+    },
+    "cross_supplier_sample": "Logitech, first 20 search results; no comparison containing both suppliers",
+    "safety": "uncertain variants remain separate; no inferred pack_count=1"
+  }
+}
