@@ -59,6 +59,14 @@ jobs:
       - name: Release the exact staged wheel and plugins
         run: |
           cd dist
-          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --latest \
-            --title 'SupDB 2.0.0' --notes-file "$GITHUB_WORKSPACE/docs/releases/2.0.0/release-notes.md" \
-            SHA256SUMS image-reference.txt suppliermcp-2.0.0-py3-none-any.whl suppliermcp-{codex,portable}-2.0.0.zip
+          assets=(SHA256SUMS image-reference.txt suppliermcp-2.0.0-py3-none-any.whl suppliermcp-{codex,portable}-2.0.0.zip)
+          notes="$GITHUB_WORKSPACE/docs/releases/2.0.0/release-notes.md"
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft | jq -e .isDraft
+            gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber "${assets[@]}"
+            gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest \
+              --title 'SupDB 2.0.0' --notes-file "$notes"
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --latest \
+              --title 'SupDB 2.0.0' --notes-file "$notes" "${assets[@]}"
+          fi
