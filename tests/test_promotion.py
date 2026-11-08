@@ -84,3 +84,39 @@ def test_incomplete_evidence_cannot_promote(candidate, failure):
         (assets / "suppliermcp-codex-2.0.0.zip").write_bytes(b"changed")
     with pytest.raises(ValueError):
         gate["verify"](*candidate)
+
+
+def test_catalog_scope_accepts_only_documented_known_limitations(candidate):
+    record, rows, _, _ = candidate
+    record["release_scope"] = ["catalog", "search", "offer_comparison"]
+    record["known_limitations"] = {}
+    for key, outcome in gate["KNOWN_LIMITATIONS"].items():
+        rows[key]["outcome"] = outcome
+        record["known_limitations"][key] = dict(
+            outcome=outcome, reason="Known upstream limitation", issue=4
+        )
+    gate["verify"](*candidate)
+    rows["ed_public.getProductList"]["outcome"] = "supplier_http_5xx"
+    with pytest.raises(ValueError):
+        gate["verify"](*candidate)
+
+
+@pytest.mark.parametrize("failure", ["unknown", "different_outcome", "wrong_image", "no_reason"])
+def test_limitation_cannot_hide_other_failures(candidate, failure):
+    record, rows, _, _ = candidate
+    key = "mega_order.GetStatus"
+    record["release_scope"] = ["catalog", "search", "offer_comparison"]
+    rows[key]["outcome"] = "missing_genuine_order_fixture"
+    record["known_limitations"] = {
+        key: dict(outcome=rows[key]["outcome"], reason="No orders", issue=4)
+    }
+    if failure == "unknown":
+        record["known_limitations"]["ed_public.getProductList"] = record["known_limitations"][key]
+    elif failure == "different_outcome":
+        rows[key]["outcome"] = "permission_denied"
+    elif failure == "wrong_image":
+        rows[key]["image"] = "old"
+    else:
+        record["known_limitations"][key]["reason"] = ""
+    with pytest.raises(ValueError):
+        gate["verify"](*candidate)
