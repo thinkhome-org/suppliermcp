@@ -1,0 +1,326 @@
+{
+  "version": "2.0.2",
+  "source_commit": "0d0442c23389e264141c1885e85bd889b20b59cb",
+  "fix_pr": 37,
+  "issue": 35,
+  "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+  "build_run": 42536102807,
+  "ci": {
+    "pr_run": 42534890513,
+    "main_run": 42535545112,
+    "tests_passed": 608,
+    "codeql_run": 42534887333,
+    "codeql": "passed",
+    "independent_review": "core and operator docs: no remaining material findings"
+  },
+  "deployment": {
+    "production_stack": "supdb-green",
+    "stage_stack": "supdb-stage",
+    "portainer_managed": true,
+    "database_and_index_volumes": "preserved",
+    "schema_changed": false,
+    "new_import_required_by_fix": false,
+    "pre_upgrade_pg_dump": "completed; protected on VM"
+  },
+  "exact_image_vm_acceptance": {
+    "source_overrides": false,
+    "result": "passed",
+    "receipt_sha256": "af0df72d5f3aedc555a9874379fc164a2bcc09a33133d6187cd96514834ae3e3",
+    "healthy_copy_seconds": 35,
+    "graceful_copy_stop_seconds": [
+      8.23,
+      3.39
+    ],
+    "sql_lock_wait_stop_seconds": 1.04,
+    "stalled_http_stop_seconds": 63.21,
+    "network_blackhole_release_seconds": 61.22,
+    "all_worker_backends_checked": true,
+    "all_worker_advisory_locks_checked": true,
+    "retry_commits_once": true,
+    "manual_backend_termination_used": false
+  },
+  "stage_worker": {
+    "observed_at": "2026-11-08T23:44:51.328249+00:00",
+    "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+    "stack": "supdb-stage",
+    "actual_entrypoint": "python -m suppliermcp.worker run",
+    "actual_index_job_id": 5165,
+    "stop_seconds": 31.976,
+    "exit_code": 0,
+    "old_worker_backends_remaining": 0,
+    "old_worker_advisory_locks_remaining": 0,
+    "same_index_job_succeeded_after_restart": true,
+    "manual_backend_termination_used": false
+  },
+  "production_worker": {
+    "observed_at": "2026-11-09T00:00:36.833378+00:00",
+    "stack": "supdb-green",
+    "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+    "stop_seconds": 32.733,
+    "exit_code": 0,
+    "old_worker_backends_remaining": 0,
+    "old_worker_advisory_locks_remaining": 0,
+    "index_resumed_after_restart": true,
+    "backlog_before_stop": 64275,
+    "backlog_after_restart": 63075,
+    "manual_backend_termination_used": false
+  },
+  "production_image": {
+    "at": "2026-11-09T00:03:52.275191+00:00",
+    "stack": "supdb-green",
+    "containers": [
+      {
+        "service": "mcp",
+        "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+        "image_id": "sha256:99e568f1f0202085fce30445710e5a8eaa7a40fbfb4a622828bbc303bc24064f",
+        "state": "running",
+        "source_commit": "0d0442c23389e264141c1885e85bd889b20b59cb",
+        "health": "healthy"
+      },
+      {
+        "service": "worker",
+        "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+        "image_id": "sha256:99e568f1f0202085fce30445710e5a8eaa7a40fbfb4a622828bbc303bc24064f",
+        "state": "running",
+        "source_commit": "0d0442c23389e264141c1885e85bd889b20b59cb"
+      },
+      {
+        "service": "migrate",
+        "image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+        "image_id": "sha256:99e568f1f0202085fce30445710e5a8eaa7a40fbfb4a622828bbc303bc24064f",
+        "state": "exited",
+        "source_commit": "0d0442c23389e264141c1885e85bd889b20b59cb",
+        "exit_code": 0
+      }
+    ]
+  },
+  "production_comparison": {
+    "observed_at": "2026-11-08T23:58:15.199623+00:00",
+    "package": "2.0.2",
+    "real_pairs": [
+      {
+        "mpn": "8489A002",
+        "ean": "4960999201719",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false,
+        "all_unit_prices_known": true,
+        "single_currency": true
+      },
+      {
+        "mpn": "7737A001",
+        "ean": "4960999047034",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false,
+        "all_unit_prices_known": true,
+        "single_currency": true
+      },
+      {
+        "mpn": "PK_6ASFTP003blue",
+        "ean": "8592457132943",
+        "expected_supplier_count": 2,
+        "supplier_count": 2,
+        "expected_pair_present": true,
+        "decision": {
+          "verdict": "same",
+          "evidence": [
+            "gtin"
+          ]
+        },
+        "quote_unknown_reasons": [
+          "order_multiple_unknown"
+        ],
+        "order_quantities_known": false,
+        "all_unit_prices_known": true,
+        "single_currency": true
+      }
+    ],
+    "different_real_products_rejected": true
+  },
+  "codex": {
+    "client": "normal Codex app-server",
+    "cross_supplier_counts": [
+      2,
+      2,
+      2
+    ],
+    "operations": [
+      "get_catalog_status",
+      "search_products",
+      "get_product",
+      "compare_offers"
+    ],
+    "outcome": "passed",
+    "observed_at": "2026-11-09T12:56:06.294457+00:00"
+  },
+  "codex_plugin": {
+    "version": "2.0.2",
+    "enabled": true,
+    "production_endpoint_unchanged": true,
+    "legacy_v1_server_enabled": false,
+    "duplicate_bundled_server_enabled": false
+  },
+  "chatgpt": {
+    "observed_at": "2026-11-08T23:58:40.671Z",
+    "plugin": "SupDB",
+    "production": true,
+    "operations": [
+      "get_catalog_status",
+      "search_products",
+      "get_product",
+      "compare_offers"
+    ],
+    "cross_supplier_counts": [
+      2,
+      2,
+      2
+    ],
+    "outcome": "passed"
+  },
+  "assets_sha256": "fef2bfc93a60e438c617a567fdcf4d21dbba2f5157c57178a8aac13e066ac689",
+  "earlier_nonpassing_checks": {
+    "concurrent_exact_image_attempt": "failed strict stop timing under concurrent stage exercise; later serial exact-image test passed all cases",
+    "production_test_controller": "first controller used nonexistent finished_at; second required a new job but existing index job was retried; corrected controller checks owned connection release and durable outbox resumption",
+    "first_running_index_snapshot": {
+      "backlog": 66875,
+      "db_rows": 157803,
+      "different_revision": 33437,
+      "extra": 1,
+      "indexed_rows": 157804,
+      "matching": false,
+      "missing": 0,
+      "observed_at": "2026-11-08T23:58:27.899479+00:00",
+      "package": "2.0.2",
+      "revision": 657
+    }
+  },
+  "limitations": {
+    "full_326_operation_matrix_repeated_for_patch": false,
+    "prior_supplier_issues": [
+      3,
+      4
+    ],
+    "unknown_mega_order_multiple": "preserved",
+    "network_cleanup_timing": "observed on tested VM, not hard real-time guarantee",
+    "healthy_sql_duration_limit_added": false
+  },
+  "test_restore_fixture_cleanup": {
+    "database": "supdb_acceptance_restore",
+    "purpose": "disposable stage2 restore rehearsal copy",
+    "active_sessions_before_drop": 0,
+    "verified_rows": 157804,
+    "verified_revision": 318,
+    "original_dump_checksum_verified": true,
+    "dump_retained": true,
+    "production_and_stage_primary_databases_preserved": true,
+    "database_remaining_after_cleanup": false,
+    "free_disk_after_gib": 43,
+    "receipt_sha256": "f9bfbe2ac4ba22d738b7b739431673c250aac66e3e977f16536a20d96cc5f5c8"
+  },
+  "healthy_production_catalog_refresh": {
+    "interface": "ed_public",
+    "queue_job_id": 23033,
+    "started_at": "2026-11-09T00:00:36.182303+00:00",
+    "finished_at": "2026-11-09T00:39:30.876761+00:00",
+    "duration_seconds": 2334.694458,
+    "outcome": "succeeded",
+    "index_job_resumed": 23318
+  },
+  "index_throughput_sample": {
+    "processed_events": 200,
+    "products": 200,
+    "profiled_seconds": 16.092,
+    "document_preparation_seconds": 10.82,
+    "get_products_seconds": 9.039,
+    "json_records_decoded": 126525,
+    "includes_lock_wait_and_profile_overhead": true,
+    "projection_rewritten_by_patch": false,
+    "receipt_sha256": "e670fc42d4ca8e60a5cd54210a9429d385672c39368a8c287a1e529d60bf7246"
+  },
+  "unauthenticated_mcp": {
+    "observed_at": "2026-11-09T00:57:23.107718+00:00",
+    "checks": [
+      {
+        "host": "supdb.thinkhome.org",
+        "unauthenticated_mcp_post_status": 401
+      },
+      {
+        "host": "supdb-stage.thinkhome.org",
+        "unauthenticated_mcp_post_status": 401
+      }
+    ]
+  },
+  "temporary_refresh_pause": {
+    "observed_at": "2026-11-09T10:58:03.420502+00:00",
+    "temporary_pause": true,
+    "stacks": [
+      {
+        "stack": "supdb-green",
+        "refresh_schedules_paused": true,
+        "queued_refresh_jobs_deferred": 0,
+        "active_refresh_jobs_preserved": [
+          27525
+        ],
+        "worker_resumed": true,
+        "index_and_tick_schedules_preserved": true,
+        "restore_directory": "/opt/supdb-issue35/refresh-pause/supdb-green"
+      },
+      {
+        "stack": "supdb-stage",
+        "refresh_schedules_paused": true,
+        "queued_refresh_jobs_deferred": 0,
+        "active_refresh_jobs_preserved": [],
+        "worker_resumed": true,
+        "index_and_tick_schedules_preserved": true,
+        "restore_directory": "/opt/supdb-issue35/refresh-pause/supdb-stage"
+      }
+    ],
+    "restore_after_acceptance": true
+  },
+  "observed_at": "2026-11-09T12:55:59.419198+00:00",
+  "production_index": {
+    "backlog": 0,
+    "catalog_pair_sha256": "c2e053c610f21c68c15c23d16e225d110ef3ab72e7baf4a0ccd0b28ac1c1a805",
+    "db_rows": 158023,
+    "different_revision": 0,
+    "extra": 0,
+    "indexed_rows": 158023,
+    "matching": true,
+    "missing": 0,
+    "observed_at": "2026-11-09T12:55:59.419198+00:00",
+    "package": "2.0.2",
+    "revision": 940
+  },
+  "final_worker_health": {
+    "observed_at": "2026-11-09T12:56:05.412987+00:00",
+    "worker_running": true,
+    "worker_paused": false,
+    "worker_oom_killed": false,
+    "worker_image": "ghcr.io/thinkhome-org/suppliermcp@sha256:7895c6cf00a764af3accad91dc3ac1ede5b6484ced10696ee23e429874ae8b24",
+    "worker_source_commit": "0d0442c23389e264141c1885e85bd889b20b59cb",
+    "older_worker_backend_count": 0,
+    "heartbeat_age_seconds": 7.865455,
+    "production_mcp_health": "healthy"
+  }
+}

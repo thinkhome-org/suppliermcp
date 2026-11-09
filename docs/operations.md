@@ -14,6 +14,10 @@ Source schedules are opt-in through `SUPPLIERMCP_SOURCE_CONTRACTS_PATH`, a mount
 
 Do not use this sample as supplier permission to poll. Verify allowed windows, returned fields and account scope first. eD PRIVATE catalog baselines contain placeholder commercial fields. 100MEGA needs verified export modes, timezone/windows and currency/stock semantics; unknown contracts fail visibly. The adapter contract tests show the accepted `exports` format. Mount the file read-only into both application services with a Compose override. Never mount secrets into the plugin package.
 
+## Worker stop and restart
+
+Version 2.0.2 adds cooperative SQL/COPY cancellation, bounded worker HTTP inactivity and TCP dead-peer detection. See [worker lifecycle](worker-lifecycle.md) for actual limits, restart procedure and exact-image tests. Preserve volumes and the durable queue.
+
 ## Durability and recovery
 
 The `postgres`, `typesense`, and `artifacts` named volumes persist across ordinary restarts. Do not run `down -v` on production data. Back up PostgreSQL with `pg_dump` plus the artifacts volume and configuration stored separately in protected storage. Restore into an empty isolated database using `pg_restore`; test the restore before replacing a working instance. Retained evidence and offers are authoritative; Typesense is disposable.
@@ -67,7 +71,7 @@ MCP is bound only to `http://127.0.0.1:8000/mcp`. `/health/live` checks the proc
 
 A failed publication keeps its staged import and raw artifact. After fixing the cause, `python -m suppliermcp.worker resume-import RUN_ID` publishes that retained run and reconciles endpoint status without fetching again or changing its original source/fetch evidence time. It does not bypass quarantine; only the separate `accept-import RUN_ID --reason ...` operation does. Never use an acceptance override merely to hide an incomplete or malformed download.
 
-Large downloads use a 300-second inactivity/read timeout (`SUPPLIERMCP_DOWNLOAD_TIMEOUT_SECONDS`, configurable up to 900), with a 10-second connection timeout. Small SOAP/status requests retain the client timeout. This avoids rejecting a valid bulk export merely because its first byte takes more than 30 seconds. Each actual 100MEGA request, including retries and redirects, rechecks its mode-specific allowed window. No request is intentionally started after the window closes.
+Large downloads use a 300-second inactivity/read timeout (`SUPPLIERMCP_DOWNLOAD_TIMEOUT_SECONDS`, configurable up to 900), with a 10-second connection timeout. Small SOAP/status requests retain the client timeout outside workers. Inside a worker all supplier reads use at most 60 seconds of read inactivity so an aborted job can unwind; this does not cap total download duration. This avoids rejecting a valid bulk export merely because its first byte takes more than 30 seconds. Each actual 100MEGA request, including retries and redirects, rechecks its mode-specific allowed window. No request is intentionally started after the window closes.
 
 ### Moving a populated v1 catalog to v2
 
