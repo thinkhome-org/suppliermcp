@@ -1,8 +1,8 @@
 # SupDB · SupplierMCP
 
-SupplierMCP 2.0 is a release candidate for read-only access to eD PUBLIC, eD PRIVATE and 100MEGA. Enable each interface independently. The catalog retains supplier evidence and last-known offers in PostgreSQL. Typesense powers text discovery. Exact lookup and complete typed listing also work when Typesense is unavailable.
+SupDB 2.0 provides stable catalog access, search and offer comparison across eD PUBLIC, eD PRIVATE and 100MEGA. The deployed 2.0.2 patch fixes worker shutdown and recovery; see the [deployment evidence](docs/releases/2.0.2/deployment.json) and [known supplier limitations](docs/releases/2.0.0/release-notes.md). Enable each interface independently. The catalog retains supplier evidence and last-known offers in PostgreSQL. Typesense powers text discovery. Exact lookup and complete typed listing also work when Typesense is unavailable.
 
-## Connect to the ThinkHome candidate
+## Connect to ThinkHome SupDB
 
 ThinkHome runs the MCP server, worker, PostgreSQL catalogue and Typesense index in Portainer. Codex on the Mac connects to [SupDB MCP](https://supdb.thinkhome.org/mcp) as `supdb_v2`. To check the connection, ask “Use supdb_v2 to get the catalog status.” In personal ChatGPT, open **Plugins → Add → Add custom MCP server**, enter that URL, choose OAuth, and sign in using your registered client. The server uses a dedicated [SupDB login](docs/login.md). Applications connecting to the hosted HTTP API can inspect its [OpenAPI documentation](https://supdb.thinkhome.org/v2/docs).
 
@@ -12,7 +12,7 @@ The [acceptance record](docs/supplier-api/v2-acceptance.md) identifies the teste
 
 | Client | Entry point |
 | --- | --- |
-| Python 3.12 | Install the candidate wheel, then import `CatalogService` from `suppliermcp.service`. Supply settings and an authorized identity. |
+| Python 3.12 | Install the release wheel, then import `CatalogService` from `suppliermcp.service`. Supply settings and an authorized identity. |
 | REST | See `/v2/docs` or `/v2/openapi.json`. Submit catalog requests to `POST /v2/catalog/{tool_name}`. Discover supplier operations with `GET /v2/operations` and invoke an allowed read with `POST /v2/operations/{operation_id}/read`. |
 | MCP | Connect to `/mcp` over Streamable HTTP. Codex and ChatGPT OAuth setup is in the [login guide](docs/login.md). |
 

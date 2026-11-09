@@ -1,8 +1,12 @@
 # ThinkHome Portainer deployment
 
-The production v1 Git stack `suppliermcp` follows `refs/heads/main` and reads `compose.portainer.yaml`. Keep that path pinned to the deployed v1 configuration. The candidate uses a separate stack, Compose file, volumes and tunnel origin. The v1 endpoint is `https://suppliermcp.thinkhome.org/mcp`. The deployed v2 candidate uses [SupDB MCP](https://supdb.thinkhome.org/mcp) and a [separate login realm](https://supdb-login.thinkhome.org/realms/supdb/.well-known/openid-configuration). See the [deployment and restart evidence](supplier-api/v2-acceptance.md#rc5-on-the-mac-and-portainer).
+ThinkHome production is the Portainer-managed `supdb-green` stack on VM111, serving [SupDB MCP](https://supdb.thinkhome.org/mcp). It runs the exact accepted 2.0.2 image; `supdb-stage` is separate. Authentication uses the existing `supdb-login` stack and [login realm](https://supdb-login.thinkhome.org/realms/supdb/.well-known/openid-configuration). See [current deployment evidence](releases/2.0.2/deployment.json) and [worker stop/restart](worker-lifecycle.md).
 
-## Build and deploy the candidate
+For an existing v2 stack, change its immutable `SUPPLIERMCP_IMAGE` reference in the Portainer editor and update the stack, preserving its volumes, credentials, network aliases and login configuration. If the editor contains a rendered Compose document with literal image references, update `migrate`, `mcp` and `worker` together. This patch needs no new stack, schema migration or full catalog reimport. Keep the previous accepted digest for rollback and take a protected database backup first. Verify the running digest, migration exit code, worker behavior and authenticated reads after the update.
+
+The new-stack procedure below also supports isolated candidate acceptance. The legacy v1 Compose path `compose.portainer.yaml` remains for historical rollback; the v2 stack uses `compose.portainer-v2.yaml`. Never point a v2 migration at a populated v1 database. Verify legacy container and tunnel availability before choosing a rollback route.
+
+## Deploy a new isolated v2 stack
 
 1. Obtain the image digest from the release's `image-reference.txt`. Candidate CI builds linux/amd64 and linux/arm64 images and runs a disposable Portainer smoke test. Select the GHCR registry identity that can pull the image.
 2. In Portainer create a **new** Git stack such as `suppliermcp-green` from `https://github.com/thinkhome-org/suppliermcp.git`. Select the tested release tag under `refs/tags/` and the Compose path `compose.portainer-v2.yaml`. Keep TLS verification enabled and GitOps redeployment disabled. Use fresh stack-scoped volumes and import the catalog from the suppliers. The v2 migration refuses a populated v1 catalog.
@@ -41,7 +45,7 @@ The image does not contain source credentials, source contracts or client tokens
 
 PostgreSQL must become healthy, then the one-shot `migrate` service must exit 0. MCP and worker start only after migrations succeed. A healthy MCP container proves liveness; `/health/ready` verifies database readiness, not catalog population.
 
-Only MCP joins the existing external `cloudflare` network. PostgreSQL, Typesense and worker stay on the stack's backend network. The v1 tunnel currently routes `suppliermcp.thinkhome.org` to `http://suppliermcp-origin:8000`. During candidate acceptance the green tunnel route uses `http://suppliermcp-green-origin:8000` and its own public hostname. After acceptance, configure the production hostname on green before switching the tunnel route. Keep the blue origin available for rollback.
+Only MCP joins the existing external `cloudflare` network. PostgreSQL, Typesense and worker stay on the stack's backend network. The historical v1 tunnel route was `suppliermcp.thinkhome.org` to `http://suppliermcp-origin:8000`; verify availability before relying on it. During candidate acceptance the green tunnel route uses `http://suppliermcp-green-origin:8000` and its own public hostname. After acceptance, configure the production hostname on green before switching the tunnel route. Keep the blue origin available for rollback.
 
 Keep application bearer authentication enabled. Avoid an interactive browser-login challenge on `/mcp` unless the chosen MCP client is explicitly configured for it. The tunnel token belongs to the existing connector stack, never this repository or SupplierMCP variables.
 
@@ -51,7 +55,7 @@ The original v1 stack was installed with fresh volumes on 2026-11-05/06 in Porta
 
 Keep the target client profile and token in the operator’s protected directory. Renew a static client token before expiry with the host-only signing key. For web ChatGPT, use the scoped OAuth flow in the login guide.
 
-Verify unauthorized `/mcp` access returns 401. On a v2 candidate, authenticated clients should discover the seven catalog tools plus `list_operations` and `read_operation`. Check the two skill resources as well. Run `scripts/live_verify.py --url https://<candidate-host>/mcp --report /protected/path/report.json` with `SUPPLIERMCP_TOKEN` supplied privately. Inspect the report's checks, not merely process exit status.
+Verify an unauthenticated MCP **POST** to `/mcp` returns 401. A plain GET may return 405 on the stateless endpoint; that does not test authorization. On a v2 candidate, authenticated clients should discover the seven catalog tools plus `list_operations` and `read_operation`. Check the two skill resources as well. Run `scripts/live_verify.py --url https://<candidate-host>/mcp --report /protected/path/report.json` with `SUPPLIERMCP_TOKEN` supplied privately. Inspect the report's checks, not merely process exit status.
 
 After the fresh import, compare authoritative active product counts with index document counts and inspect `get_catalog_status` endpoint outcomes/revisions. A running worker is not proof of a populated catalog. Night-only exports wait for their permitted Europe/Prague windows; unavailable/disabled interfaces must remain visible without hiding retained results. Do not bypass windows with repeated targeted reads.
 

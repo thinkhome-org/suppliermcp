@@ -1,6 +1,6 @@
 # Promote SupDB 2.0.0
 
-Production now runs the reviewed 2.0.1 matching patch. See [patch verification](releases/2.0.1/deployment.json) and [packaging semantics](supplier-api/packaging-and-comparison.md). The original 2.0.0 promotion record and runbook below remain historical and are not relabeled as a full 326-operation acceptance of the patch.
+Production now runs the reviewed 2.0.2 worker-lifecycle patch. See [patch verification](releases/2.0.2/deployment.json), [worker lifecycle](worker-lifecycle.md) and [packaging semantics](supplier-api/packaging-and-comparison.md). The original 2.0.0 promotion record and runbook below remain historical and are not relabeled as a full 326-operation acceptance of later patches.
 
 Stable 2.0.0 was published and deployed on 2026-11-08 to the production Portainer stack `supdb-green`, replacing RC6. The normal Codex and personal ChatGPT connections use the production endpoint. See the sanitized [production deployment record](releases/2.0.0/deployment.json) for the exact digest, client checks and database/index parity. The steps below remain the reproducible promotion runbook.
 

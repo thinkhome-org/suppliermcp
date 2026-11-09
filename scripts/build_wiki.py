@@ -9,6 +9,7 @@ PAGES = {
     "Home": "README.md",
     "Stable-release": "docs/stable-release.md",
     "Operations": "docs/operations.md",
+    "Worker-lifecycle": "docs/worker-lifecycle.md",
     "Portainer": "docs/portainer.md",
     "Login": "docs/login.md",
     "Compatibility": "docs/compatibility.md",
