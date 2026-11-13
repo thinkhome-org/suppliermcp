@@ -43,7 +43,7 @@ jobs:
           gh release download "$stage" --dir dist
           uv run --locked python scripts/verify_promotion.py "$RECORD" dist "$source"
       - uses: docker/setup-buildx-action@v4
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
